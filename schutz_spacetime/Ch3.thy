@@ -1,6 +1,6 @@
 (*  Title:      Ch3.thy
     Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
-                University of Edinburgh           
+                University of Edinburgh, 2021          
 *)
 
 theory Ch3
