@@ -1,3 +1,8 @@
+(*  Title:      Ch3.thy
+    Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
+                University of Edinburgh           
+*)
+
 theory Ch3
 imports Main Minkowski TernaryOrdering
 
