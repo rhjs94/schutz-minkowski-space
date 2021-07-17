@@ -15,6 +15,8 @@ chapter AFP
 (* Session name, add to AFP group, list base session: *)
 session "schutz_spacetime" (AFP) = HOL +
 
+  description [This is a partial formalisation of Schutz' 1997 monograph `Independent Axioms for Minkowski Spacetime`. All axioms and theorems 1-14 are mechanised, except 12(ii).]
+
   options [timeout = 600, document = pdf, document_output = "output"]
 
 (* To suppress document generation of some theories: *)
@@ -29,5 +31,5 @@ session "schutz_spacetime" (AFP) = HOL +
 
 (* Dependencies on document source files: *)
   document_files
-    (* "root.bib" *)
+    "root.bib"
     "root.tex"
