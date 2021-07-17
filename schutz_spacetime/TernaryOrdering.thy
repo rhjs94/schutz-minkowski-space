@@ -1,26 +1,29 @@
 theory TernaryOrdering
 imports Main Util
 
-(* Definition of chains using an ordering on sets of events, plus some proofs. *)
-
 begin
 
-section "Totally ordered chains"
+text \<open>
+  Definition of chains using an ordering on sets of events
+  based on natural numbers, plus some proofs.
+\<close>
 
-(* Based on page 110 of Phil Scott's thesis and the following HOL Light definition:
-let ORDERING = new_definition
-  `ORDERING f X <=> (!n. (FINITE X ==> n < CARD X) ==> f n IN X)
+section \<open>Totally ordered chains\<close>
+
+text \<open>
+  Based on page 110 of Phil Scott's thesis and the following HOL Light definition:
+  let ORDERING = new_definition
+    `ORDERING f X <=> (!n. (FINITE X ==> n < CARD X) ==> f n IN X)
                     /\ (!x. x IN X ==> ?n. (FINITE X ==> n < CARD X)
                         /\ f n = x)                   
                     /\ !n n' n''. (FINITE X ==> n'' < CARD X)
                           /\ n < n' /\ n' < n'' 
                           ==> between (f n) (f n') (f n'')`;;
-*)
-(* The second conjunction is missing from the thesis for some reason. *)
-(* https://github.com/Chattered/hilbert-bundle/blob/master/hol-light/hilbert/order.ml *)
-(* https://www.era.lib.ed.ac.uk/bitstream/handle/1842/15948/Scott2015.pdf?sequence=1&isAllowed=y *)
-(* I've made it strict for simplicity, and because that's how Schutz's ordering is. It could be
-   made more generic by taking in the function corresponding to < as a paramater. *)
+  I've made it strict for simplicity, and because that's how Schutz's ordering is. It could be
+  made more generic by taking in the function corresponding to < as a paramater.
+  Main difference to Schutz: he has local order, not total (cf Theorem 2 and `ordering2`).
+\<close>
+
 definition ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool" where
   "ordering f ord X \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X)
                      \<and> (\<forall>x\<in>X. (\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x))
@@ -40,8 +43,6 @@ lemma singleton_ordering [simp]: "\<exists>f. ordering f ord {a}"
 apply (rule_tac x = "\<lambda>n. a" in exI)
 by (simp add: ordering_def)
 
-(* The {a,b} case is more complicated than it was for ord = [[\<sqdot>\<sqdot>\<sqdot>]]. *)
-(* Fair price to pay for the generality. *)
 lemma two_ordering [simp]: "\<exists>f. ordering f ord {a, b}"
 proof cases
   assume "a = b"
@@ -129,18 +130,11 @@ lemma overlap_ordering_alt:
   shows "\<exists>f. ordering f ord {a,b,c,d}"
 by (meson assms overlap_ordering)
 
-lemma ordering_rev:
-  assumes finiteX: "finite X"
-      and ord_rev: "\<forall>a b c. (ord a b c \<longrightarrow> ord c b a)"
-  (* If |X| = m, then \<lambda>n. f (card X - n - 1) should return f 0 for n = m - 1. *)
-  (* card X - n - 1 = m - (m - 1) - 1 = 0. *)
-  shows "ordering f ord X = ordering (\<lambda>n. f (card X - n - 1)) ord X"
-  apply (simp add: ordering_def)
-(* This is done is chain_unique_upto_rev and chain_sym instead. *)
-  oops
+text \<open>
+  The lemmas below are easy to prove for X = {}, and if I included that case then I would have
+  to write a conditional definition in place of {0..|X| - 1}.
+\<close>
 
-(* These things are easy to prove for X = {}, and if I included that case then I would have
-   to write some kind of if-statement-like-thing in place of {0..|X| - 1}. *)
 lemma finite_ordering_img: "\<lbrakk>X \<noteq> {}; finite X; ordering f ord X\<rbrakk> \<Longrightarrow> f ` {0..card X - 1} = X"
 by (force simp add: ordering_def image_def)
 
@@ -171,7 +165,7 @@ proof -
   thus ?thesis by (metis inj_on_imp_bij_betw orderingX finiteX finite_ordering_inj_on)  
 qed
 
-(* I think there might be a way f proving this without ord_distinct. *)
+(* I think there might be a way of proving this without ord_distinct (?) *)
 lemma inf_ordering_inj':
   assumes infX: "infinite X"
       and f_ord: "ordering f ord X"
@@ -210,12 +204,15 @@ lemma inf_ordering_inj:
   shows "inj f"
 using inf_ordering_inj' assms by (metis injI) 
 
-(* This one is a little more difficult as I can't just choose some other natural number to form
-   the third part of the betweenness relation and the initial simplification isn't as nice. *)
-(* Note that I cannot prove inj f, because I need to capture the m and n that obey specific
-   requirements for the finite case. In order to prove inj f, I would have to extend the definition
-   for ordering to include m and n beyond card X, such that it is still injective. That would
-   probably not be very useful. *)
+text \<open>
+  The finite case is a little more difficult as I can't just choose some other natural number
+  to form the third part of the betweenness relation and the initial simplification isn't as nice.
+  Note that I cannot prove inj f (over the whole type that f is defined on, i.e. natural numbers),
+  because I need to capture the m and n that obey specific requirements for the finite case.
+  In order to prove inj f, I would have to extend the definition for ordering to include m and n
+  beyond card X, such that it is still injective. That would probably not be very useful.
+\<close>
+
 lemma finite_ordering_inj:
   assumes finiteX: "finite X"
       and f_ord: "ordering f ord X"
@@ -239,7 +236,6 @@ proof (rule ccontr)
     proof (rule impI)
       assume card_is_2: "card X = 2"
       then have mn01: "m = 0 \<and> n = 1 \<or> n = 0 \<and> m = 1" using m_less_card n_less_card m_not_n by auto
-      (* hammered *)
       then have "f m \<noteq> f n" using card_is_2 surj_f One_nat_def card_eq_SucD insertCI
                                   less_2_cases numeral_2_eq_2 by (metis (no_types, lifting))
       thus False using f_eq by simp
@@ -313,15 +309,13 @@ qed
 lemma  zero_into_ordering:
   assumes "ordering f betw X"
   and "X \<noteq> {}"
-  (* and "card X > 2" *)
-  (* and "finite X" *)
   shows "(f 0) \<in> X"
     using ordering_def
     by (metis assms card_eq_0_iff gr_implies_not0 linorder_neqE_nat)
 
 
 section "Locally ordered chains"
-(* Definitions for Schutz-like chains, with local order only *)
+text \<open>Definitions for Schutz-like chains, with local order only.\<close>
 
 definition ordering2 :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool" where
   "ordering2 f ord X \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X)
@@ -330,7 +324,8 @@ definition ordering2 :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 
                                    \<longrightarrow> ord (f n) (f n') (f n''))"
 
 
-(* Analogue to ordering_ord_ijk, which is quicker to use in sledgehammer than the definition. *)
+text \<open>Analogue to ordering_ord_ijk, which is quicker to use in sledgehammer than the definition.\<close>
+
 lemma ordering2_ord_ijk:
   assumes "ordering2 f ord X"
       and "Suc i = j \<and> Suc j = k \<and> (finite X \<longrightarrow> k < card X)"

@@ -5,7 +5,8 @@ imports Main
 
 begin
 
-text\<open>For multiple uses of conjI\<close>
+text \<open>For multiple uses of conjI (goal splitting).\<close>
+
 lemma conjI3: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P1\<and>P2\<and>P3"
   by auto
 lemma conjI4: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P4 \<Longrightarrow> P1\<and>P2\<and>P3\<and>P4"
@@ -17,28 +18,11 @@ lemma conjI6: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P4
 lemma conjI7: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P4 \<Longrightarrow> P5 \<Longrightarrow> P6 \<Longrightarrow> P7 \<Longrightarrow> P1\<and>P2\<and>P3\<and>P4\<and>P5\<and>P6\<and>P7"
   by auto
 
-(* Nice for use in "lemmas" statements. *)
-(* lemma def_mp:
-  "\<lbrakk>P \<equiv> Q; P\<rbrakk> \<Longrightarrow> Q"
-by simp
-lemma def_mp2:
-  "\<lbrakk>P \<equiv> Q; Q\<rbrakk> \<Longrightarrow> P"
-by simp
+text \<open>
+  We need this in order to obtain a natural number which can be passed to the ordering function,
+  distinct from two others, in the case of a finite set of events with cardinality a least 3.
+\<close>
 
-lemma ex_distrib_and:
-  "\<exists>x. P x \<and> Q x \<Longrightarrow> (\<exists>x. P x) \<and> (\<exists>x. Q x)"
-by auto
-
-lemma ex_distrib_and':
-  "\<exists>x\<in>S. P x \<and> Q x \<Longrightarrow> (\<exists>x\<in>S. P x) \<and> (\<exists>x\<in>S. Q x)"
-by auto
-
-lemma conj_elim:
-  "\<lbrakk>R; R \<Longrightarrow> P; R \<Longrightarrow> Q\<rbrakk> \<Longrightarrow> P \<and> Q"
-by simp *)
-
-(* I need this in order to obtain a natural number which can be passed to the ordering function,
-   distinct from two others, in the case of a finite set of events with cardinality a least 3. *)
 lemma is_free_nat:
   assumes "(m::nat) < n"
       and "n < c"
@@ -46,16 +30,7 @@ lemma is_free_nat:
   shows "\<exists>k::nat. k < m \<or> (m < k \<and> k < n) \<or> (n < k \<and> k < c)"
 using assms by presburger
 
-(* lemma minus_ex_nat: "(\<exists>n::nat. f n = x) \<Longrightarrow> (\<forall>m. \<exists>n::nat. f (n - m) = x)"
-proof (rule allI)
-  fix m
-  assume "\<exists>n. f n = x"
-  then obtain k where "f k = x" by blast
-  then have "f ((k + m) - m) = x" by simp
-  then show "\<exists>n. f (n - m) = x" by blast
-qed *)
-
-(* Helpful proofs on sets. *)
+text \<open>Helpful proofs on sets.\<close>
 
 lemma set_le_two [simp]: "card {a, b} \<le> 2"
 by (simp add: card_insert_if)
@@ -82,23 +57,9 @@ lemma card_Collect_nat:
   using Suc_diff_le assms le_eq_less_or_eq by presburger
 
 
-(* Some of the following lemmas could easily go both ways, but go one way only so that the automatic
-   stuff can be used without too much worry about it getting wild. *)
-(* These are the kinds of lemmas that make my life a lot easier with some of the ordering proofs. *)
+text \<open>These lemmas make life easier with some of the ordering proofs.\<close>
 
 lemma less_3_cases: "n < 3 \<Longrightarrow> n = 0 \<or> n = Suc 0 \<or> n = Suc (Suc 0)"
 by auto
-(* 
-lemma less_2_cases_ex: "\<exists>n::nat < 2. P n \<Longrightarrow> P 0 \<or> P 1"
-using less_2_cases by fastforce
-
-lemma less_2_cases_all: "\<forall>n::nat < 2. P n \<Longrightarrow> P 0 \<and> P 1"
-by simp
-
-lemma less_3_cases_ex: "\<exists>n::nat < 3. P n \<Longrightarrow> P 0 \<or> P 1 \<or> P 2"
-by (metis One_nat_def less_3_cases numerals(2))
-
-lemma less_3_cases_all: "\<forall>n::nat < 3. P n \<Longrightarrow> P 0 \<and> P 1 \<and> P 2"
-  by simp *)
 
 end
