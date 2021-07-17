@@ -16,6 +16,7 @@ section \<open>Totally ordered chains\<close>
 
 text \<open>
   Based on page 110 of Phil Scott's thesis and the following HOL Light definition:
+  \begin{verbatim}
   let ORDERING = new_definition
     `ORDERING f X <=> (!n. (FINITE X ==> n < CARD X) ==> f n IN X)
                     /\ (!x. x IN X ==> ?n. (FINITE X ==> n < CARD X)
@@ -23,9 +24,10 @@ text \<open>
                     /\ !n n' n''. (FINITE X ==> n'' < CARD X)
                           /\ n < n' /\ n' < n'' 
                           ==> between (f n) (f n') (f n'')`;;
+  \end{verbatim}
   I've made it strict for simplicity, and because that's how Schutz's ordering is. It could be
-  made more generic by taking in the function corresponding to < as a paramater.
-  Main difference to Schutz: he has local order, not total (cf Theorem 2 and `ordering2`).
+  made more generic by taking in the function corresponding to $<$ as a paramater.
+  Main difference to Schutz: he has local order, not total (cf Theorem 2 and \<open>ordering2\<close>).
 \<close>
 
 definition ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool" where
@@ -328,7 +330,7 @@ definition ordering2 :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 
                                    \<longrightarrow> ord (f n) (f n') (f n''))"
 
 
-text \<open>Analogue to ordering_ord_ijk, which is quicker to use in sledgehammer than the definition.\<close>
+text \<open>Analogue to \<open>ordering_ord_ijk\<close>, which is quicker to use in sledgehammer than the definition.\<close>
 
 lemma ordering2_ord_ijk:
   assumes "ordering2 f ord X"

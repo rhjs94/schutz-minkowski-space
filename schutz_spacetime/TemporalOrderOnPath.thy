@@ -7,10 +7,12 @@ imports Main Minkowski TernaryOrdering
 begin
 
 text \<open>
-  Chapter 3: Temporal order on a path
+  In Schutz \cite[pp.~18-30]{schutz1997}, this is ``Chapter 3: Temporal order on a path''.
   All theorems are from Schutz, all lemmas are either parts of the Schutz proofs extracted, or
-  additional lemmas which needed to be added.
-  Much of what we'd like to prove about chains wrt inj, surj, bij, is proved in TernaryOrdering.
+  additional lemmas which needed to be added, with the exception of the three transitivity lemmas
+  leading to Theorem 9, which are given by Schutz as well.
+  Much of what we'd like to prove about chains with respect to injectivity, surjectivity,
+  bijectivity, is proved in \<open>TernaryOrdering.thy\<close>.
   Some more things are proved in interlude sections.
 \<close>
 
@@ -139,7 +141,7 @@ context MinkowskiBetweenness begin
 
 subsection \<open>Theorem 1, p18\<close>
 text \<open>
-  See abc_only_cba from Minkowski.thy.
+  See \<open>Minkowski.abc_only_cba\<close>.
   Proving it again here to show it can be done following the prose in Schutz.
 \<close>
 theorem theorem1 [no_atp]:
@@ -167,19 +169,19 @@ qed
 
 subsection \<open>Theorem 2, p19\<close>
 text \<open>
-  `abc_bcd_acd`, the start of Schutz's proof, was proved in Minkowski.thy in order to prove some
-  equivalences.
+  The lemma \<open>abc_bcd_acd\<close>, equal to the start of Schutz's proof, is given in \<open>Minkowski\<close> in order
+  to prove some equivalences.
   Splitting it up into the proof of:
-    "there is a betweenness relation for each ordered triple", and
-    "all events of a chain are distinct"
-  The first part is obvious with total chains (using `ordering`), and will be proved using the
-  local definition as well (`ordering2`), following Schutz' proof.
-  The second part is proved as injectivity of the indexing function (see `index_injective`).
+    ``there is a betweenness relation for each ordered triple", and
+    ``all events of a chain are distinct"
+  The first part is obvious with total chains (using \<open>ordering\<close>), and will be proved using the
+  local definition as well (\<open>ordering2\<close>), following Schutz' proof.
+  The second part is proved as injectivity of the indexing function (see \<open>index_injective\<close>).
 \<close>
 
 text \<open>
   For the case of two-element chains: the elements are distinct by definition,
-  and the statement on ordering is void (respectively, False \<Rightarrow> whatever)
+  and the statement on ordering is void (respectively, \<open>False \<Longrightarrow> P\<close> for any \<open>P\<close>).
 \<close>
 
 (* Theorem 2 for total chains *)
@@ -297,9 +299,9 @@ lemma thm2_ind2b:
 
 
 text \<open>
-  This is theorem 2 properly speaking, except for the "chain elements are distinct" part
+  This is Theorem 2 properly speaking, except for the "chain elements are distinct" part
   (which is proved as injectivity of the index later). Follows Schutz fairly well!
-  The statement Schutz proves under (i) is given in MinkowskiBetweenness.abc_bcd_acd instead.
+  The statement Schutz proves under (i) is given in \<open>MinkowskiBetweenness.abc_bcd_acd\<close> instead.
 \<close>
 theorem (*2*) order_finite_chain2:
   assumes chX: "long_ch_by_ord2 f X"
@@ -475,11 +477,11 @@ lemma triangle_paths_unique:
   using path_unique tri_abc triangle_paths(1) by auto
 
 text \<open>
-  The definition of the kinematic triangle says that there exist paths that a and b pass through,
-  and a and c pass through etc that are not equal. But we can show there is a *unique* ab that a
-  and b passes through, and assuming there is a path abc  that a b c pass through, it must be
-  unique. Therefore ab = abc and ac = abc, but ab \<noteq> ac, therefore False.
-  Lemma tri_three_paths is not in the books but might simplify some path obtaining.
+  The definition of the kinematic triangle says that there exist paths that $a$ and $b$ pass through,
+  and $a$ and $c$ pass through etc that are not equal. But we can show there is a \emph{unique} $ab$ that $a$
+  and $b$ pass through, and assuming there is a path $abc$  that $a, b, c$ pass through, it must be
+  unique. Therefore \<open>ab = abc\<close> and \<open>ac = abc\<close>, but \<open>ab \<noteq> ac\<close>, therefore \<open>False\<close>.
+  Lemma \<open>tri_three_paths\<close> is not in the books but might simplify some path obtaining.
 \<close>
 
 lemma triangle_diff_paths:
@@ -901,9 +903,9 @@ lemma nocross_events_neq:
 by auto
 
 text \<open>
-  Given a nonempty path Q, and an external point d, we can find another path
-  R passing through d (by I2 aka events_paths). This path is distinct
-  from Q, as it passes through a point external to it.
+  Given a nonempty path $Q$, and an external point $d$, we can find another path
+  $R$ passing through $d$ (by I2 aka \<open>events_paths\<close>). This path is distinct
+  from $Q$, as it passes through a point external to it.
 \<close>
 lemma external_path:
   assumes path_Q: "Q \<in> \<P>"
@@ -942,7 +944,7 @@ text \<open>
   The same assumptions as I7, different conclusion.
   This doesn't just give us boundedness, it gives us another event outside of the unreachable
   set, as long as we have one already.
-  I7 conclusion:  \<exists>X Q0 Qm Qn. [[Q0 .. Qm .. Qn]X] \<and> Q0 = ?Qx \<and> Qm = ?Qy \<and> Qn \<in> ?Q - \<emptyset> ?Q ?b
+  I7 conclusion:  \<open>\<exists>X Q0 Qm Qn. [[Q0 .. Qm .. Qn]X] \<and> Q0 = ?Qx \<and> Qm = ?Qy \<and> Qn \<in> ?Q - \<emptyset> ?Q ?b\<close>
 \<close>
 
 theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
@@ -957,8 +959,8 @@ theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
 
 subsection \<open>Theorem 5 (first existence theorem)\<close>
 text \<open>
-  The lemma below is used in the contradiction in external_event,
-  which is the essential part to thm 5(i).
+  The lemma below is used in the contradiction in \<open>external_event\<close>,
+  which is the essential part to Theorem 5(i).
 \<close>
 lemma (in MinkowskiUnreachable) only_one_path:
   assumes path_Q: "Q \<in> \<P>"
@@ -1012,7 +1014,7 @@ qed
 
 text \<open>
   Simple corollary which is easier to use when we don't have one event on a path yet.
-  Anything which uses this implicitly used no_empty_paths on top of ge2_events.
+  Anything which uses this implicitly used \<open>no_empty_paths\<close> on top of \<open>ge2_events\<close>.
 \<close>
 lemma ge2_events_lax:
   assumes path_Q: "Q \<in> \<P>"
@@ -1051,10 +1053,10 @@ proof -
 qed
 
 text \<open>
-  If we have two paths Q and R with a on Q and b at the intersection of Q and R, then by
-  two_in_unreach (I5) and Theorem 4 (boundedness of the unreachable set), there is an unreachable
-  set from a on one side of b on R, and on the other side of that there is an event which is
-  reachable from a by some path, which is the path we want.
+  If we have two paths $Q$ and $R$ with $a$ on $Q$ and $b$ at the intersection of $Q$ and $R$, then by
+  \<open>two_in_unreach\<close> (I5) and Theorem 4 (boundedness of the unreachable set), there is an unreachable
+  set from $a$ on one side of $b$ on $R$, and on the other side of that there is an event which is
+  reachable from $a$ by some path, which is the path we want.
 \<close>
 
 lemma path_past_unreach:
@@ -1380,8 +1382,8 @@ by (meson ab_neq_bc cross_once_notin path_ab path_bc path_ca paths_tri)
 
 text \<open>
   Schutz states it more like
-   "\<lbrakk>tri_abc; bcd; cea\<rbrakk> \<Longrightarrow> (path de d e \<longrightarrow> \<exists>f\<in>de. [[a f b]]\<and>[[d e f]])"
-  Equivalent up to usage of impI.
+   \<open>\<lbrakk>tri_abc; bcd; cea\<rbrakk> \<Longrightarrow> (path de d e \<longrightarrow> \<exists>f\<in>de. [[a f b]]\<and>[[d e f]])\<close>
+  Equivalent up to usage of \<open>impI\<close>.
 \<close>
 
 theorem (*7*) (in MinkowskiChain) collinearity2:
@@ -2453,10 +2455,10 @@ proof -
 qed
 
 text \<open>
-  Notice that this whole proof would be unnecessary if includig path-belongingness in the def,
+  Notice that this whole proof would be unnecessary if includig path-belongingness in the definition,
   as Schutz does. This would also keep path-belongingness independent of axiom O1 and O4,
   thus enabling an independent statement of axiom O6, which perhaps we now lose. In exchange,
-  our definition is slightly weaker (for card X \<ge> 3 and infinite X).
+  our definition is slightly weaker (for \<open>card X \<ge> 3\<close> and \<open>infinite X\<close>).
 \<close>
 
 lemma chain_on_path:
@@ -5248,7 +5250,7 @@ text \<open>
   Alternatively, the result is trivial: any function that assigns one element to index 0 and
   the other to 1 can be replaced with the (unique) other assignment, without destroying any
   (trivial, since ternary) "ordering" of the chain.
-  This could be made generic over the ordering similar to chain_sym relying on ordering_sym.
+  This could be made generic over the ordering similar to \<open>chain_sym\<close> relying on \<open>ordering_sym\<close>.
 \<close>
 
 lemma (in MinkowskiSpacetime) chain_unique_upto_rev_cases:
@@ -7203,8 +7205,8 @@ lemma (*for 14i*) union_of_bounded_sets_is_bounded2:
 
 text \<open>
   Schutz proves a mildly stronger version of this theorem than he states. Namely, he gives an
-  additional condition that has to be fulfilled by the bounds y,z in the proof (\<notin>\<emptyset> Q ab).
-  This condition is trivial given abc_abc_neq. His stating it in the proof makes me wonder
+  additional condition that has to be fulfilled by the bounds $y,z$ in the proof (\<open>y,z\<notin>\<emptyset> Q ab\<close>).
+  This condition is trivial given \<open>abc_abc_neq\<close>. His stating it in the proof makes me wonder
   whether his (strictly speaking) undefined notion of bounded set is somehow weaker than the
   version using strict betweenness in his theorem statement and used here in Isabelle.
   This would make sense, given the obvious analogy with sets on the real line.
@@ -7471,7 +7473,7 @@ text \<open>
   Path density: if a and b are connected by a path, then the segment between them is nonempty.
   Since Schutz insists on the number of segments in his segmentation (Theorem 11), we prove it here,
   showcasing where his missing assumption of path density fits in
-  (it is used three times in number_of_segments, once in each separate meaningful ordering case).
+  (it is used three times in \<open>number_of_segments\<close>, once in each separate meaningful ordering case).
 \<close>
 
 lemma segment_nonempty:

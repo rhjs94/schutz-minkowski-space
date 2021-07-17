@@ -11,6 +11,10 @@ begin
 (* For proofs involving the cardinality of concrete, finite sets see `card_insert_if`. *)
 
 text \<open>
+  Primitives and axioms as given in \cite[pp.~9-17]{schutz1997}.
+\<close>
+
+text \<open>
   I've tried to do little to no proofs in this file, and keep that in other files.
   So, this is mostly locale and other definitions, except where it is nice to prove something
   about definitional equivalence and the like (plus the intermediate lemmas that are necessary for
@@ -18,8 +22,8 @@ text \<open>
 \<close>
 
 text \<open>
-  Minkowski spacetime = <\<E>, \<P>, [...]>
-  except in the notation here I've used [[...]] for [...] as Isabelle uses [...] for lists.
+  Minkowski spacetime = $(\mathcal{E}, \mathcal{P}, [\dots])$
+  except in the notation here I've used $[[\dots]]$ for $[\dots]$ as Isabelle uses $[\dots]$ for lists.
 
   Except where stated otherwise all axioms are exactly as they appear in Schutz97.
   It is the independent axiomatic system provided in the main body of the book.
@@ -28,9 +32,9 @@ text \<open>
   I1-I7 are the axioms of incidence.
   I1-I3 are similar to axioms found in systems for Euclidean geometry. As compared to Hilbert's
   Foundations (HIn), our incidence axioms (In) are loosely identifiable as
-   I1 \<rightarrow> HI3, HI8;
-   I2 \<rightarrow> HI1;
-   I3 \<rightarrow> HI2.
+   I1 \<open>\<rightarrow>\<close> HI3, HI8;
+   I2 \<open>\<rightarrow>\<close> HI1;
+   I3 \<open>\<rightarrow>\<close> HI2.
   I4 fixes the dimension of the space.
   I5-I7 are what makes our system non-Galilean, and lead (I think)
   to Lorentz transforms (together with S?) and the ultimate speed limit.
@@ -42,15 +46,15 @@ text \<open>
 section "MinkowskiPrimitive: I1-I3"
 
 text \<open>
-  Events \<E>, paths \<P>, and {spray,SPRAY}s. Sprays only need to refer to \<E> and \<P>.
-  Axiom in_path_event is covered in English by saying "a path is a set of events",
+  Events \<open>\<E>\<close>, paths \<open>\<P>\<close>, and sprays. Sprays only need to refer to \<open>\<E>\<close> and \<open>\<P>\<close>.
+  Axiom \<open>in_path_event\<close> is covered in English by saying "a path is a set of events",
   but is necessary to have explicitly as an axiom as the types do not force it to be the case.
 \<close>
 
 text \<open>
   I think part of why Schutz has I1, together with the trickery
-  `\<lbrakk> \<E>\<noteq>{} \<rbrakk> \<Longrightarrow>` in I4, is that then I4 talks *only* about dimension, and results such
-  as no_empty_paths can be proved using only existence of elements and unreachable sets.
+  \<open>\<lbrakk> \<E>\<noteq>{} \<rbrakk> \<Longrightarrow>\<close> $\dots$ in I4, is that then I4 talks \emph{only} about dimension, and results such
+  as \<open>no_empty_paths\<close> can be proved using only existence of elements and unreachable sets.
   In our case, it's also a question of ordering the sequence of axiom introductions:
   dimension should really go at the end, since it is not needed for quite a while;
   but many earlier proofs rely on the set of events being non-empty.
@@ -83,7 +87,7 @@ by (simp add: path_sub_events subsetI)
 
 text \<open>
   For more terse statements.
-  a \<noteq> b because a and b are being used to identify the path, and a = b would not do that.
+  $a \neq b$ because $a$ and $b$ are being used to identify the path, and $a = b$ would not do that.
 \<close>
 
 abbreviation path :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
@@ -111,8 +115,8 @@ lemma path_unique:
 section "Primitives: Unreachable Subset (from an Event)"
 
 text \<open>
-  The Q \<in> \<P> \<and> b \<in> \<E> constraints are necessary as the types as not expressive enough to do it on
-  their own. Schutz's notation is: Q(b,\<emptyset>).
+  The \<open>Q \<in> \<P> \<and> b \<in> \<E>\<close> constraints are necessary as the types as not expressive enough to do it on
+  their own. Schutz's notation is: $Q(b,\emptyset)$.
 \<close>
 
 definition unreachable_subset :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a set" ("\<emptyset> _ _" [100, 100] 100) where
@@ -129,7 +133,7 @@ definition kinematic_triangle :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightar
                                        \<and> a \<in> R \<and> c \<in> R
                                        \<and> b \<in> S \<and> c \<in> S))"
 
-text \<open>A fuller, more explicit equivalent of \<triangle>, to show that the above definition is sufficient.\<close>
+text \<open>A fuller, more explicit equivalent of \<open>\<triangle>\<close>, to show that the above definition is sufficient.\<close>
 lemma tri_full:
   "\<triangle> a b c = (a \<in> \<E> \<and> b \<in> \<E> \<and> c \<in> \<E> \<and> a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c
               \<and> (\<exists>Q\<in>\<P>. \<exists>R\<in>\<P>. Q \<noteq> R \<and> (\<exists>S\<in>\<P>. Q \<noteq> S \<and> R \<noteq> S
@@ -141,8 +145,9 @@ unfolding kinematic_triangle_def by (meson path_unique)
 
 section "Primitives: SPRAY"
 
-text \<open>It's okay to not require x \<in> \<E> because if x \<notin> \<E> the SPRAY will be empty anyway, and if it's
-   nonempty then x \<in> \<E> is derivable.\<close>
+text \<open>
+  It's okay to not require $x \in \E$ because if $x \notin \E$ the \<open>SPRAY\<close> will be empty anyway,
+  and if it's nonempty then $x \in \E$ is derivable.\<close>
 definition SPRAY :: "'a \<Rightarrow> ('a set) set" where
   "SPRAY x \<equiv> {R\<in>\<P>. x \<in> R}"
 
@@ -224,7 +229,7 @@ text \<open>
   Otherwise the subset is independent." [Schutz97]
 \<close>
 
-text \<open>The definition of SPRAY constrains x, Q, R, S to be in \<E> and \<P>.\<close>
+text \<open>The definition of \<open>SPRAY\<close> constrains $x, Q, R, S$ to be in $\E$ and $\P$.\<close>
 definition dep3_event :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
   "dep3_event Q R S x \<equiv> Q \<noteq> R \<and> Q \<noteq> S \<and> R \<noteq> S \<and> Q \<in> SPRAY x \<and> R \<in> SPRAY x \<and> S \<in> SPRAY x
                          \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"
@@ -235,7 +240,7 @@ definition dep3_spray :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rig
 definition dep3 :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
   "dep3 Q R S \<equiv> \<exists>x. dep3_event Q R S x"
 
-text \<open>Some very simple lemmas related to dep3_event.\<close>
+text \<open>Some very simple lemmas related to \<open>dep3_event\<close>.\<close>
 
 (* Nice to have this on its own. *)
 lemma dep3_nonspray:
@@ -263,12 +268,12 @@ using dep3_event_def assms by auto
 
 text \<open>
   "We next give recursive definitions of dependence and independence which will be used to
-  characterize the concept of dimension. A path T is dependent on the set of n paths (where n\<ge>3)
+  characterize the concept of dimension. A path $T$ is dependent on the set of $n$ paths (where $n\geq3$)
 
-  S = {Qi : i = 1, 2, ..., n; Qi \<in> SPRAY x}
+  $$S = \left\lbrace Q_i \colon i = 1, 2, ..., n; Q_i \in \spray x\right\rbrace$$
 
-  if it is dependent on two paths S1 and S2, where each of these two paths is dependent
-  on some subset of n - 1 paths from the set S." [Schutz97]\<close>
+  if it is dependent on two paths $S_1$ and $S_2$, where each of these two paths is dependent
+  on some subset of $n - 1$ paths from the set $S$." [Schutz97]\<close>
 
 inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> 'a \<Rightarrow> bool" where
   dep_two: "dep3_event T A B x \<Longrightarrow> dep_path T {A, B} x"
@@ -277,7 +282,7 @@ inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> 'a \<Righ
              dep_path S1 S' x; dep_path S2 S'' x\<rbrakk> \<Longrightarrow> dep_path T S x"
 
 text \<open>
-  "We also say that the set of n + 1 paths S\<union>{T} is a dependent set." [Schutz97]
+  "We also say that the set of $n + 1$ paths $S\cup\{T\}$ is a dependent set." [Schutz97]
   Starting from this constructive definition, the below gives an analytical one.
 \<close>
 
@@ -337,8 +342,8 @@ definition three_SPRAY :: "'a \<Rightarrow> bool" where
     \<and> (\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x)"
 
 text \<open>
-  Lemma is_three_SPRAY says "this set of sets of elements is a set of paths which is a 3-SPRAY".
-  Lemma three_SPRAY_ge4 just extracts a bit of the definition.
+  Lemma \<open>is_three_SPRAY\<close> says "this set of sets of elements is a set of paths which is a 3-$\spray$".
+  Lemma \<open>three_SPRAY_ge4\<close> just extracts a bit of the definition.
 \<close>
 
 definition is_three_SPRAY :: "('a set) set \<Rightarrow> bool" where
@@ -354,10 +359,10 @@ end (* MinkowskiPrimitive *)
 section "MinkowskiBetweenness: O1-O5"
 
 text \<open>
-  In O4, I have removed the requirement that a \<noteq> d in order to prove negative
-  betweenness statements as Schutz does. For example, if we have [abc]
-  and [bca] we want to conclude [aba] and claim "contradiction!", but
-  we can't as long as we mandate that a \<noteq> d.
+  In O4, I have removed the requirement that $a \neq d$ in order to prove negative
+  betweenness statements as Schutz does. For example, if we have $[abc]$
+  and $[bca]$ we want to conclude $[aba]$ and claim "contradiction!", but
+  we can't as long as we mandate that $a \neq d$.
 \<close>
 
 locale MinkowskiBetweenness = MinkowskiPrimitive +
@@ -407,7 +412,7 @@ lemma some_betw_xor:
                  \<or> ([[c a b]] \<and> \<not> [[a b c]] \<and> \<not> [[b c a]])"
 by (meson abc_ac_neq abc_bcd_abd some_betw)
 
-text \<open>The lemma abc_abc_neq is the full O3 as stated by Schutz.\<close>
+text \<open>The lemma \<open>abc_abc_neq\<close> is the full O3 as stated by Schutz.\<close>
 lemma abc_abc_neq:
   assumes abc: "[[a b c]]"
   shows "a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c"
@@ -463,10 +468,10 @@ definition ch :: "'a set \<Rightarrow> bool" where
   "ch X \<equiv> \<exists>f. ch_by_ord f X"
 
 text \<open>
-  Since f 0 is always in the chain, and plays a special role particularly for infinite chains
+  Since $f(0)$ is always in the chain, and plays a special role particularly for infinite chains
   (as the 'endpoint', the non-finite edge) let us fix it straight in the definition.
-  Notice we require both infinite X and long_ch_by_ord, thus circumventing infinite
-  Isabelle sets having cardinality 0.
+  Notice we require both \<open>infinite X\<close> and \<open>long_ch_by_ord\<close>, thus circumventing infinite
+  Isabelle sets having cardinality $0$.
 \<close>
 definition semifin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[_[_ ..]_]") where
   "semifin_chain f x Q \<equiv>
@@ -567,7 +572,7 @@ definition long_ch_by_ord2 :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rig
 
 subsection "Chains using betweenness"
 
-text \<open>Old definitions of chains. Shown equivalent to fin_long_chain_2 in Schutz_Chapter_3.thy.\<close>
+text \<open>Old definitions of chains. Shown equivalent to \<open>fin_long_chain_2\<close> in TemporalOrderOnPath.thy.\<close>
 
 definition chain_with :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[.. _ .. _ .. _ ..]_]") where
   "chain_with x y z X \<equiv> [[x y z]] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
@@ -590,10 +595,11 @@ lemma finite_chain2_betw: "[[a..c]X] \<Longrightarrow> \<exists>b. [[a b c]]"
 section "Betweenness: Rays and Intervals"
 
 text \<open>
-  "Given any two distinct events a,b of a path we define the segment
-  (ab) := {x : [axb], x\<in>ab} [...]" [Schutz97]
-  Our version is a little different, because it is defined for any a b of type 'a.
-  Thus we can have empty set segments, which Schutz cannot (once he proves path density).
+  ``Given any two distinct events $a,b$ of a path we define the segment
+  $(ab) = \left\lbrace x : \ord{a}{x}{b},\; x \in ab \right\rbrace$" [Schutz97]
+  Our version is a little different, because it is defined for any $a,b$ of type \<open>'a\<close>.
+  Thus we can have empty set segments, while Schutz can prove (once he proves path density)
+  that segments are never empty.
 \<close>
 definition segment :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set"
   where "segment a b \<equiv> {x::'a. \<exists>ab. [[a x b]] \<and> x\<in>ab \<and> path ab a b}"
@@ -615,8 +621,8 @@ abbreviation is_prolongation :: "'a set \<Rightarrow> bool"
 
 text \<open>
   I think this is what Schutz actually meant, maybe there is a typo in the text?
-  Notice that b \<in> ray a b for any a, always. Cf the comment on segment_def.
-  Thus `\<exists>ray a b \<noteq> {}` is no guarantee that a path ab exists.
+  Notice that \<open>b \<in> ray a b\<close> for any $a$, always. Cf the comment on \<open>segment_def\<close>.
+  Thus \<open>\<exists>ray a b \<noteq> {}\<close> is no guarantee that a path $ab$ exists.
 \<close>
 definition ray :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set"
   where "ray a b \<equiv> insert b (segment a b \<union> prolongation a b)"
@@ -627,7 +633,7 @@ abbreviation is_ray :: "'a set \<Rightarrow> bool"
 definition is_ray_on :: "'a set \<Rightarrow> 'a set \<Rightarrow> bool"
   where "is_ray_on R P \<equiv> P\<in>\<P> \<and> R\<subseteq>P \<and> is_ray R"
 
-text \<open>This is as in Schutz. Notice b is not in it?\<close>
+text \<open>This is as in Schutz. Notice $b$ is not in the ray through $b$?\<close>
 definition ray_Schutz :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set"
   where "ray_Schutz a b \<equiv> insert a (segment a b \<union> prolongation a b)"
 
@@ -671,7 +677,7 @@ lemma seg_path2:
   obtains ab where "path ab a b" "segment a b \<subseteq> ab"
   using assms seg_path by force
 
-text \<open>Path density (theorem 17) will extend this by weakening the assumption to `segment a b \<noteq> {}`.\<close>
+text \<open>Path density (theorem 17) will extend this by weakening the assumptions to \<open>segment a b \<noteq> {}\<close>.\<close>
 lemma seg_endpoints_on_path:
   assumes "card (segment a b) \<ge> 2" "segment a b \<subseteq> P" "P\<in>\<P>"
   shows "path P a b"
@@ -783,8 +789,8 @@ definition is_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
     \<exists>f::(nat\<Rightarrow>'a). is_bound_f Q\<^sub>b Q f"
 
 text \<open>
-  Q_b has to be on the same path as the chain Q.
-  This is left implicit in the betweenness condition (as is Q_b\<in>\<E>).
+  $Q_b$ has to be on the same path as the chain $Q$.
+  This is left implicit in the betweenness condition (as is $Q_b\in\E$).
   So this is equivalent to Schutz only if we also assume his axioms,
   i.e. the statement of the continuity axiom is no longer independent of other axioms.
 \<close>
@@ -874,8 +880,8 @@ begin
 using ex_3SPRAY by blast *)
 
 text \<open>
-  There exists an event by nonempty_events, and by ex_3SPRAY there is a three-SPRAY, which by
-  three_SPRAY_ge4 means that there are at least four paths.
+  There exists an event by \<open>nonempty_events\<close>, and by \<open>ex_3SPRAY\<close> there is a three-$\spray$, which by
+  \<open>three_SPRAY_ge4\<close> means that there are at least four paths.
 \<close>
 lemma four_paths:
   "\<exists>Q1\<in>\<P>. \<exists>Q2\<in>\<P>. \<exists>Q3\<in>\<P>. \<exists>Q4\<in>\<P>. Q1 \<noteq> Q2 \<and> Q1 \<noteq> Q3 \<and> Q1 \<noteq> Q4 \<and> Q2 \<noteq> Q3 \<and> Q2 \<noteq> Q4 \<and> Q3 \<noteq> Q4"
