@@ -1,4 +1,4 @@
-theory Ch3
+theory TemporalOrderOnPath
 imports Main Minkowski TernaryOrdering
 begin
 

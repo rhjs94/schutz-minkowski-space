@@ -25,7 +25,7 @@ session "schutz_spacetime" (AFP) = HOL +
   theories
     TernaryOrdering
     Minkowski
-    Ch3
+    TemporalOrderOnPath
 
 (* Dependencies on document source files: *)
   document_files
