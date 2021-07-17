@@ -1,4 +1,8 @@
 theory TemporalOrderOnPath
+(*  Title:      Ch3.thy
+    Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
+                University of Edinburgh, 2021          
+*)
 imports Main Minkowski TernaryOrdering
 begin
 
