@@ -1,16 +1,16 @@
 theory Ch3
 imports Main Minkowski TernaryOrdering
-
-(* Chapter 3: Temporal order on a path *)
-(* All theorems are from Schutz, all lemmas are either parts of the Schutz proofs extracted, or
-   additional lemmas which needed to be added. *)
-(* Anything we''d like to prove about chains wrt inj, surj, bij, is proved in TernaryOrdering and
-   easily derivable for chains automatically, for the most part. If we do prove some of that stuff
-   here, it should at some point be moved.*)
-
 begin
 
-(* Disable list syntax. *)
+text \<open>
+  Chapter 3: Temporal order on a path
+  All theorems are from Schutz, all lemmas are either parts of the Schutz proofs extracted, or
+  additional lemmas which needed to be added.
+  Much of what we'd like to prove about chains wrt inj, surj, bij, is proved in TernaryOrdering.
+  Some more things are proved in interlude sections.
+\<close>
+
+text \<open>Disable list syntax.\<close>
 no_translations
   "[x, xs]" == "x#[xs]"
   "[x]" == "x#[]"
@@ -21,9 +21,11 @@ no_notation Cons (infixr "#" 65)
 no_notation Nil ("[]")
 
 
-(* First some proofs that belong in this section but aren't proved in the book or are covered but
-   in a different form or off-handed remark. *)
 section "Preliminary Results for Primitives"
+text \<open>
+  First some proofs that belong in this section but aren't proved in the book or are covered but
+  in a different form or off-handed remark.
+\<close>
 
 context MinkowskiPrimitive begin
 
@@ -131,9 +133,11 @@ end (* context MinkowskiBetweenness *)
 section "3.1 Order on a finite chain"
 context MinkowskiBetweenness begin
 
-(* Theorem 1-3.1, p18 *)
-(* See abc_only_cba from Minkowski.thy. *)
-(* Proving it again here to show it can be done following the prose in Schutz. *)
+subsection \<open>Theorem 1, p18\<close>
+text \<open>
+  See abc_only_cba from Minkowski.thy.
+  Proving it again here to show it can be done following the prose in Schutz.
+\<close>
 theorem theorem1 [no_atp]:
   assumes abc: "[[a b c]]"
   shows "[[c b a]] \<and> \<not> [[b c a]] \<and> \<not> [[c a b]]" 
@@ -157,16 +161,22 @@ proof -
   thus ?thesis using part_i part_ii part_iii by auto
 qed
 
-(* Theorem 2-3.1 (ii).1, p19 *)
-(* abc_bcd_acd, the start of Schutz's proof, was proved in Minkowski.thy in order to prove some
-   equivalences. *)
-(* Splitting it up into the proof of:
-   "there is a betweenness relation for each ordered triple", and
-   "all events of a chain are distinct" *)
-(* As I'm using sets, all elements of the set are obviously distinct, so we needn't prove that. *)
+subsection \<open>Theorem 2, p19\<close>
+text \<open>
+  `abc_bcd_acd`, the start of Schutz's proof, was proved in Minkowski.thy in order to prove some
+  equivalences.
+  Splitting it up into the proof of:
+    "there is a betweenness relation for each ordered triple", and
+    "all events of a chain are distinct"
+  The first part is obvious with total chains (using `ordering`), and will be proved using the
+  local definition as well (`ordering2`), following Schutz' proof.
+  The second part is proved as injectivity of the indexing function (see `index_injective`).
+\<close>
 
-(* Furthermore, we prove this twice: first with the old definition using total order (trivial)
-   and then using a definition more akin to Schutz (local order only; hard). *)
+text \<open>
+  For the case of two-element chains: the elements are distinct by definition,
+  and the statement on ordering is void (respectively, False \<Rightarrow> whatever)
+\<close>
 
 (* Theorem 2 for total chains *)
 theorem order_finite_chain:
@@ -175,13 +185,6 @@ theorem order_finite_chain:
       and ordered_nats: "0 \<le> (i::nat) \<and> i < j \<and> j < l \<and> l < card X"
   shows "[[(f i) (f j) (f l)]]"
   by (metis chX long_ch_by_ord_def ordered_nats ordering_ord_ijk)
-(* For the case of two-element chains: the elements are distinct by definition,
-   and the statement on ordering is void (respectively, False \<Rightarrow> whatever) *)
-(* proof -
-  have "\<forall>n n' n''. (finite X \<longrightarrow> n'' < card X) \<and> n < n' \<and> n' < n'' \<longrightarrow> [[(f n) (f n') (f n'')]]"
-       using long_ch_by_ord_def ordering_def chX  by metis
-  thus ?thesis using finiteX ordered_nats by simp
-qed *)
 
 (* Theorem 2 (with helper lemmas for induction) for local chains *)
 lemma thm2_ind1:
@@ -193,7 +196,7 @@ proof (rule allI)+
   fix i j
   show "(i<j \<and> j<card X -1) \<longrightarrow> ?P i j"
   proof (induct j)
-    case 0 (* yet again, this assumption is False, so easy *)
+    case 0 (* this assumption is False, so easy *)
     show ?case by blast
   next
     case (Suc j)
@@ -203,7 +206,6 @@ proof (rule allI)+
       have pj: "?P j (Suc j)" (* needs Suc Suc j < card X *)
         using asm(2) chX less_diff_conv long_ch_by_ord2_def ordering2_def
         by (metis Suc_eq_plus1)
-        (* by auto *)
       have "i<j \<or> i=j" using asm(1)
         by linarith
       thus "?P i (Suc j)"
@@ -248,40 +250,33 @@ proof (rule allI)+
       proof
         assume "Suc m = 1"
         show ?goal
-          (* by (smt Suc_eq_plus1 \<open>Suc m = 1\<close> add_diff_inverse_nat asm(1) asm(2) asm(3) chX
-              diff_Suc_less finiteX gr_implies_not_zero less_one less_trans plus_1_eq_Suc thm2_ind1) *)
         proof -
           have "l - Suc m < card X"
             using asm(2) asm(3) less_trans by blast
           then show ?thesis
-            using \<open>Suc m = 1\<close> asm(1) asm(2) finiteX thm2_ind1 chX
+            using \<open>Suc m = 1\<close> asm finiteX thm2_ind1 chX
             using Suc_eq_plus1 add_diff_inverse_nat diff_Suc_less
                   gr_implies_not_zero less_one plus_1_eq_Suc
-            by (smt asm(3) long_ch_by_ord2_def ordering2_ord_ijk)
+            by (smt long_ch_by_ord2_def ordering2_ord_ijk)
         qed
       next
         assume "Suc m > 1"
         show ?goal
-        proof - (* sledgehammered *)
-          have f1: "\<forall>n na. \<not> n < na \<or> Suc (na - Suc n) = na - n"
-            by (meson Suc_diff_Suc)
-          hence f2: "Suc (l - Suc m) = l - m"
-            by (metis asm(1) nat_diff_split not_less_eq zero_less_Suc)
-          have f3: "m = Suc (Suc m - Suc 1)"
-            using f1 \<open>1 < Suc m\<close> diff_Suc_1
-            by presburger
-          have f4: "0 < l"
-            using asm(1)
-            by linarith
-          have f5: "(0::nat) < 1"
-            by blast
-          have "l - Suc m < card X - 1"
-            using f4 asm(3) diff_less less_trans zero_less_Suc
-            by linarith
-          then show ?thesis
-            using f5 f4 f3 f2
-            using  asm(1) asm(3) chX finiteX Suc.hyps thm2_ind1 abc_bcd_abd
-            by (metis (full_types) Suc_eq_plus1 diff_Suc_1 diff_less zero_less_Suc)
+          apply (rule_tac a="f l" and c="f(l - Suc m - 1)" in abc_sym)
+          apply (rule_tac a="f l" and c="f(l-Suc m)" and d="f(l-Suc m-1)" and b="f(l-m)" in abc_bcd_acd)
+        proof -
+          have "[[(f(l-m-1)) (f(l-m)) (f l)]]"
+            using Suc.hyps \<open>1 < Suc m\<close> asm(1,3) by force
+          thus "[[(f l) (f(l - m)) (f(l - Suc m))]]"
+            using abc_sym One_nat_def diff_zero minus_nat.simps(2)
+            by metis
+          have "Suc(l - Suc m - 1) = l - Suc m" "Suc(l - Suc m) = l-m"
+            using Suc_pred asm(1) by presburger+
+          hence "[[(f(l - Suc m - 1)) (f(l - Suc m)) (f(l - m))]]"
+            using chX unfolding long_ch_by_ord2_def ordering2_def
+            by (meson asm(3) less_imp_diff_less)
+          thus "[[(f(l - m)) (f(l - Suc m)) (f(l - Suc m - 1))]]"
+            using abc_sym by blast
         qed
       qed
     qed
@@ -297,16 +292,17 @@ lemma thm2_ind2b:
   by (metis diff_diff_cancel less_imp_le)
 
 
-(* This is theorem 2 properly speaking, except for the "chain elements are distinct" part
-   (which is assumed since we're using sets, not sequences). Will try to follow Schutz! *)
+text \<open>
+  This is theorem 2 properly speaking, except for the "chain elements are distinct" part
+  (which is proved as injectivity of the index later). Follows Schutz fairly well!
+  The statement Schutz proves under (i) is given in MinkowskiBetweenness.abc_bcd_acd instead.
+\<close>
 theorem (*2*) order_finite_chain2:
   assumes chX: "long_ch_by_ord2 f X"
       and finiteX: "finite X"
       and ordered_nats: "0 \<le> (i::nat) \<and> i < j \<and> j < l \<and> l < card X"
     shows "[[(f i) (f j) (f l)]]"
 proof -
-  (* The statement Schutz proves under (i) is given in MinkowskiBetweenness.abc_bcd_acd instead.
-     Thus we start on (ii) immediately. *)
   let ?n = "card X - 1"
   have ord1: "0\<le>i \<and> i<j \<and> j<?n"
     using ordered_nats by linarith
@@ -450,55 +446,44 @@ end (*context MinkowskiBetweenness*)
 
 section "Preliminary Results for Kinematic Triangles and Paths/Betweenness"
 
-(* Theorem 3-3.2 (collinearity), p20 *)
-
-(* First need/want to prove some stuff that will be very helpful, plus stuff that is related to
-   that stuff that I might as well prove as well. *)
+text \<open>
+  Theorem 3-3.2 (collinearity), p20
+  First we prove some lemmas that will be very helpful.
+\<close>
 
 
 context MinkowskiPrimitive begin
 
 lemma triangle_permutes [no_atp]:
-  "\<triangle> a b c \<Longrightarrow> \<triangle> a c b \<and> \<triangle> b a c \<and> \<triangle> b c a \<and> \<triangle> c a b \<and> \<triangle> c b a"
-by (auto simp add: kinematic_triangle_def)
-
-lemmas triangle_permutes1 =
-  triangle_permutes [THEN conjunct1]
-lemmas triangle_permutes2 =
-  triangle_permutes [THEN conjunct2, THEN conjunct1]
-lemmas triangle_permutes3 =
-  triangle_permutes [THEN conjunct2, THEN conjunct2, THEN conjunct1]
-lemmas triangle_permutes4 =
-  triangle_permutes [THEN conjunct2, THEN conjunct2, THEN conjunct2, THEN conjunct1]
-lemmas triangle_permutes5 =
-  triangle_permutes [THEN conjunct2, THEN conjunct2, THEN conjunct2, THEN conjunct2]
+  assumes "\<triangle> a b c" 
+  shows "\<triangle> a c b" "\<triangle> b a c" "\<triangle> b c a" "\<triangle> c a b" "\<triangle> c b a"
+  using assms by (auto simp add: kinematic_triangle_def)+
 
 lemma triangle_paths [no_atp]:
   assumes tri_abc: "\<triangle> a b c"
-  shows "path_ex a b \<and> path_ex a c \<and> path_ex b c"
-using tri_abc by (auto simp add: kinematic_triangle_def)
+  shows "path_ex a b" "path_ex a c" "path_ex b c"
+using tri_abc by (auto simp add: kinematic_triangle_def)+
 
-lemmas triangle_paths1 = triangle_paths [THEN conjunct1]
-lemmas triangle_paths2 = triangle_paths [THEN conjunct2, THEN conjunct1]
-lemmas triangle_paths3 = triangle_paths [THEN conjunct2, THEN conjunct2]
 
 lemma triangle_paths_unique:
   assumes tri_abc: "\<triangle> a b c"
   shows "\<exists>!ab. path ab a b"      
-  using path_unique tri_abc triangle_paths1 by auto
+  using path_unique tri_abc triangle_paths(1) by auto
 
-(* The definition of the kinematic triangle says that there exists paths that a and b pass through,
-   and a and c pass through etc that are not equal. But we can show there is a *unique* ab that a
-   and b passes through, and assuming there is a path abc  that a b c pass through, it must be
-   unique. Therefore ab = abc and ac = abc, but ab \<noteq> ac, therefore False. *)
-(* I think there is a simpler proof using eq_paths and the like, so the proof could then exist in
-   MinkowskiPrimitive. *)
+text \<open>
+  The definition of the kinematic triangle says that there exist paths that a and b pass through,
+  and a and c pass through etc that are not equal. But we can show there is a *unique* ab that a
+  and b passes through, and assuming there is a path abc  that a b c pass through, it must be
+  unique. Therefore ab = abc and ac = abc, but ab \<noteq> ac, therefore False.
+  Lemma tri_three_paths is not in the books but might simplify some path obtaining.
+\<close>
+
 lemma triangle_diff_paths:
   assumes tri_abc: "\<triangle> a b c"
   shows "\<not> (\<exists>Q\<in>\<P>. a \<in> Q \<and> b \<in> Q \<and> c \<in> Q)"
 proof (rule notI)
   assume not_thesis: "\<exists>Q\<in>\<P>. a \<in> Q \<and> b \<in> Q \<and> c \<in> Q"
-  (* First show [abc] or whatever so I can show the path through abc is unique. *)
+  (* First show [abc] or similar so I can show the path through abc is unique. *)
   then obtain abc where path_abc: "abc \<in> \<P> \<and> a \<in> abc \<and> b \<in> abc \<and> c \<in> abc" by auto
   have abc_neq: "a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c" using tri_abc kinematic_triangle_def by simp
   (* Now extract some information from \<triangle> a b c. *)
@@ -514,11 +499,10 @@ proof (rule notI)
   thus False using ab_ac_relate by simp
 qed
 
-(* Not in the books but might simplify some path obtaining. *)
 lemma tri_three_paths [elim]:
   assumes tri_abc: "\<triangle> a b c"
   shows "\<exists>ab bc ca. path ab a b \<and> path bc b c \<and> path ca c a \<and> ab \<noteq> bc \<and> ab \<noteq> ca \<and> bc \<noteq> ca"
-using tri_abc triangle_diff_paths triangle_paths2 triangle_paths3 triangle_paths_unique
+using tri_abc triangle_diff_paths triangle_paths(2,3) triangle_paths_unique
 by fastforce
 
 lemma triangle_paths_neq:
@@ -527,16 +511,6 @@ lemma triangle_paths_neq:
       and path_ac: "path ac a c"
   shows "ab \<noteq> ac"
 using assms triangle_diff_paths by blast
-(* This prose needs MinkowskiBetweenness. *)
-(*proof (rule ccontr)
-  assume "\<not> ab \<noteq> ac"
-  then have ab_eq_ac: "ab = ac" by simp
-  have abc_neq: "a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c" using tri_abc kinematic_triangle_def by simp
-  have abc_events: "a \<in> \<E> \<and> b \<in> \<E> \<and> c \<in> \<E>" using in_path_event path_ab path_ac by blast
-  have abc_in_ab: "{a,b,c} \<subseteq> ab" using ab_eq_ac path_ab path_ac by auto
-  have "[[a b c]] \<or> [[b c a]] \<or> [[c a b]]" using some_betw abc_events abc_in_ab abc_neq path_ab by blast
-  thus False using triangle_not_betw tri_abc triangle_permutes by blast
-qed*)
 
 end (*context MinkowskiPrimitive*)
 context MinkowskiBetweenness begin
@@ -580,12 +554,12 @@ using tri_abc abc_ex_path triangle_diff_paths by blast
 lemma triangle_not_betw_acb:
   assumes tri_abc: "\<triangle> a b c"
   shows "\<not> [[a c b]]"
-by (simp add: tri_abc triangle_not_betw_abc triangle_permutes1)
+by (simp add: tri_abc triangle_not_betw_abc triangle_permutes(1))
 
 lemma triangle_not_betw_bac:
   assumes tri_abc: "\<triangle> a b c"
   shows "\<not> [[b a c]]"
-by (simp add: tri_abc triangle_not_betw_abc triangle_permutes2)
+by (simp add: tri_abc triangle_not_betw_abc triangle_permutes(2))
 
 lemma triangle_not_betw_any:
   assumes tri_abc: "\<triangle> a b c"
@@ -609,9 +583,9 @@ theorem (*3*) (in MinkowskiChain) collinearity_alt2:
 proof -
   have "\<exists>f\<in>ab \<inter> de. \<exists>X. [[a..f..b]X]"
   proof -
-    have "path_ex a c" using tri_abc triangle_paths2 by auto
+    have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
-    have "path_ex b c" using tri_abc triangle_paths3 by auto
+    have "path_ex b c" using tri_abc triangle_paths(3) by auto
     then obtain bc where path_bc: "path bc b c" by auto
     have ab_neq_ac: "ab \<noteq> ac" using triangle_paths_neq path_ab path_ac tri_abc by fastforce
     have ab_neq_bc: "ab \<noteq> bc" using eq_paths ab_neq_ac path_ab path_ac path_bc by blast
@@ -640,9 +614,9 @@ proof -
     by blast
   have "\<exists>f\<in>ab \<inter> de. \<exists>X. [[a..f..b]X]"
   proof -
-    have "path_ex a c" using tri_abc triangle_paths2 by auto
+    have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
-    have "path_ex b c" using tri_abc triangle_paths3 by auto
+    have "path_ex b c" using tri_abc triangle_paths(3) by auto
     then obtain bc where path_bc: "path bc b c" by auto
     have ab_neq_ac: "ab \<noteq> ac" using triangle_paths_neq path_ab path_ac tri_abc by fastforce
     have ab_neq_bc: "ab \<noteq> bc" using eq_paths ab_neq_ac path_ab path_ac path_bc by blast
@@ -670,9 +644,9 @@ proof -
     using tri_abc theI' [OF triangle_paths_unique] by blast
   have "\<exists>f\<in>?ab \<inter> de. \<exists>X. [[a..f..b]X]"
   proof -
-    have "path_ex a c" using tri_abc triangle_paths2 by auto
+    have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
-    have "path_ex b c" using tri_abc triangle_paths3 by auto
+    have "path_ex b c" using tri_abc triangle_paths(3) by auto
     then obtain bc where path_bc: "path bc b c" by auto
     have ab_neq_ac: "?ab \<noteq> ac" using triangle_paths_neq path_ab path_ac tri_abc by fastforce
     have ab_neq_bc: "?ab \<noteq> bc" using eq_paths ab_neq_ac path_ab path_ac path_bc by blast
@@ -693,12 +667,7 @@ section "Additional results for Paths and Unreachables"
 
 context MinkowskiPrimitive begin
 
-(* The degenerate case. *)
-(* ~~~~~~~~~~~~~ *)
-(* The Big Bang! *)
-(* ~~~~~~~~~~~~~ *)
-(* This would only be in MinkowskiPrimitive but unfortunately nonempty_events, once removed from
-   the axioms, isn't proven till MinkowskiSpray. *)
+text \<open>The degenerate case.\<close>
 lemma big_bang:
   assumes no_paths: "\<P> = {}"
   shows "\<exists>a. \<E> = {a}"
@@ -715,7 +684,6 @@ proof -
   thus ?thesis using a_event by auto
 qed
 
-(* Corollary to the big bang *)
 lemma two_events_then_path:
   assumes two_events: "\<exists>a\<in>\<E>. \<exists>b\<in>\<E>. a \<noteq> b"
   shows "\<exists>Q. Q \<in> \<P>"
@@ -737,14 +705,14 @@ lemma same_path_reachable:
   "\<lbrakk>Q \<in> \<P>; a \<in> Q; b \<in> Q\<rbrakk> \<Longrightarrow> a \<in> Q - \<emptyset> Q b"
 by (simp add: same_empty_unreach)
 
-(* If we have two paths crossing and a is on the crossing point, and b is on one of the paths,
-   then a is in the reachable part of the path b is not on from b. *)
+text \<open>
+  If we have two paths crossing and a is on the crossing point, and b is on one of the paths,
+  then a is in the reachable part of the path b is on.
+\<close>
+
 lemma same_path_reachable2:
   "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; a \<in> Q; a \<in> R; b \<in> Q\<rbrakk> \<Longrightarrow> a \<in> R - \<emptyset> R b"
-unfolding unreachable_subset_def apply simp
-apply (rule disjI2)
-unfolding Bex_def apply (rule_tac x = Q in exI)
-by simp
+  unfolding unreachable_subset_def by blast
 
 (* This will never be used without R \<in> \<P> but we might as well leave it off as the proof doesn't
    need it. *)
@@ -779,11 +747,11 @@ qed
 end (* context MinkowskiPrimitive *)
 context MinkowskiUnreachable begin
 
-(* First some basic facts about the primitive notions, which seem to belong here. *)
-(* I don't think any/all of these are explicitly proved in Schutz. *)
+text \<open>
+  First some basic facts about the primitive notions, which seem to belong here.
+  I don't think any/all of these are explicitly proved in Schutz.
+\<close>
 
-(* This requires the axiom of dimension (I4; MinkowskiSpacetime) if we omit axiom I1.
-   Otherwise it can be shown from I1 and I5 alone. *)
 lemma no_empty_paths [simp]:
   assumes "Q\<in>\<P>"
   shows "Q\<noteq>{}"
@@ -831,9 +799,12 @@ lemma unreach_ge2_then_ge2:
   shows "\<exists>x\<in>Q. \<exists>y\<in>Q. x \<noteq> y"
 using assms unreachable_subset_def by auto
 
-(* This lemma just proves that the chain obtained to bound the unreachable set of a path
-   is indeed on that path. Extends I6; requires Theorem 2; used in Theorem 13. *)
-(* Seems to be assumed in Schutz chain notation in I6. *)
+text \<open>
+  This lemma just proves that the chain obtained to bound the unreachable set of a path
+  is indeed on that path. Extends I6; requires Theorem 2; used in Theorem 13.
+  Seems to be assumed in Schutz' chain notation in I6.
+\<close>
+
 lemma chain_on_path_I6:
   assumes path_Q: "Q\<in>\<P>"
       and event_b: "b\<notin>Q" "b\<in>\<E>"
@@ -891,8 +862,11 @@ end (* context MinkowskiUnreachable *)
 
 section "Results about Paths as Sets"
 
-(* Note none of the following need MinkowskiPrimitive, they are just Set lemmas; nevertheless
-   I'm naming them and writing them this way for clarity. *)
+text \<open>
+  Note several of the following don't need MinkowskiPrimitive, they are just Set lemmas;
+  nevertheless I'm naming them and writing them this way for clarity.
+\<close>
+
 context MinkowskiPrimitive begin
 
 lemma distinct_paths:
@@ -922,8 +896,11 @@ lemma nocross_events_neq:
   "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; a \<in> Q; b \<in> R; R\<inter>Q = {}\<rbrakk> \<Longrightarrow> a \<noteq> b"
 by auto
 
-(* Given a path Q with points a and b on it, and an external point d, we can find another path
-   R passing through d (by I2 aka events_paths). *)
+text \<open>
+  Given a nonempty path Q, and an external point d, we can find another path
+  R passing through d (by I2 aka events_paths). This path is distinct
+  from Q, as it passes through a point external to it.
+\<close>
 lemma external_path:
   assumes path_Q: "Q \<in> \<P>"
       and a_inQ: "a \<in> Q"
@@ -935,9 +912,6 @@ proof -
   thus "\<exists>R\<in>\<P>. d \<in> R" using events_paths by (meson a_inQ d_event in_path_event path_Q)
 qed
 
-(* Given a path Q with points a and b on it, and an external point d, we can find another path
-   R passing through d which crosses Q at point e (by I2 aka events_paths). This path is distinct
-   from Q, as it passes through a point external to it. *)
 lemma distinct_path:
   assumes "Q \<in> \<P>"
       and "a \<in> Q"
@@ -959,11 +933,14 @@ end (* context MinkowskiPrimitive *)
 
 section "3.3 Boundedness of the unreachable set"
 
-(* Theorem 4-3.3 (boundedness of the unreachable set), p20 *)
-(* The same assumptions as I7, different conclusion. *)
-(* This doesn't just give us boundedness, it gives us another event outside of the urneachable
-   set, as long as we have one already. *)
-(* I7 conclusion:  \<exists>X Q0 Qm Qn. [[Q0 .. Qm .. Qn]X] \<and> Q0 = ?Qx \<and> Qm = ?Qy \<and> Qn \<in> ?Q - \<emptyset> ?Q ?b *)
+subsection \<open>Theorem 4 (boundedness of the unreachable set), p20\<close>
+text \<open>
+  The same assumptions as I7, different conclusion.
+  This doesn't just give us boundedness, it gives us another event outside of the unreachable
+  set, as long as we have one already.
+  I7 conclusion:  \<exists>X Q0 Qm Qn. [[Q0 .. Qm .. Qn]X] \<and> Q0 = ?Qx \<and> Qm = ?Qy \<and> Qn \<in> ?Q - \<emptyset> ?Q ?b
+\<close>
+
 theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
   assumes path_Q: "Q \<in> \<P>"
       and b_nin_Q: "b \<notin> Q"
@@ -973,28 +950,12 @@ theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
   shows "\<exists>Qz\<in>Q - \<emptyset> Q b. [[Qx Qy Qz]] \<and> Qx \<noteq> Qz"
   using assms I7 order_finite_chain fin_long_chain_def
   by (metis fin_ch_betw)
-(* TODO expand this metis use, it's very opaque. *)
-  (* using assms I7 abc_abc_neq finite_chain3_betw fin_ch_betw by metis *)
 
-(* begin Theorem 5-3.3 (first existence theorem) *)
-(* begin Theorem 5-3.3 (i) (first existence theorem) *)
-
-(* lemma (in MinkowskiSpacetime) only_one_path:
-  assumes path_Q: "Q \<in> \<P>"
-      and all_inQ: "\<forall>a\<in>\<E>. a \<in> Q"
-      (* and path_R: "R \<in> \<P>" *)
-  shows "\<forall>R\<in>\<P>. R = Q"
-proof (rule ccontr)
-  obtain x where "three_SPRAY x"
-    using ex_3SPRAY nonempty_events by blast
-  then obtain X where "X = SPRAY x"
-    by blast
-  then obtain R P where "R\<in>\<P>" "P\<in>\<P>" "R \<noteq> P" (* "R \<in> SPRAY x" "P \<in> SPRAY x" *)
-    using four_paths by blast
-  hence "R \<noteq> Q \<or> P \<noteq> Q"
-    by auto *)
-
-(* used in the contradiction in external_event, which is the essential part to thm 5(i) *)
+subsection \<open>Theorem 5 (first existence theorem)\<close>
+text \<open>
+  The lemma below is used in the contradiction in external_event,
+  which is the essential part to thm 5(i).
+\<close>
 lemma (in MinkowskiUnreachable) only_one_path:
   assumes path_Q: "Q \<in> \<P>"
       and all_inQ: "\<forall>a\<in>\<E>. a \<in> Q"
@@ -1003,7 +964,6 @@ lemma (in MinkowskiUnreachable) only_one_path:
 proof (rule ccontr)
   assume "\<not> R = Q"
   then have R_neq_Q: "R \<noteq> Q" by simp
-
   have "\<E> = Q"
     by (simp add: all_inQ antisym path_Q path_sub_events subsetI)
   hence "R\<subset>Q"
@@ -1016,49 +976,11 @@ proof (rule ccontr)
     using \<open>\<E> = Q\<close> \<open>path R a b\<close> in_path_event apply blast+ done
   thus False using eq_paths
     using R_neq_Q \<open>path R a b\<close> path_Q by blast
-
-  (* thus False
-  proof (cases "R \<subseteq> Q")
-    case True
-    then have R_in_Q: "R \<subseteq> Q" by simp
-    thus False
-    proof (cases "\<exists>a\<in>R. \<exists>b\<in>R. a \<noteq> b")
-      case True
-      then obtain a b where ab_inR: "a \<in> R \<and> b \<in> R \<and> a \<noteq> b" by auto
-      then have ab_inQ: "a \<in> Q \<and> b \<in> Q" using R_in_Q by auto
-      then have "R = Q" using eq_paths path_Q path_R ab_inR ab_inQ by auto
-      thus False using R_neq_Q by simp
-    next
-      case False
-      then have R_card1: "\<forall>a\<in>R. \<forall>b\<in>R. a = b" by simp
-      then obtain a where R_just_a: "R = {a}" using no_empty_paths path_R by fast
-      show False
-      proof (cases "\<forall>a\<in>Q. \<forall>b\<in>Q. a = b")
-        case True
-        then have "R = Q" using R_card1 R_in_Q R_just_a by blast
-        thus False using R_neq_Q by simp
-      next
-        case False
-        then have "R \<subset> Q" using R_in_Q R_card1 by blast
-        then have "\<exists>a\<in>Q. a \<notin> R" by auto
-        then obtain a where "a \<in> Q" and "a \<notin> R" by auto
-        then have "\<exists>a\<in>R. \<exists>b\<in>R. a \<noteq> b"
-          using two_in_unreach [where Q = R and b = a]
-                path_R path_Q in_path_event unreach_ge2_then_ge2 by metis
-        thus False using R_card1 by simp
-    qed
-  qed
-  next
-    case False
-    then have "Q \<subset> R" using in_path_event all_inQ path_R by blast 
-    then have "\<exists>a\<in>R. a \<notin> Q" by auto
-    thus False using all_inQ path_R in_path_event by simp
-  qed *)
 qed
 
 context MinkowskiSpacetime begin
 
-(* Unfortunately, we cannot assume that a path exists without the axiom of dimension. *)
+text \<open>Unfortunately, we cannot assume that a path exists without the axiom of dimension.\<close>
 lemma external_event:
   assumes path_Q: "Q \<in> \<P>"
   shows "\<exists>d\<in>\<E>. d \<notin> Q"
@@ -1069,9 +991,11 @@ proof (rule ccontr)
   thus False using ex_3SPRAY three_SPRAY_ge4 four_paths by auto
 qed
 
-(* Now we can prove the first part of the theorem's conjunction. *)
-(* This follows pretty much exactly the same pattern as the book, except it relies on more
-   intermediate lemmas. *)
+text \<open>
+  Now we can prove the first part of the theorem's conjunction.
+  This follows pretty much exactly the same pattern as the book, except it relies on more
+  intermediate lemmas.
+\<close>
 theorem (*5i*) ge2_events:
   assumes path_Q: "Q \<in> \<P>"
       and a_inQ: "a \<in> Q"
@@ -1082,8 +1006,10 @@ proof -
   thus ?thesis using two_in_unreach [where Q = Q and b = d] path_Q unreach_ge2_then_ge2 by metis
 qed
 
-(* Simple corollary which is easier to use when we don't have one event on a path yet. *)
-(* Anything which uses this implicitly used no_empty_paths on top of ge2_events. *)
+text \<open>
+  Simple corollary which is easier to use when we don't have one event on a path yet.
+  Anything which uses this implicitly used no_empty_paths on top of ge2_events.
+\<close>
 lemma ge2_events_lax:
   assumes path_Q: "Q \<in> \<P>"
   shows "\<exists>a\<in>Q. \<exists>b\<in>Q. a \<noteq> b"
@@ -1092,12 +1018,6 @@ proof -
   thus ?thesis using path_Q ge2_events by blast
 qed
 
-(* end Theorem 5-3.3 (i) (first existence theorem) *)
-
-(* begin Theorem 5-3.3 (ii) (first existence theorem) *)
-
-(* Is there any point splitting this up into this and a _lax version as I did with ge2_events?
-   Probably not, I only did that to follow Schutz more closely. *)
 lemma ex_crossing_path:
   assumes path_Q: "Q \<in> \<P>"
   shows "\<exists>R\<in>\<P>. R \<noteq> Q \<and> (\<exists>c. c \<in> R \<and> c \<in> Q)"
@@ -1126,10 +1046,13 @@ proof -
   qed
 qed
 
-(* If we have two paths Q and R with a on Q and b at the intersection of Q and R, then by
-   two_in_unreach (I5) and Theorem 4 (boundedness of the unreachable set), there is an unreachable
-   set from a on one side of b on R, and on the other side of that there is an event which is
-   reachable from a by some path, which is the path we want. *)
+text \<open>
+  If we have two paths Q and R with a on Q and b at the intersection of Q and R, then by
+  two_in_unreach (I5) and Theorem 4 (boundedness of the unreachable set), there is an unreachable
+  set from a on one side of b on R, and on the other side of that there is an event which is
+  reachable from a by some path, which is the path we want.
+\<close>
+
 lemma path_past_unreach:
   assumes path_Q: "Q \<in> \<P>"
       and path_R: "R \<in> \<P>"
@@ -1200,13 +1123,9 @@ lemma (*5ii_alt*) ex_crossing_at_alt:
 
 end (* context MinkowskiSpacetime *)
 
-(* end Theorem 5-3.3 (ii) (first existence theorem) *)
-
 
 section "3.4 Prolongation"
 context MinkowskiSpacetime begin
-
-(* begin Theorem 6-3.4 (i) (prolongation) *)
 
 lemma (in MinkowskiPrimitive) unreach_on_path:
   "a \<in> \<emptyset> Q b \<Longrightarrow> a \<in> Q"
@@ -1255,10 +1174,6 @@ lemma (in MinkowskiSpacetime) prolong_betw3:
       and ab_neq: "a \<noteq> b"
   shows "\<exists>c\<in>Q. \<exists>d\<in>Q. [[a b c]] \<and> [[a b d]] \<and> c\<noteq>d"
   by (metis (full_types) abc_abc_neq abc_bcd_abd a_inQ ab_neq b_inQ path_Q prolong_betw2)
-
-(* end Theorem 6-3.4 (i) (prolongation) *)
-
-(* begin Theorem 6-3.4 (ii) (prolongation) *)
 
 lemma finite_path_has_ends:
   assumes "Q \<in> \<P>"
@@ -1416,16 +1331,14 @@ proof
     by simp
 qed
 
-(* end Theorem 6-3.4 (ii) (prolongation) *)
 
 end (* contex MinkowskiSpacetime *)
 
 
 section "3.5 Second collinearity theorem"
 
-(* begin Theorem 7-3.5 (second collinearity theorem). *)
 
-(* A useful betweenness lemma. *)
+text \<open>We start with a useful betweenness lemma.\<close>
 lemma (in MinkowskiBetweenness) some_betw2:
   assumes path_Q: "Q \<in> \<P>"
       and a_inQ: "a \<in> Q"
@@ -1461,9 +1374,12 @@ lemma (in MinkowskiPrimitive) paths_tri2:
   shows "\<triangle> a b c"
 by (meson ab_neq_bc cross_once_notin path_ab path_bc path_ca paths_tri)
 
-(* Schutz states it more like
+text \<open>
+  Schutz states it more like
    "\<lbrakk>tri_abc; bcd; cea\<rbrakk> \<Longrightarrow> (path de d e \<longrightarrow> \<exists>f\<in>de. [[a f b]]\<and>[[d e f]])"
-   Equivalent up to usage of impI. *)
+  Equivalent up to usage of impI.
+\<close>
+
 theorem (*7*) (in MinkowskiChain) collinearity2:
   assumes tri_abc: "\<triangle> a b c"
       and bcd: "[[b c d]]"
@@ -1524,7 +1440,7 @@ proof -
                 afb fde path_bd path_ea by blast
       then have "y = c" by (metis (mono_tags, lifting)
                                   afb bcd cea path_bd tri_abc
-                                  abc_ac_neq betw_b_in_path path_unique triangle_paths2
+                                  abc_ac_neq betw_b_in_path path_unique triangle_paths(2)
                                     triangle_paths_neq)
       then have "[[e c a]]" using eya by simp
       then have "False" using cea abc_only_cba [where a = c and b = e and c = a] by simp
@@ -1537,15 +1453,17 @@ proof -
   thus ?thesis using afb f_in_de by blast
 qed
 
-(* end Theorem 7-3.5 (second collinearity theorem). *)
 
 
 section "3.6 Order on a path - Theorems 8 and 9"
 context MinkowskiSpacetime begin
 
-(* begin Theorem  8-3.6 (as in Veblen (1911) Theorem 6). *)
+subsection \<open>Theorem 8 (as in Veblen (1911) Theorem 6)\<close>
+text \<open>
+  Note a'b'c' don't necessarily form a triangle, as there still needs to be paths between them.
+\<close>
 
-(* Note a'b'c' don't necessarily form a triangle, as there still needs to be paths between them. *)
+
 theorem (*8*) (in MinkowskiChain) tri_betw_no_path:
   assumes tri_abc: "\<triangle> a b c"
       and ab'c: "[[a b' c]]"
@@ -1557,7 +1475,7 @@ proof -
                       \<and> b \<noteq> a' \<and> b \<noteq> b' \<and> b \<noteq> c'
                       \<and> c \<noteq> a' \<and> c \<noteq> b' \<and> c \<noteq> c'"
       using abc_ac_neq
-      by (metis ab'c abc_abc_neq bc'a ca'b tri_abc triangle_not_betw_abc triangle_permutes4)
+      by (metis ab'c abc_abc_neq bc'a ca'b tri_abc triangle_not_betw_abc triangle_permutes(4))
   show ?thesis
   proof (rule notI)
     assume path_a'b'c': "\<exists>Q\<in>\<P>. a' \<in> Q \<and> b' \<in> Q \<and> c' \<in> Q"
@@ -1582,7 +1500,7 @@ proof -
       then have tri_a'bc': "\<triangle> a' b c'"
           by (smt bc'a ca'b path_a'b'c' paths_tri abc_ex_path_unique)
       obtain ab' where path_ab': "path ab' a b'" using ab'c abc_a'b'c'_neq abc_ex_path by blast
-      obtain a'b where path_a'b: "path a'b a' b" using tri_a'bc' triangle_paths1 by blast
+      obtain a'b where path_a'b: "path a'b a' b" using tri_a'bc' triangle_paths(1) by blast
       then have "\<exists>x\<in>a'b. [[a' x b]] \<and> [[a b' x]]"
           using collinearity2 [where a = a' and b = b and c = c' and e = b' and d = a and de = ab']
                 bc'a betw_b_in_path c'b'a' path_ab' tri_a'bc' by blast
@@ -1602,8 +1520,6 @@ proof -
     next
       assume b'c'a': "[[b' c' a']]"
       then have a'c'b': "[[a' c' b']]" using abc_sym by simp
-      (* It would have followed the "rotate the letters" principle better to put this in the order
-         b' c a'. *)
       have nopath_a'cb': "\<not> (\<exists>Q\<in>\<P>. a' \<in> Q \<and> c \<in> Q \<and> b' \<in> Q)"
       proof (rule notI)
         assume "\<exists>Q\<in>\<P>. a' \<in> Q \<and> c \<in> Q \<and> b' \<in> Q"
@@ -1621,12 +1537,12 @@ proof -
       obtain bc' where path_bc': "path bc' b c'"
           using abc_a'b'c'_neq abc_ex_path_unique bc'a
           by blast
-      obtain b'c where path_b'c: "path b'c b' c" using tri_a'cb' triangle_paths3 by blast
+      obtain b'c where path_b'c: "path b'c b' c" using tri_a'cb' triangle_paths(3) by blast
       then have "\<exists>x\<in>b'c. [[b' x c]] \<and> [[b c' x]]"
           using collinearity2 [where a = b' and b = c and c = a'
                                  and e = c' and d = b and de = bc']
                 bc'a betw_b_in_path a'c'b' path_bc' tri_a'cb'
-          by (meson ca'b triangle_permutes5)
+          by (meson ca'b triangle_permutes(5))
       then obtain x where x_in_b'c: "x \<in> b'c"
                       and b'xc: "[[b' x c]]"
                       and bc'x: "[[b c' x]]" by blast
@@ -1658,11 +1574,11 @@ proof -
       obtain ca' where path_ca': "path ca' c a'"
           using abc_a'b'c'_neq abc_ex_path_unique ca'b
           by blast
-      obtain c'a where path_c'a: "path c'a c' a" using tri_a'cb' triangle_paths3 by blast
+      obtain c'a where path_c'a: "path c'a c' a" using tri_a'cb' triangle_paths(3) by blast
       then have "\<exists>x\<in>c'a. [[c' x a]] \<and> [[c a' x]]"
           using collinearity2 [where a = c' and b = a and c = b'
                                  and e = a' and d = c and de = ca']
-                ab'c b'a'c' betw_b_in_path path_ca' tri_a'cb' triangle_permutes5 by blast
+                ab'c b'a'c' betw_b_in_path path_ca' tri_a'cb' triangle_permutes(5) by blast
       then obtain x where x_in_c'a: "x \<in> c'a"
                       and c'xa: "[[c' x a]]"
                       and ca'x: "[[c a' x]]" by blast
@@ -1679,7 +1595,12 @@ proof -
   qed
 qed
 
-(* end Theorem  8-3.6 (as in Veblen (1911) Theorem 6). *)
+subsection \<open>Theorem 9\<close>
+text \<open>
+  We now begin working on the transitivity lemmas needed to prove Theorem 9.
+  Multiple lemmas below obtain primed variables (e.g. d'). These are starred in Schutz (e.g. d*),
+  but that notation is already reserved in Isabelle.
+\<close>
 
 lemma unreachable_bounded_path_only:
   assumes d'_def: "d'\<notin> \<emptyset> ab e" "d'\<in>ab" "d'\<noteq>e"
@@ -1702,7 +1623,6 @@ proof (rule ccontr)
     using d'_def(1) by auto
 qed
 
-(* in Schutz' proof of 3.6 - Lemma 1, the d' we obtain is d* *)
 lemma unreachable_bounded_path:
   assumes S_neq_ab: "S \<noteq> ab"
       and a_inS: "a \<in> S"
@@ -1745,9 +1665,10 @@ proof -
     using that by blast
 qed
 
-(* This lemma collects the first three paragraphs of Schutz' proof of Theorem 9 - Lemma 1.
-   Several case splits need to be considered, but have no further importance outside of this lemma:
-   thus we parcel them away from the main proof. *)
+text \<open>
+  This lemma collects the first three paragraphs of Schutz' proof of Theorem 9 - Lemma 1.
+  Several case splits need to be considered, but have no further importance outside of this lemma:
+  thus we parcel them away from the main proof.\<close>
 lemma exist_c'd'_alt:
   assumes abc: "[[a b c]]"
       and abd: "[[a b d]]"
@@ -1982,9 +1903,6 @@ next
 qed
 
 
-(* Lemma 1-3.6. *)
-(* The conditional assignment to d' of either d or some other event in ab makes the prose quite
-   hard to translate. *)
 lemma abc_abd_bcdbdc:
   assumes abc: "[[a b c]]"
       and abd: "[[a b d]]"
@@ -2001,7 +1919,7 @@ proof -
                and a_inS: "a \<in> S"
       using ex_crossing_at path_ab
       by auto
-    (* This is not as immediate as Schutz presents it. Should probably be made a theorem. TODO. *)
+    (* This is not as immediate as Schutz presents it. *)
     have "\<exists>e\<in>S. e \<noteq> a \<and> (\<exists>be\<in>\<P>. path be b e)"
     proof -
       have b_notinS: "b \<notin> S" using S_neq_ab a_inS path_S path_ab path_unique by blast
@@ -2050,7 +1968,7 @@ proof -
       using path_ab path_S a_inS e_inS e_neq_a f_def S_neq_ab c'd'_def
       by blast
 
-    (* Now we follow Schutz, who follows Veblen. This is essentially Jake's code. *)
+    (* Now we follow Schutz, who follows Veblen. *)
     obtain ae where path_ae: "path ae a e" using a_inS e_inS e_neq_a path_S by blast
     have tri_aec: "\<triangle> a e c'"
         by (smt cross_once_notin S_neq_ab a_inS abc abc_abc_neq abc_ex_path
@@ -2133,7 +2051,10 @@ proof -
   qed
 qed
 
-(* Doesn't seem to be proved by Schutz that I can see. Can now prove it after Lemma 3. *)
+text \<open>
+  A few lemmas that don't seem to be proved by Schutz, but can be proven now, after Lemma 3.
+  These sometimes avoid us having to construct a chain explicitly.
+\<close>
 lemma abd_bcd_abc:
   assumes abd: "[[a b d]]"
       and bcd: "[[b c d]]"
@@ -2151,12 +2072,6 @@ lemma abc_acd_abd:
     shows "[[a b d]]"
   using abc abc_acd_bcd acd by blast
 
-(* TODO - is this not yet possible before thm9/10? *)
-(* lemma abd_acd_abcacb:
-  assumes abd: "[[a b d]]"
-      and acd: "[[a c d]]"
-    shows "[[a b c]] \<or> [[a c b]]" *)
-
 lemma abd_acd_abcacb:
   assumes abd: "[[a b d]]"
       and acd: "[[a c d]]"
@@ -2172,7 +2087,6 @@ proof -
   thus ?thesis
     by (metis P_def(1-3) \<open>c \<in> P\<close> abc_abc_neq abc_sym abd acd bc some_betw)
 qed
-
 
 lemma abe_ade_bcd_ace:
   assumes abe: "[[a b e]]"
@@ -2191,8 +2105,8 @@ proof -
   qed
 qed
 
+text \<open>Now we start on Theorem 9. Based on Veblen (1904) Lemma 2 p357.\<close>
 
-(* begin Theorem 9-3.6. Based on Veblen (1904) Lemma 2 p357. *)
 lemma (in MinkowskiBetweenness) chain3:
   assumes path_Q: "Q \<in> \<P>"
       and a_inQ: "a \<in> Q"
@@ -2213,11 +2127,13 @@ proof -
     using abc_betw ch1 ch2 ch3 by (metis insert_commute)
 qed
 
-(* The book introduces theorem 9 before the above three lemmas but can only complete the proof
-   once they are proven. *)
-(* This doesn't exactly say it the same way as the book, as the book gives the ordering (abcd)
-   explicitly, though the theorem is semantically equivalent, I think. *)
-(* TODO prove a corollary which matched the book statement better. *)
+text \<open>
+  The book introduces Theorem 9 before the above three lemmas but can only complete the proof
+  once they are proven.
+  This doesn't exactly say it the same way as the book, as the book gives the ordering (abcd)
+  explicitly (for arbitrarly named events), but is equivalent.
+\<close>
+
 theorem (*9*) chain4:
   assumes path_Q: "Q \<in> \<P>"
       and inQ: "a \<in> Q" "b \<in> Q" "c \<in> Q" "d \<in> Q"
@@ -2271,23 +2187,21 @@ proof -
   thus ?thesis using picked_chain by simp
 qed
 
-(* end Theorem 9-3.6. Based on Veblen (1904) Lemma 2 p357. *)
 
 end (* context MinkowskiSpacetime *)
 
 
 section "Interlude - Chains and Equivalences"
-(* This section is meant for our alternative definitions of chains, and proofs of equivalence.
-   If we want to regain full independence of our axioms, we probably need to shuffle quite a few
-   things around - notably, we cannot use totally ordered chains before this point, where we
-   strengthen Schutz' locally ordered variant.
+text \<open>
+  This section is meant for our alternative definitions of chains, and proofs of equivalence.
+  If we want to regain full independence of our axioms, we probably need to shuffle a few
+  things around. Some of this may be redundant, but is kept for compatibility with legacy proofs.
 
-   Three definitions are given (cf `Betweenness: Chains` in Minkowski.thy):
-    - Jake's definition, relying on explicit betweenness conditions
-    - my first definition, relying on a total ordering and explicit indexing
-    - my second definition, equivalent to the above except for use of the weaker, local-only
-      ordering2
-*)
+  Three definitions are given (cf `Betweenness: Chains` in Minkowski.thy):
+   - one relying on explicit betweenness conditions
+   - one relying on a total ordering and explicit indexing
+   - one equivalent to the above except for use of the weaker, local-only ordering2
+\<close>
 
 context MinkowskiChain begin
 
@@ -2306,7 +2220,7 @@ proof -
   thus ?thesis using assms semifin_chain_def by blast
 qed
 
-(* A reassurance that the starting point x is implied. *)
+text \<open>A reassurance that the starting point x is implied.\<close>
 lemma long_inf_chain_is_semifin:
   assumes "long_ch_by_ord f X \<and> infinite X"
   shows "\<exists> x. [f[x..]X]"
@@ -2317,7 +2231,6 @@ lemma endpoint_in_semifin:
     shows "x\<in>X"
   using assms semifin_chain_def zero_into_ordering inf_chain_is_long long_ch_by_ord_def
   by (metis finite.emptyI)
-  (* by (metis finite.emptyI inf_chain_is_long long_ch_by_ord_def) *)
 
 lemma three_in_long_chain:
   assumes "long_ch_by_ord f X" and fin: "finite X"
@@ -2329,7 +2242,7 @@ subsubsection "Index-chains lie on paths"
 lemma all_aligned_on_semifin_chain:
   assumes "[f[x..]X]"
   and a: "y\<in>X" and b:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
-  shows "([[x y z]] \<or> [[x z y]])" (* todo-bracket *)
+  shows "[[x y z]] \<or> [[x z y]]"
 proof -
     obtain n\<^sub>y n\<^sub>z where "f n\<^sub>y = y" and "f n\<^sub>z = z"
       by (metis TernaryOrdering.ordering_def a assms(1) b inf_chain_is_long long_ch_by_ord_def)
@@ -2357,13 +2270,6 @@ proof -
             ordering_def lessI \<open>y \<in> X\<close> \<open>y \<noteq> x\<close> finite.emptyI finite_insert
             finite_subset insert_iff subsetI
       by smt
-    (* ALTERNATIVE: proof -
-      assume a1: "\<And>e. \<lbrakk>e \<in> X; e \<noteq> x; e \<noteq> y; [[x y e]] \<or> [[x e y]]\<rbrakk> \<Longrightarrow> thesis"
-      have "\<And>a. a \<notin> X \<or> [[x a y]] \<or> [[x y a]] \<or> a = y \<or> x = a \<or> y = x"
-        by (metis \<open>y \<in> X\<close> all_aligned_on_semifin_chain assms)
-      then show ?thesis
-        using a1 by (metis \<open>y \<noteq> x\<close> assms finite.emptyI finite_insert finite_subset inf_chain_is_long insert_iff subsetI)
-    qed *)
     obtain P where "path P x y"
       using \<open>[[x y e]] \<or> [[x e y]]\<close> abc_abc_neq abc_ex_path
       by blast
@@ -2379,10 +2285,9 @@ proof -
     fix e
     assume "e\<in>X"
     show "e\<in>P"
-    proof - (* A proof in three cases. Is there an automatic format?*)
+    proof -
       have "e=x \<or> e=y \<or> (e\<noteq>x \<and> e\<noteq>y)" by auto
-      moreover
-      { assume "e\<noteq>x \<and> e\<noteq>y"
+      moreover { assume "e\<noteq>x \<and> e\<noteq>y"
         have "[[x y e]] \<or> [[x e y]]"
           using all_aligned_on_semifin_chain assms
                 \<open>e \<in> X\<close> \<open>e \<noteq> x \<and> e \<noteq> y\<close> \<open>y \<in> X\<close> \<open>y \<noteq> x\<close>
@@ -2390,14 +2295,10 @@ proof -
         hence ?thesis
           using \<open>path P x y\<close> abc_ex_path path_unique
           by blast
-      }
-      moreover
-      { assume "e=x"
+      } moreover { assume "e=x"
         have ?thesis
           by (simp add: \<open>e = x\<close> \<open>path P x y\<close>)
-      }
-      moreover
-      { assume "e=y"
+      } moreover { assume "e=y"
         have "e\<in>P"
           by (simp add: \<open>e = y\<close> \<open>path P x y\<close>)
       }
@@ -2445,11 +2346,6 @@ proof -
     using \<open>path P x y\<close> by blast
 qed
 
-(* Much shorter - thanks Jacques! @me: numeral_X_eq_X is the key *)
-(* lemma three_in_set3:
-  assumes "card X \<ge> 3"
-  obtains x y z where "x\<in>X" and "y\<in>X" and "z\<in>X" and "x\<noteq>y" and "x\<noteq>z" and "y\<noteq>z"
-  using assms by (auto simp add: card_le_Suc_iff numeral_3_eq_3) *)
 
 lemma all_aligned_on_long_chain:
   assumes "long_ch_by_ord f X" and "finite X"
@@ -2476,10 +2372,6 @@ proof -
     by metis
   hence "[[(f n\<^sub>x) (f n\<^sub>y) (f n\<^sub>z)]] \<or> [[(f n\<^sub>x) (f n\<^sub>z) (f n\<^sub>y)]] \<or> [[(f n\<^sub>z) (f n\<^sub>x) (f n\<^sub>y)]] \<or>
          [[(f n\<^sub>z) (f n\<^sub>y) (f n\<^sub>x)]] \<or> [[(f n\<^sub>y) (f n\<^sub>z) (f n\<^sub>x)]] \<or> [[(f n\<^sub>y) (f n\<^sub>x) (f n\<^sub>z)]]"
-    (* using TernaryOrdering.ordering_def assms semifin_chain_def
-          card_infinite rel_simps(76) long_ch_by_ord_def short_ch_def
-          ch_by_ordering_def ch_def  fx fy fz ch_betw
-    by (smt linorder_neqE_nat) *)
   proof -
     have f1: "\<And>n na nb. \<not> n < na \<or> \<not> nb < n \<or> \<not> na < card X \<or> [[(f nb) (f n) (f na)]]"
       by (metis (no_types) ordering_def \<open>long_ch_by_ord f X\<close> long_ch_by_ord_def)
@@ -2526,7 +2418,7 @@ proof -
     fix e
     assume "e\<in>X"
     show "e\<in>P"
-    proof - (* A proof in three cases. Is there an automatic format?*)
+    proof -
       have "e=x \<or> e=y \<or> (e\<noteq>x \<and> e\<noteq>y)" by auto
       moreover {
         assume "e\<noteq>x \<and> e\<noteq>y"
@@ -2556,11 +2448,13 @@ proof -
     by blast
 qed
 
+text \<open>
+  Notice that this whole proof would be unnecessary if includig path-belongingness in the def,
+  as Schutz does. This would also keep path-belongingness independent of axiom O1 and O4,
+  thus enabling an independent statement of axiom O6, which perhaps we now lose. In exchange,
+  our definition is slightly weaker (for card X \<ge> 3 and infinite X).
+\<close>
 
-(* Notice that this whole proof would be unnecessary if includig path-belongingness in the def,
-   as Schutz does. This would also keep path-belongingness independent of axiom O1 and O4,
-   thus enabling an independent statement of axiom O6, which we now lose. In exchange,
-   our definition is slightly weaker (for card X \<ge> 3 and infinite X). *)
 lemma chain_on_path:
   assumes "ch_by_ord f X"
   shows "\<exists>P\<in>\<P>. X\<subseteq>P"
@@ -2573,8 +2467,6 @@ subsubsection "More general results"
 (* In fact, it is xor. *)
 lemma ch_some_betw: "\<lbrakk>x \<in> X; y \<in> X; z \<in> X; x \<noteq> y; x \<noteq> z; y \<noteq> z; ch X\<rbrakk>
         \<Longrightarrow> [[x y z]] \<or> [[y x z]] \<or> [[y z x]]"
-   (* apply (auto simp add: ch_def ch_by_ord_def ordering_def)
-   apply (metis short_ch_def) *)
 proof -
   assume asm: "x \<in> X" "y \<in> X" "z \<in> X" "x \<noteq> y" "x \<noteq> z" "y \<noteq> z" "ch X"
   {
@@ -3021,7 +2913,7 @@ proof -
     by metis
   have "\<not>(\<exists>w\<in>X. [[w a b]] \<or> [[b c w]])"
   proof (safe)
-    fix w assume "w\<in>X" (* and cases: "[[w a b]] \<or> [[b c w]]" *)
+    fix w assume "w\<in>X"
     {
       assume case1: "[[w a b]]"
       then obtain n where "f n = w" and "n<card X"
@@ -3080,44 +2972,6 @@ section "Results for segments, rays and chains"
 
 context MinkowskiChain begin
 
-(* lemma inside_not_bound1:
-  assumes "[f[a..b..c]X]"
-      and "j<card X" "j>0"
-    shows "f j \<noteq> a"
-proof -
-  have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
-    using assms(1) fin_long_chain_def by auto
-  let ?e = "if (f j = c) then b else c"
-  have "[[(f 0) (f j) ?e]] \<or> [[(f 0) ?e (f j)]]"
-    using  assms(1,2,3) fin_ch_betw fin_long_chain_def
-    by (smt Suc_diff_1 diff_less le_numeral_extra(3)
-        less_SucE less_trans order_finite_chain zero_less_one)
-  thus "f j \<noteq> a" using abc_abc_neq bound_indices by blast
-qed *)
-
-(* 
-lemma inside_not_bound2:
-  assumes "[f[a..b..c]X]"
-      and "j<card X - 1"
-    shows "f j \<noteq> c"
-proof -
-  have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
-    using assms(1) fin_long_chain_def by auto
-  show "f j \<noteq> c"
-  proof (cases)
-    assume "f j = a"
-    show ?thesis
-      using \<open>f j = a\<close> assms(1) fin_long_chain_def by blast
-  next assume "f j \<noteq> a"
-    hence "[[a (f j) (f (card X - 1))]] \<or> [[(f j) a (f (card X - 1))]]"
-    using  assms fin_ch_betw fin_long_chain_def order_finite_chain
-    by (metis One_nat_def card_0_eq diff_Suc_less equals0D le_numeral_extra(3) not_gr0)
-  thus "f j \<noteq> c"
-    using abc_abc_neq bound_indices by auto
-  qed
-qed
- *)
-
 lemma inside_not_bound:
   assumes "[f[a..b..c]X]"
       and "j<card X"
@@ -3167,8 +3021,6 @@ lemma some_betw2:
 proof -
   obtain ab where ab_def: "path ab a b" "X\<subseteq>ab"
     by (metis fin_long_chain_def long_chain_on_path assms(1) points_in_chain subsetD)
-  (* hence path_ab: "ab\<in>\<P>"
-    by blast *)
   have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
     using assms(1) fin_long_chain_def by auto
   have "f j \<noteq> a"
@@ -3187,7 +3039,6 @@ lemma i_le_j_events_neq1:
   assumes "[f[a..b..c]X]"
       and "i<j" "j<card X" "f j \<noteq> b" (* this just means you need to pick b well *)
     shows "f i \<noteq> f j"
-  (* by (smt abc_abc_neq assms(1) assms(2) assms(3) fin_long_chain_def finite_ordering_inj less_trans long_ch_by_ord_def nat_neq_iff) *)
 proof -
   have in_X: "f i \<in> X \<and> f j \<in> X"
     by (metis ordering_def assms(1,2,3) fin_long_chain_def less_trans long_ch_by_ord_def)
@@ -3252,15 +3103,6 @@ lemma indices_neq_imp_events_neq:
   by (metis assms i_le_j_events_neq less_linear)
 
 
-(*
-lemma index_order2:
-  assumes "chain_with x y z X"
-      and "ch_by_ord f X" and "f a = x" and "f b = y" and "f c = z"
-      and "finite X \<longrightarrow> a<card X" and "finite X \<longrightarrow> b<card X" and "finite X \<longrightarrow> c<card X"
-    shows "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
-*)
-
-
 lemma index_order2:
   assumes "[f[x..y..z]X]" and "f a = x" and "f b = y" and "f c = z"
       and "finite X \<longrightarrow> a < card X" and "finite X \<longrightarrow> b < card X" and "finite X \<longrightarrow> c < card X"
@@ -3275,7 +3117,6 @@ lemma index_order3:
   using index_order2 [where x=x and y=y and z=z and a=a and b=b and c=c and f=f and X=X]
   using assms long_ch_by_ord_def ordering_ord_ijk
   by (smt abc_abc_neq abc_only_cba(1-3) linorder_neqE_nat)
-(* TODO: smt above *)
 
 end (* context MinkowskiChain *)
 
@@ -3344,7 +3185,7 @@ section "3.6 Order on a path - Theorems 10 and 11"
 
 context MinkowskiSpacetime begin
 
-(* Theorem 10-3.6 (based on Veblen (1904) theorem 10). *)
+subsection \<open>Theorem 10 (based on Veblen (1904) theorem 10).\<close>
 
 lemma (in MinkowskiBetweenness) two_event_chain:
   assumes finiteX: "finite X"
@@ -4378,11 +4219,14 @@ proof -
 qed
 
 
-(* begin theorem 11-3.6 page 27 *)
+subsection \<open>Theorem 11 page 27\<close>
 
 
-(* Notice this case is so simple, it doesn't even require the path density larger sets of segments
-   rely on for fixing their cardinality. *)
+text \<open>
+  Notice this case is so simple, it doesn't even require the path density larger sets of segments
+  rely on for fixing their cardinality.
+\<close>
+
 lemma (*for 11*) segmentation_ex_N2:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "finite (Q::'a set)" "card Q = N" "Q\<subseteq>P" "N=2"
@@ -4416,7 +4260,6 @@ proof -
       then have "x\<in>s \<or> x\<in>P1 \<or> x\<in>P2 \<or> x=a \<or> x=b"
         using pro_betw seg_betw P1_def P2_def s_def \<open>Q = {a, b}\<close>
         by auto
-        (* by (metis empty_iff f_def fin_chain_def fin_long_chain_def insert_iff points_in_chain) *)
       hence "x \<in> (\<Union>{s}) \<union> P1 \<union> P2 \<union> Q"
         using \<open>Q = {a, b}\<close> by auto
     } moreover {
@@ -4427,8 +4270,6 @@ proof -
         using s_def P1_def P2_def
         unfolding segment_def prolongation_def
         by auto
-        (* by (metis (no_types, lifting) P1_def P2_def \<open>Q = {a, b}\<close> empty_iff f_def fin_chain_def
-            insert_iff points_in_chain pro_betw pro_path s_def seg_betw) *)
       hence "x\<in>P"
         using \<open>a \<in> P \<and> b \<in> P\<close> \<open>a \<noteq> b\<close> betw_b_in_path betw_c_in_path path_P
         by blast
@@ -4442,10 +4283,6 @@ proof -
         using \<open>Q = {a, b}\<close> \<open>a \<noteq> b\<close> assms(3) by auto
       show "is_segment s"
         using s_def by blast
-      (* show "is_prolongation P1"
-        using P1_def is_prolongation_def by blast
-      show "is_prolongation P2"
-        using P2_def is_prolongation_def by blast *)
       show "\<And>x. x \<in> P1 \<Longrightarrow> x \<in> P2 \<Longrightarrow> x \<in> {}"
       proof -
         fix x assume "x\<in>P1" "x\<in>P2"
@@ -4478,7 +4315,6 @@ qed
 lemma int_split_to_segs:
   assumes f_def: "[f[a..b..c]Q]"
   fixes S defines S_def: "S \<equiv> {segment (f i) (f(i+1)) | i. i<card Q-1}"
-    (* S_def: "S \<equiv> {s. \<exists>i<(card Q-1). s = segment (f i) (f (i+1))}" *)
   shows "interval a c = (\<Union>S) \<union> Q"
 proof
   let ?N = "card Q"
@@ -4515,7 +4351,7 @@ proof
         using \<open>[[y p z]]\<close> abc_abc_neq seg_betw yz_def(1,2)
         by blast
       have "n\<^sub>z = n\<^sub>y + 1"
-        using yz_def(6) (* TODO not sure why this needs more results - why not just linarith? *)
+        using yz_def(6)
         by (metis abc_abc_neq add.commute add_diff_inverse_nat less_one yz_def(1,2,3) zero_diff)
       hence "?s\<in>S"
         using S_def \<open>n\<^sub>y<card Q-1\<close> assms(2)
@@ -4563,8 +4399,6 @@ proof
       hence "[[a p c]]"
       proof (cases)
         assume "y=0"
-        (* hence "[[a p f (y+1)]] \<and> [[a f (y+1) c]]"
-          by (metis One_nat_def Suc_diff_1 \<open>[[a f (y + 1) c]] \<or> y = N - 2\<close> \<open>\<And>thesis. (\<And>f a b c. a \<in> Q \<and> b \<in> Q \<and> c \<in> Q \<and> [f[a .. b .. c]Q] \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> \<open>p \<in> s\<close> \<open>s = segment (f y) (f (y + 1))\<close> \<open>y < N - 1\<close> assms(3) bound_indices diff_diff_left fin_long_chain_def index_middle_element less_one numeral_2_eq_2 plus_1_eq_Suc seg_betw) *)
         hence "f y = a"
           by (simp add: bound_indices)
         hence "[[a p (f(y+1))]]"
@@ -4660,8 +4494,6 @@ proof -
       hence "x\<in>interval a c"
         using int_split_to_segs [OF f_def(2)] assms `x\<in>\<Union>S`
         by (simp add: UnCI)
-        (* using int_split_to_segs [where Q=Q and f=f and a=a and b=b and c=c]
-        by (simp add: S_def assms(2) assms(3) assms(5) f_def subset_iff) *)
       hence "[[a x c]] \<or> x=a \<or> x=c"
         using interval_def seg_betw by auto
       thus ?thesis
@@ -4696,8 +4528,6 @@ lemma (*for 11*) inseg_axc:
       and x_def: "x\<in>s" "s\<in>S"
     shows "[[a x c]]"
 proof -
-(* TODO: maybe define a segmentation as a given set, then prove results below generally as lemmas *)
-(* TODO: I think proving inseg_notin_Q would be useful for general purposes *)
   have inseg_neq_ac: "x\<noteq>a \<and> x\<noteq>c" if "x\<in>s" "s\<in>S" for x s
   proof
     show "x\<noteq>a"
@@ -4712,8 +4542,6 @@ proof -
         using f_def fin_long_chain_def assms(3) order_finite_chain seg_betw that(1)
         using \<open>n < N - 1\<close> \<open>s = segment (f n) (f (n + 1))\<close> \<open>x = a\<close>
         by (metis abc_abc_neq add_lessD1 ch_all_betw_f inside_not_bound(2) less_diff_conv)
-        (* by (metis (no_types, lifting) (* why does this not work anymore? *)
-            card_Diff1_less card_Diff_singleton le_numeral_extra(3) neq0_conv) *)
       moreover have "[[(f(n)) x (f(n+1))]]"
         using \<open>x\<in>s\<close> seg_betw s_def(1) by simp
       ultimately show False
@@ -4749,7 +4577,7 @@ proof -
     qed
   qed
 
-  show "[[a x c]]" (* if "x\<in>s" "s\<in>S" for x s *)
+  show "[[a x c]]"
   proof -
     have "x\<in>interval a c"
       using int_split_to_segs [OF f_def(2)] S_def assms(2,3,5) x_def
@@ -4883,21 +4711,22 @@ proof -
   then show ?thesis by auto
 qed
 
+text \<open>
+  We define `disjoint` to be the same as in HOL-Library.DisjointSets.
+  This saves importing a lot of baggage we don't need.
+  The two lemmas below are just for safety.
+\<close>
 
-abbreviation disjoint (* this is the same as in HOL-Library.DisjointSets *)
+abbreviation disjoint
   where "disjoint A \<equiv> (\<forall>a\<in>A. \<forall>b\<in>A. a \<noteq> b \<longrightarrow> a \<inter> b = {})"
 
-(* These two lemmas are just for safety, no need to carry forward I think. *)
 lemma
   fixes S:: "('a set) set" and P1:: "'a set" and P2:: "'a set"
   assumes "\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={}))" "P1\<inter>P2={}"
   shows "disjoint (S\<union>{P1,P2})"
 proof (rule ballI)
   let ?U = "S\<union>{P1,P2}"
-  (* let ?r = "\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={}))" *)
   fix a assume "a\<in>?U"
-  (* hence casesA: "a\<in>S \<or> a=P1 \<or> a=P2"
-    by fastforce *)
   then consider (aS)"a\<in>S"|(a1)"a=P1"|(a2)"a=P2"
     by fastforce
   thus "\<forall>b\<in>?U. a \<noteq> b \<longrightarrow> a \<inter> b = {}"
@@ -4961,10 +4790,12 @@ proof (rule ballI)
 qed
 
 
-(* Schutz says "As in the proof of the previous theorem [...]" - does he mean to imply that this
-   should really be proved as induction? I can see that quite easily, induct on N, and add a segment
-   by either splitting up a segment or taking a piece out of a prolongation. But I think that might
-   be too much trouble. *)
+text \<open>
+  Schutz says "As in the proof of the previous theorem [...]" - does he mean to imply that this
+  should really be proved as induction? I can see that quite easily, induct on N, and add a segment
+  by either splitting up a segment or taking a piece out of a prolongation.
+  But I think that might be too much trouble.
+\<close>
 
 theorem (*11*) show_segmentation:  
   assumes path_P: "P\<in>\<P>"
@@ -5145,22 +4976,6 @@ proof -
           by (smt Suc_less_eq add_leD1 cancel_comm_monoid_add_class.diff_cancel card_Diff1_less
               card_Diff_singleton card_eq_0_iff card_insert_disjoint gr_implies_not0 insert_iff lch_X
               le_add_diff_inverse less_SucI numeral_3_eq_3 plus_1_eq_Suc zero_less_diff)
-        (* using assms(3,4,5) bound_ind lch_X unfolding long_ch_by_ord_def ordering_def
-        apply safe
-           apply (metis card_gt_0_iff card_insert_disjoint diff_Suc_1 diff_less
-            get_fin_long_ch_bounds gr_implies_not0 indices_neq_imp_events_neq insert_iff
-            lch_X less_Suc_eq_le less_imp_le_nat less_numeral_extra(1) nat_neq_iff)
-          apply (metis (no_types, lifting) card_gt_0_iff card.infinite card_insert_disjoint
-            diff_Suc_1 diff_less finite_insert get_fin_long_ch_bounds indices_neq_imp_events_neq
-            insert_iff lch_X less_Suc_eq_le less_imp_le_nat less_numeral_extra(1) nat_neq_iff
-            numeral_3_eq_3)
-         apply (metis abc_abc_neq assms(4) card.infinite card_insert_disjoint diff_Suc_1 diff_less
-            finite_insert gr_implies_not0 insert_iff less_Suc_eq_le less_imp_le_nat
-            less_numeral_extra(1) nat_neq_iff)
-        by (metis abc_abc_neq assms(5) card.infinite card_insert_disjoint diff_Suc_1 diff_less
-            finite_insert gr_implies_not0 insert_iff less_Suc_eq_le less_imp_le_nat
-            less_numeral_extra(1) nat_neq_iff) *)
-  (* TODO the horror! is the above call really better than a single large smt? *)
         { 
           fix x assume "x\<in>Y"
           hence "x\<in>X"
@@ -5212,9 +5027,10 @@ lemma (in MinkowskiChain) fin_long_ch_imp_fin_ch:
   using assms fin_chain_def points_in_chain by auto
 
 
-(* jep: Easier to read, and work with (presumably). Also without the 'n', which can be worked with as in the other two lemmas I've restructured. *)
-(* If we ever want to have chains less strongly identified by endpoints,
-   this result should generalise - a,c,x,z are only used to identify reversal/no-reversal. *)
+text \<open>
+  If we ever want to have chains less strongly identified by endpoints,
+  this result should generalise - a,c,x,z are only used to identify reversal/no-reversal cases.
+\<close>
 lemma (in MinkowskiSpacetime) chain_unique_induction_ax:
   assumes "card X \<ge> 3"
       and "i < card X"
@@ -5236,7 +5052,6 @@ proof (induct "card X - 3" arbitrary: X a c x z)
 
   have "i=1 \<or> i=0 \<or> i=2"
     using \<open>card X = 3\<close> Nil.prems(2) by linarith
-  (* thus "((a=x \<or> c=z) \<longrightarrow> f i = g i) \<and> ((c=x \<or> a=z) \<longrightarrow> f i = g (card X - i - 1))" *)
   thus ?case
   proof (rule disjE)
     assume "i=1"
@@ -5272,7 +5087,6 @@ proof (induct "card X - 3" arbitrary: X a c x z)
   qed
 next
   case IH: (Suc n)
-  (* assume asm: "3 \<le> card X" "i < card X" "[f[a .. c]X]" "[g[x .. z]X]" *)
   have lch_fX: "long_ch_by_ord f X"
     using ch_by_ord_def fin_chain_def fin_long_chain_def long_ch_card_ge3 IH(3,5)
     by fastforce
@@ -5411,6 +5225,7 @@ next
   qed
 qed
 
+text \<open>I'm really impressed sledgehammer/smt can solve this if I just tell them "Use symmetry!".\<close>
 
 lemma (in MinkowskiSpacetime) chain_unique_induction_cx:
   assumes "card X \<ge> 3"
@@ -5421,13 +5236,17 @@ lemma (in MinkowskiSpacetime) chain_unique_induction_cx:
     shows "f i = g (card X - i - 1)"
   using chain_sym chain_unique_induction_ax
   by (smt (verit, best) assms diff_right_commute fin_chain_def fin_long_ch_imp_fin_ch)
-(* I'm really impressed sledgehammer/smt can solve this if I just tell them "Use symmetry!" *)
 
 
-(* This lemma has to exclude two-element chains again, because no order exists within them.
-   Alternatively, the result is trivial: any function that assigns one element to index 0 and
-   the other to 1 can be replaced with the (unique) other assignment, without destroying any
-   (trivial, since ternary) "ordering" of the chain. *)
+
+text \<open>
+  This lemma has to exclude two-element chains again, because no order exists within them.
+  Alternatively, the result is trivial: any function that assigns one element to index 0 and
+  the other to 1 can be replaced with the (unique) other assignment, without destroying any
+  (trivial, since ternary) "ordering" of the chain.
+  This could be made generic over the ordering similar to chain_sym relying on ordering_sym.
+\<close>
+
 lemma (in MinkowskiSpacetime) chain_unique_upto_rev_cases:
   assumes ch_f: "[f[a..c]X]"
       and ch_g: "[g[x..z]X]"
@@ -5445,7 +5264,6 @@ proof -
   show "((a=z \<or> c=x) \<longrightarrow> (f i = g (card X - i - 1)))"
     using assms(3) ch_f ch_g chain_unique_induction_cx valid_index by blast
 qed
-
 
 lemma (in MinkowskiSpacetime) chain_unique_upto_rev:
   assumes "[f[a..c]X]" "[g[x..z]X]" "card X \<ge> 3" "i < card X"
@@ -5710,7 +5528,7 @@ proof -
     fix i j assume "?P j i"
     hence "?P i j" by auto
   }
-  ultimately show ?thesis (* linorder_wlog is in metis? nice! *)
+  ultimately show ?thesis
     by (metis assms(2) leI less_imp_le_nat)
 qed
 
@@ -5907,7 +5725,8 @@ section "Interlude: betw4 and WLOG"
 subsection "betw4 - strict and non-strict, basic lemmas"
 context MinkowskiBetweenness begin
 
-(* Additional notation for non-strict ordering - cf Schutz p.27 *)
+text \<open>Define additional notation for non-strict ordering - cf Schutz p.27.\<close>
+
 abbreviation nonstrict_betw_right :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[[_ _ _\<rbrakk>") where
   "nonstrict_betw_right a b c \<equiv> [[a b c]] \<or> b = c"
 
@@ -5962,15 +5781,11 @@ lemma betw4_sym:
 
 lemma abcd_dcba_only:
   fixes a::'a and b::'a and c::'a and d::'a
-  assumes (* "[[a b c d]]" *) "betw4 a b c d"
+  assumes "betw4 a b c d"
   shows "\<not>betw4 a b d c" "\<not>betw4 a c b d" "\<not>betw4 a c d b" "\<not>betw4 a d b c" "\<not>betw4 a d c b"
         "\<not>betw4 b a c d" "\<not>betw4 b a d c" "\<not>betw4 b c a d" "\<not>betw4 b c d a" "\<not>betw4 b d c a" "\<not>betw4 b d a c"
         "\<not>betw4 c a b d" "\<not>betw4 c a d b" "\<not>betw4 c b a d" "\<not>betw4 c b d a" "\<not>betw4 c d a b" "\<not>betw4 c d b a"
         "\<not>betw4 d a b c" "\<not>betw4 d a c b" "\<not>betw4 d b a c" "\<not>betw4 d b c a" "\<not>betw4 d c a b"
-  (* shows "\<not>[[a b d c]]" "\<not>[[a c b d]]" "\<not>[[a c d b]]" "\<not>[[a d b c]]" "\<not>[[a d c b]]"
-        "\<not>[[b a c d]]" "\<not>[[b a d c]]" "\<not>[[b c a d]]" "\<not>[[b c d a]]" "\<not>[[b d c a]]" "\<not>[[b d a c]]"
-        "\<not>[[c a b d]]" "\<not>[[c a d b]]" "\<not>[[c b a d]]" "\<not>[[c b d a]]" "\<not>[[c d a b]]" "\<not>[[c d b a]]"
-        "\<not>[[d a b c]]" "\<not>[[d a c b]]" "\<not>[[d b a c]]" "\<not>[[d b c a]]" "\<not>[[d c a b]]" *)
   using abc_only_cba assms apply blast+ done
 
 lemma some_betw4a:
@@ -5978,8 +5793,6 @@ lemma some_betw4a:
   assumes "P\<in>\<P>" "a\<in>P" "b\<in>P" "c\<in>P" "d\<in>P" "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
       and "\<not>(betw4 a b c d \<or> betw4 a b d c \<or> betw4 a c b d \<or> betw4 a c d b \<or> betw4 a d b c \<or> betw4 a d c b)"
     shows "betw4 b a c d \<or> betw4 b a d c \<or> betw4 b c a d \<or> betw4 b d a c \<or> betw4 c a b d \<or> betw4 c b a d"
-      (* and "\<not>([[a b c d]] \<or> [[a b d c]] \<or> [[a c b d]] \<or> [[a c d b]] \<or> [[a d b c]] \<or> [[a d c b]])"
-    shows "[[b a c d]] \<or> [[b a d c]] \<or> [[b c a d]] \<or> [[b d a c]] \<or> [[c a b d]] \<or> [[c b a d]]" *)
   by (smt abc_bcd_acd abc_sym abd_bcd_abc assms some_betw_xor)
 
 lemma some_betw4b:
@@ -5987,8 +5800,6 @@ lemma some_betw4b:
   assumes "P\<in>\<P>" "a\<in>P" "b\<in>P" "c\<in>P" "d\<in>P" "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
       and "\<not>(betw4 b a c d \<or> betw4 b a d c \<or> betw4 b c a d \<or> betw4 b d a c \<or> betw4 c a b d \<or> betw4 c b a d)"
     shows "betw4 a b c d \<or> betw4 a b d c \<or> betw4 a c b d \<or> betw4 a c d b \<or> betw4 a d b c \<or> betw4 a d c b"
-      (* and "\<not>([[b a c d]] \<or> [[b a d c]] \<or> [[b c a d]] \<or> [[b d a c]] \<or> [[c a b d]] \<or> [[c b a d]])"
-    shows "[[a b c d]] \<or> [[a b d c]] \<or> [[a c b d]] \<or> [[a c d b]] \<or> [[a d b c]] \<or> [[a d c b]]" *)
   by (smt abc_bcd_acd abc_sym abd_bcd_abc assms some_betw_xor)
 
 
@@ -5996,8 +5807,6 @@ lemma abd_acd_abcdacbd:
   fixes a::'a and b::'a and c::'a and d::'a
   assumes abd: "[[a b d]]" and acd: "[[a c d]]" and "b\<noteq>c"
   shows "betw4 a b c d \<or> betw4 a c b d"
-  (* by (smt abc_abc_neq abc_ex_path abcd_dcba_only(18) abd acd assms(3)
-      betw4_weak cross_once_notin some_betw) *)
 proof -
   obtain P where "P\<in>\<P>" "a\<in>P" "b\<in>P" "d\<in>P"
     using abc_ex_path abd by blast
@@ -6017,18 +5826,23 @@ end (*context MinkowskiSpacetime*)
 subsection "WLOG for two general symmetric relations of two elements on a single path"
 context MinkowskiBetweenness begin
 
-(* This first one is really just trying to get a hang of how to write these things.
-   If you have a relation that does not care which way round the `endpoints` (if Q is the
-   interval-relation) go, then anything you want to prove about both undistinguished endpoints,
-   follows from a proof involving a single endpoint. *)
+text \<open>
+  This first one is really just trying to get a hang of how to write these things.
+  If you have a relation that does not care which way round the `endpoints` (if Q is the
+  interval-relation) go, then anything you want to prove about both undistinguished endpoints,
+  follows from a proof involving a single endpoint.
+\<close>
+
 lemma wlog_sym_element:
   assumes symmetric_rel: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
       and one_endpoint: "\<And>a b x I. \<lbrakk>Q I a b; x=a\<rbrakk> \<Longrightarrow> P x I"
     shows other_endpoint: "\<And>a b x I. \<lbrakk>Q I a b; x=b\<rbrakk> \<Longrightarrow> P x I"
   using assms by fastforce
 
-(* This one gives the most pertinent case split: a proof involving e.g. an element of an interval
-   must consider the edge case and the inside case. *)
+text \<open>
+  This one gives the most pertinent case split: a proof involving e.g. an element of an interval
+  must consider the edge case and the inside case.
+\<close>
 lemma wlog_element:
   assumes symmetric_rel: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
       and one_endpoint: "\<And>a b x I. \<lbrakk>Q I a b; x=a\<rbrakk> \<Longrightarrow> P x I"
@@ -6036,9 +5850,11 @@ lemma wlog_element:
     shows any_element: "\<And>x I. \<lbrakk>x\<in>I; (\<exists>a b. Q I a b)\<rbrakk> \<Longrightarrow> P x I"
   by (metis assms)
 
-(* Summary of the two above. Use for early case splitting in proofs. *)
-(* Doesn't need P to be symmetric
-   - the context in the conclusion is explicitly symmetric. *)
+text \<open>
+  Summary of the two above. Use for early case splitting in proofs.
+  Doesn't need P to be symmetric - the context in the conclusion is explicitly symmetric.
+\<close>
+
 lemma wlog_two_sets_element:
   assumes symmetric_Q: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
       and case_split: "\<And>a b c d x I J. \<lbrakk>Q I a b; Q J c d\<rbrakk> \<Longrightarrow>
@@ -6046,6 +5862,10 @@ lemma wlog_two_sets_element:
     shows "\<And>x I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>a b. Q J a b\<rbrakk> \<Longrightarrow> P x I J"
   by (smt case_split symmetric_Q)
 
+text \<open>
+  Now we start on the actual result of interest. First we assume the events are all distinct,
+  and we deal with the degenerate possibilities after.
+\<close>
 
 lemma wlog_endpoints_distinct1:
   assumes symmetric_Q: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
@@ -6123,7 +5943,7 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct':
       and "\<And>I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>a b. Q J a b; P I J\<rbrakk> \<Longrightarrow> P J I"
       and "\<And>I J a b c d.
           \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b\<rbrakk> \<Longrightarrow> P I J"
-      and "Q I a b" (* Better style to have these assumptions first, or last like this? *)
+      and "Q I a b" (* Is it better style to have these assumptions first, or last like this? *)
       and "Q J c d"
       and "I \<subseteq> A"
       and "J \<subseteq> A"
@@ -6151,34 +5971,6 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct:
   shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
               a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
   by (smt (verit, ccfv_SIG) assms some_betw4b)
-  (* apply (rule wlog_endpoints_distinct4 [OF assms])
-                 apply auto
-  using symmetric_Q apply presburger *)
-(* proof -
-  have a: "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d;
-                    betw4 a b c d\<rbrakk> \<Longrightarrow> P I J"
-    by (simp add: assms(5))
-  have b: "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d;
-                    betw4 a c b d\<rbrakk> \<Longrightarrow> P I J"
-    by (simp add: assms(5))
-  have c: "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d;
-                    betw4 a c d b\<rbrakk> \<Longrightarrow> P I J"
-    by (simp add: assms(5))
-  show "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
-              a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
-  proof -
-    fix I J a b c d
-    assume "Q I a b" "Q J c d" "I\<subseteq>A" "J\<subseteq>A"
-      "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
-    show "P I J"
-      using wlog_endpoints_distinct4
-        [where P=P and Q=Q and A=A and I=I and J=J and a=a and b=b and c=c and d=d]
-      using a b c assms(4) \<open>Q I a b\<close> \<open>I \<subseteq> A\<close> \<open>Q J c d\<close> \<open>J \<subseteq> A\<close> \<open>A \<in> \<P>\<close>
-        \<open>a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d\<close>
-      using Q_implies_path symmetric_Q abc_abc_neq abcd_dcba_only(21)
-      by (smt (z3))
-  qed
-qed *)
 
 
 lemma wlog_endpoints_degenerate1:
@@ -6215,7 +6007,7 @@ proof -
     by (smt (z3) abc_sym assms(2,4,5) some_betw)
 qed
 
-(* More compact, maybe better for proofs, but less legible. *)
+
 lemma wlog_endpoints_degenerate:
   assumes path_A: "A\<in>\<P>"
       and symmetric_Q: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
@@ -6281,6 +6073,11 @@ end (*context MinkowskiSpacetime*)
 subsection "WLOG for two intervals"
 context MinkowskiBetweenness begin
 
+text \<open>
+  This section just specifies the results for a generic relation Q
+  in the previous section to the interval relation.
+\<close>
+
 lemma wlog_two_interval_element:
   assumes "\<And>x I J. \<lbrakk>is_interval I; is_interval J; P x J I\<rbrakk> \<Longrightarrow> P x I J"
       and "\<And>a b c d x I J. \<lbrakk>I = interval a b; J = interval c d\<rbrakk> \<Longrightarrow>
@@ -6329,7 +6126,6 @@ lemma wlog_interval_endpoints_degenerate:
             \<not>(a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d \<and> a\<noteq>c \<and> b\<noteq>d)\<rbrakk> \<Longrightarrow> P I J"
 proof -
   let ?Q = "\<lambda> I a b. I = interval a b"
-  (* let ?R = "\<lambda> I. is_interval I" *)
 
   fix I J a b c d A
   assume asm: "?Q I a b" "?Q J c d" "I\<subseteq>A" "J\<subseteq>A" "A\<in>\<P>" "\<not>(a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d \<and> a\<noteq>c \<and> b\<noteq>d)"
@@ -6362,6 +6158,13 @@ end (* context MinkowskiBetweenness *)
 section "Interlude: Intervals, Segments, Connectedness"
 context MinkowskiSpacetime begin
 
+text \<open>
+  In this secion, we apply the WLOG lemmas from the previous section in order to reduce the
+  number of cases we need to consider when thinking about two arbitrary intervals on a path.
+  This is used to prove that the (countable) intersection of intervals is an interval.
+  These results cannot be found in Schutz, but he does use them (without justification)
+  in his proof of Theorem 12 (even for uncountable intersections).
+\<close>
 
 lemma int_of_ints_is_interval_neq: (* Proof using WLOG *)
   assumes  "I1 = interval a b" "I2 = interval c d" "I1\<subseteq>P" "I2\<subseteq>P" "P\<in>\<P>" "I1\<inter>I2 \<noteq> {}"
@@ -6739,6 +6542,11 @@ end (*context MinkowskiSpacetime*)
 section "3.7 Continuity and the monotonic sequence property"
 context MinkowskiSpacetime begin
 
+text \<open>
+  This section only includes a proof of the first part of Theorem 12, as well as some results
+  that would be useful in proving part (ii).
+\<close>
+
 theorem (*12(i)*) two_rays:
   assumes path_Q: "Q\<in>\<P>"
       and event_a: "a\<in>Q"
@@ -7097,14 +6905,14 @@ end (* context MinkowskiSpacetime *)
 section "3.8 Connectedness of the unreachable set"
 context MinkowskiSpacetime begin
 
+subsection \<open>Theorem 13 (Connectedness of the Unreachable Set)\<close>
+
 theorem (*13*) unreach_connected:
   assumes path_Q: "Q\<in>\<P>"
       and event_b: "b\<notin>Q" "b\<in>\<E>"
       and unreach: "Q\<^sub>x \<in> \<emptyset> Q b" "Q\<^sub>z \<in> \<emptyset> Q b" "Q\<^sub>x \<noteq> Q\<^sub>z"
       and xyz: "[[Q\<^sub>x Q\<^sub>y Q\<^sub>z]]"
     shows "Q\<^sub>y \<in> \<emptyset> Q b"
-(* Schutz states it more like:
-    shows "[[Q\<^sub>x Q\<^sub>y Q\<^sub>z]] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b" *)
 proof -
 
 (* First we obtain the chain from I6. *)
@@ -7210,6 +7018,7 @@ proof -
   qed
 qed
 
+subsection \<open>Theorem 14 (Second Existence Theorem)\<close>
 
 lemma (*for 14i*) union_of_bounded_sets_is_bounded:
   assumes "\<forall>x\<in>A. [[a x b]]" "\<forall>x\<in>B. [[c x d]]" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
@@ -7388,12 +7197,15 @@ lemma (*for 14i*) union_of_bounded_sets_is_bounded2:
     [where A=A and a=a and b=b and B=B and c=c and d=d and Q=Q]
   by (metis Diff_iff abc_abc_neq)
 
+text \<open>
+  Schutz proves a mildly stronger version of this theorem than he states. Namely, he gives an
+  additional condition that has to be fulfilled by the bounds y,z in the proof (\<notin>\<emptyset> Q ab).
+  This condition is trivial given abc_abc_neq. His stating it in the proof makes me wonder
+  whether his (strictly speaking) undefined notion of bounded set is somehow weaker than the
+  version using strict betweenness in his theorem statement and used here in Isabelle.
+  This would make sense, given the obvious analogy with sets on the real line.
+\<close>
 
-(* Schutz proves a mildly stronger version of this theorem than he states. Namely, he gives an
-   additional condition that has to be fulfilled by the bounds y,z in the proof (\<notin>\<emptyset> Q ab).
-   This condition is trivial given abc_abc_neq. His stating it in the proof makes me wonder
-   whether his (strictly speaking) undefined notion of bounded set is somehow weaker than the
-   version using strict betweenness in his theorem statement and used here in Isabelle. *)
 theorem (*14i*) second_existence_thm_1:
   assumes path_Q: "Q\<in>\<P>"
       and events: "a\<notin>Q" "b\<notin>Q"
@@ -7546,9 +7358,6 @@ proof -
       using events(3-5) path_Q by blast
     then obtain e where "[[c d e]]" by auto
     have "\<not>[[y e z]]"
-      (* using path_finsubset_chain (* works as he said - but only in smt and even without thm10!*)
-      by (smt \<open>(\<lbrakk>y c d]] \<or> [[c y d\<rbrakk>) \<and> (\<lbrakk>z c d]] \<or> [[c z d\<rbrakk>)\<close> \<open>[[c d e]]\<close>
-          abc_only_cba betw4_strong betw4_weak) *)
     proof (rule notI)
       (*Notice thm10 is not needed for this proof, and does not seem to help sledgehammer.
         I think this is because it cannot be easily/automatically reconciled with non-strict
@@ -7588,7 +7397,6 @@ proof -
     using events(1-4) paths eq_paths by blast
   hence "\<emptyset> Q a \<noteq> {}"
     by (metis events(3) ex_in_conv in_path_event paths(1,2) two_in_unreach)
-    (* using events(3) paths(1,2) two_in_unreach by force (*simpler, slower*) *)
 
   then obtain d where "d\<in> \<emptyset> Q a" (*as in Schutz*)
     by blast
@@ -7655,8 +7463,13 @@ locale MinkowskiDense = MinkowskiSpacetime +
   assumes path_dense: "path ab a b \<Longrightarrow> \<exists>x. [[a x b]]"
 begin
 
+text \<open>
+  Path density: if a and b are connected by a path, then the segment between them is nonempty.
+  Since Schutz insists on the number of segments in his segmentation (Theorem 11), we prove it here,
+  showcasing where his missing assumption of path density fits in
+  (it is used three times in number_of_segments, once in each separate meaningful ordering case).
+\<close>
 
-(* if a and b are connected by a path, then the segment between them is nonempty *)
 lemma segment_nonempty:
   assumes "path ab a b"
   obtains x where "x \<in> segment a b"
@@ -7783,12 +7596,6 @@ proof -
         less_Suc_eq_le minus_nat.diff_0 not_less not_numeral_le_zero)
 qed
 
-
-(* Theorem 11-3.6 (after Veblen (1904) theorem 11). *)
-(* This is closer to what Schutz states, with no explicit construction of the segments
-   and prolongations. It follows here as a corollary of our more explicit, stronger theorem 11,
-   with the statement on number of segments dependent on a proxy for theorem 17.
-   Notice proper proof *has to be* postponed until after proof of path density in theorem 17. *)
 theorem (*11*) segmentation_card:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "Q\<subseteq>P"
