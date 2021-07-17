@@ -223,38 +223,36 @@ definition dep3 :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarro
 (* Some very simple lemmas related to dep3_event. *)
 
 (* Nice to have this on its own. *)
-lemmas dep3_nonspray = dep3_event_def
-  [THEN def_mp, THEN conjunct2, THEN conjunct2, THEN conjunct2, THEN conjunct2,
-   THEN conjunct2, THEN conjunct2, THEN ex_distrib_and', THEN conjunct1]
+lemma dep3_nonspray:
+  assumes "dep3_event Q R S x"
+    shows "\<exists>P\<in>\<P>. P \<notin> SPRAY x"
+  by (metis assms dep3_event_def)
 
-lemma dep3_paths:
+lemma dep3_path:
   assumes dep3_QRSx: "dep3_event Q R S x"
-  shows "Q \<in> \<P> \<and> R \<in> \<P> \<and> S \<in> \<P>"
+  shows "Q \<in> \<P>" "R \<in> \<P>" "S \<in> \<P>"
 proof -
   have "{Q,R,S} \<subseteq> SPRAY x" using dep3_event_def using dep3_QRSx by simp
-  thus ?thesis using SPRAY_path by auto
+  thus "Q \<in> \<P>" "R \<in> \<P>" "S \<in> \<P>" using SPRAY_path by auto
 qed
-lemmas dep3_path1 = dep3_paths [THEN conjunct1]
-lemmas dep3_path2 = dep3_paths [THEN conjunct2, THEN conjunct1]
-lemmas dep3_path3 = dep3_paths [THEN conjunct2, THEN conjunct2]
 
 lemma dep3_is_event:
   "dep3_event Q R S x \<Longrightarrow> x \<in> \<E>"
 using SPRAY_event dep3_event_def by auto
 
 lemma dep3_event_permute [no_atp]:
-  "dep3_event Q R S x \<Longrightarrow>
-     dep3_event Q S R x \<and> dep3_event R Q S x \<and> dep3_event R S Q x
-     \<and> dep3_event S Q R x \<and> dep3_event S R Q x"
-using dep3_event_def by auto
-lemmas dep3_event_permute1 = dep3_event_permute [THEN conjunct1]
+  assumes "dep3_event Q R S x"
+    shows "dep3_event Q S R x" "dep3_event R Q S x" "dep3_event R S Q x"
+     "dep3_event S Q R x" "dep3_event S R Q x"
+using dep3_event_def assms by auto
+(* lemmas dep3_event_permute1 = dep3_event_permute [THEN conjunct1]
 lemmas dep3_event_permute2 = dep3_event_permute [THEN conjunct2, THEN conjunct1]
 lemmas dep3_event_permute3 = dep3_event_permute [THEN conjunct2, THEN conjunct2,
                                                  THEN conjunct1]
 lemmas dep3_event_permute4 = dep3_event_permute [THEN conjunct2, THEN conjunct2,
                                                  THEN conjunct2, THEN conjunct1]
 lemmas dep3_event_permute5 = dep3_event_permute [THEN conjunct2, THEN conjunct2,
-                                                 THEN conjunct2, THEN conjunct2]
+                                                 THEN conjunct2, THEN conjunct2] *)
 
 (* "We next give recursive definitions of dependence and independence which will be used to
     characterize the concept of dimension. A path T is dependent on the set of n paths (where
@@ -318,8 +316,8 @@ proof
   show "?S'' \<subseteq> {P, Q, R}" by simp
   show "card ?S' = card {P, Q, R} - 1" using assms dep3_event_def by auto
   show "card ?S'' = card {P, Q, R} - 1" using assms dep3_event_def by auto
-  show "dep_path ?S1 ?S' x" by (simp add: assms dep3_event_permute2 dep_two)
-  show "dep_path ?S2 ?S'' x" using assms dep3_event_permute2 dep_two dep3_event_permute4 by blast
+  show "dep_path ?S1 ?S' x" by (simp add: assms dep3_event_permute(2) dep_two)
+  show "dep_path ?S2 ?S'' x" using assms dep3_event_permute(2,4) dep_two by blast
 qed
 
 
@@ -431,13 +429,15 @@ proof -
   thus ?thesis using abc_sym by simp
 qed
 
-lemma abc_only_cba: "[[a b c]] \<Longrightarrow> \<not> [[b a c]] \<and> \<not> [[a c b]] \<and> \<not> [[b c a]] \<and> \<not> [[c a b]]"
-using abc_sym abc_abc_neq abc_bcd_abd by blast
+lemma abc_only_cba:
+  assumes "[[a b c]]"
+    shows "\<not> [[b a c]]" "\<not> [[a c b]]" "\<not> [[b c a]]" "\<not> [[c a b]]"
+using abc_sym abc_abc_neq abc_bcd_abd assms by blast+
 
-lemmas abc_only_cba1 = abc_only_cba [THEN conjunct1]
+(* lemmas abc_only_cba1 = abc_only_cba [THEN conjunct1]
 lemmas abc_only_cba2 = abc_only_cba [THEN conjunct2, THEN conjunct1]
 lemmas abc_only_cba3 = abc_only_cba [THEN conjunct2, THEN conjunct2, THEN conjunct1]
-lemmas abc_only_cba4 = abc_only_cba [THEN conjunct2, THEN conjunct2, THEN conjunct2]
+lemmas abc_only_cba4 = abc_only_cba [THEN conjunct2, THEN conjunct2, THEN conjunct2] *)
 
 
 section "Betweenness: Unreachable Subset Via a Path"

@@ -1313,7 +1313,7 @@ next
     { fix c
       assume "c \<in> X" "x \<noteq> c" "a \<noteq> c"
       then have "[[x c a]]"
-        by (smt IH.prems(2) X_eq Y_ends \<open>[[x b a]]\<close> ab_Y(1) abc_abc_neq abc_bcd_abd abc_only_cba3 abc_sym \<open>Q \<in> \<P>\<close> betw_b_in_path insert_iff some_betw subsetD)
+        by (smt IH.prems(2) X_eq Y_ends \<open>[[x b a]]\<close> ab_Y(1) abc_abc_neq abc_bcd_abd abc_only_cba(3) abc_sym \<open>Q \<in> \<P>\<close> betw_b_in_path insert_iff some_betw subsetD)
     }
     thus ?thesis
       using X_eq \<open>[[x b a]]\<close> ab_Y(1) abc_abc_neq insert_iff by force
@@ -1322,7 +1322,7 @@ next
     { fix c
       assume "c \<in> X" "b \<noteq> c" "x \<noteq> c"
       then have "[[b c x]]"
-        by (smt IH.prems(2) X_eq Y_ends \<open>[[b a x]]\<close> ab_Y(1) abc_abc_neq abc_bcd_acd abc_only_cba1
+        by (smt IH.prems(2) X_eq Y_ends \<open>[[b a x]]\<close> ab_Y(1) abc_abc_neq abc_bcd_acd abc_only_cba(1)
             abc_sym \<open>Q \<in> \<P>\<close> betw_a_in_path insert_iff some_betw subsetD)
     }
     thus ?thesis
@@ -1395,7 +1395,7 @@ proof (rule ccontr)
     then obtain x where "[[a b x]]" and "x\<in>Q"
       using prolong_betw2 assms(1) by blast
     thus False
-      by (metis acb abc_abc_neq abc_only_cba)
+      by (metis acb abc_abc_neq abc_only_cba(2))
   qed
 qed
 
@@ -2112,7 +2112,7 @@ proof -
   have path_acd: "\<exists>Q\<in>\<P>. a \<in> Q \<and> c \<in> Q \<and> d \<in> Q" using acd by (simp add: abc_ex_path)
   then have "\<exists>Q\<in>\<P>. b \<in> Q \<and> c \<in> Q \<and> d \<in> Q" using path_abc abc_abc_neq acd cross_once_notin by metis 
   (* Schutz implicitly assumes this. *)
-  then have bcd3: "[[b c d]] \<or> [[b d c]] \<or> [[c b d]]" by (metis abc abc_only_cba acd some_betw2)
+  then have bcd3: "[[b c d]] \<or> [[b d c]] \<or> [[c b d]]" by (metis abc abc_only_cba(1,2) acd some_betw2)
   show ?thesis
   proof (rule ccontr)
     assume "\<not> [[b c d]]"
@@ -3274,7 +3274,7 @@ lemma index_order3:
     shows "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
   using index_order2 [where x=x and y=y and z=z and a=a and b=b and c=c and f=f and X=X]
   using assms long_ch_by_ord_def ordering_ord_ijk
-  by (smt abc_abc_neq abc_only_cba1 abc_only_cba2 abc_only_cba3 linorder_neqE_nat)
+  by (smt abc_abc_neq abc_only_cba(1-3) linorder_neqE_nat)
 (* TODO: smt above *)
 
 end (* context MinkowskiChain *)
@@ -3396,7 +3396,7 @@ lemma (*for 10*) chain_append_at_left_edge:
 proof -
   let ?X = "insert b Y"
   have "b\<notin>Y"
-    by (metis abc_ac_neq abc_only_cba1 bY ch_all_betw_f long_ch_Y)
+    by (metis abc_ac_neq abc_only_cba(1) bY ch_all_betw_f long_ch_Y)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
     using long_ch_Y by (simp add: fin_long_chain_def)
   have fin_Y: "card Y \<ge> 3"
@@ -3497,7 +3497,7 @@ lemma (*for 10*) chain_append_at_right_edge:
 proof -
   let ?X = "insert b Y"
   have "b\<notin>Y"
-    by (metis Yb abc_abc_neq abc_only_cba2 ch_all_betw_f long_ch_Y)
+    by (metis Yb abc_abc_neq abc_only_cba(2) ch_all_betw_f long_ch_Y)
   have fin_X: "finite ?X"
     using fin_long_chain_def long_ch_Y by blast
   have fin_Y: "card Y \<ge> 3"
@@ -3576,7 +3576,7 @@ proof -
     have "k' < card Y"
       using S_def \<open>k \<in> S\<close> \<open>k' < k\<close> less_trans by blast
     thus False
-      using abc_bcd_abd order_finite_chain S_def abc_only_cba2 long_ch_Y
+      using abc_bcd_abd order_finite_chain S_def abc_only_cba(2) long_ch_Y
         \<open>0 < k'\<close> \<open>[[(f k) b (f k')]]\<close> \<open>k \<in> S\<close> \<open>k' < k\<close>
       unfolding fin_long_chain_def
       by (metis (mono_tags, lifting) le_numeral_extra(3) mem_Collect_eq)
@@ -3677,7 +3677,7 @@ proof -
       proof (rule conjI4)
         show "(0::nat)<?k" by simp
         show "?k < card Y"
-          by (metis (no_types, lifting) S_def Yb \<open>k \<in> S\<close> abc_only_cba2 add.commute
+          by (metis (no_types, lifting) S_def Yb \<open>k \<in> S\<close> abc_only_cba(2) add.commute
               add_diff_cancel_right' bound_indices less_SucE mem_Collect_eq nat_add_left_cancel_less
               plus_1_eq_Suc)
         show "[[a\<^sub>1 b (f ?k)]]"
@@ -3726,12 +3726,12 @@ proof -
             using abc_ac_neq bound_indices neq0_conv
             by blast
           hence "k'<k"
-            using S_def \<open>k \<in> S\<close> abc_only_cba2 less_SucE by fastforce
+            using S_def \<open>k \<in> S\<close> abc_only_cba(2) less_SucE by fastforce
           hence "k'\<in>S"
             using S_is_dense long_ch_Y S_def \<open>\<not>S={}\<close> \<open>k = Max S\<close> \<open>k'>0\<close>
             by blast
           thus False
-            using S_def abc_only_cba2 k'_def(3) by blast
+            using S_def abc_only_cba(2) k'_def(3) by blast
         qed
       qed
     qed
@@ -3854,7 +3854,7 @@ proof -
                 by auto
             qed
             moreover have "\<not> [[b a\<^sub>n (f ?k)]]"
-              using Yb \<open>[[a\<^sub>1 (f ?k) a\<^sub>n]]\<close> abc_only_cba abc_bcd_acd
+              using Yb \<open>[[a\<^sub>1 (f ?k) a\<^sub>n]]\<close> abc_only_cba(2) abc_bcd_acd
               by blast
             ultimately show "[[(f ?k) b a\<^sub>n]]"
               using abc_sym by auto
@@ -3870,15 +3870,15 @@ proof -
             using abc_ac_neq bound_indices neq0_conv
             by (metis Suc_diff_1 abc_sym gr_implies_not0 less_SucE)
           hence "k'>k"
-            using S_def \<open>k \<in> S\<close> abc_only_cba2 less_SucE
+            using S_def \<open>k \<in> S\<close> abc_only_cba(2) less_SucE
             by (metis (no_types, lifting) add_diff_inverse_nat less_one mem_Collect_eq
                 not_less_eq plus_1_eq_Suc)
           hence "k'\<in>S"
             using S_is_dense long_ch_Y S_def \<open>\<not>S={}\<close> \<open>k = Min S\<close> \<open>k'<card Y - 1\<close>
-            by (smt Yb \<open>k \<in> S\<close> abc_acd_bcd abc_only_cba3 card_Diff1_less card_Diff_singleton
+            by (smt Yb \<open>k \<in> S\<close> abc_acd_bcd abc_only_cba(3) card_Diff1_less card_Diff_singleton
                 fin_long_chain_def k'_def(3) less_le mem_Collect_eq neq0_conv order_finite_chain)
           thus False
-            using S_def abc_only_cba2 k'_def(3)
+            using S_def abc_only_cba(2) k'_def(3)
             by blast
         qed
       qed
@@ -4061,7 +4061,7 @@ proof -
       thus "[[(f (k-1)) b (f k)]]"
       proof -
         have "\<not> [[a\<^sub>1 (f k) b]]"
-          by (simp add: \<open>[[a\<^sub>1 b (f k)]]\<close> abc_only_cba2)
+          by (simp add: \<open>[[a\<^sub>1 b (f k)]]\<close> abc_only_cba(2))
         thus ?thesis
           using some_ord_bk k_def abc_bcd_acd abd_bcd_abc bound_indices
           by (metis diff_is_0_eq' diff_less less_imp_diff_less less_irrefl_nat not_less
@@ -4717,7 +4717,7 @@ proof -
       moreover have "[[(f(n)) x (f(n+1))]]"
         using \<open>x\<in>s\<close> seg_betw s_def(1) by simp
       ultimately show False
-        using \<open>x=a\<close> abc_only_cba1 assms(3) f_def fin_long_chain_def s_def(2) order_finite_chain
+        using \<open>x=a\<close> abc_only_cba(1) assms(3) f_def fin_long_chain_def s_def(2) order_finite_chain
         by (metis le_numeral_extra(3) less_add_one less_diff_conv neq0_conv)
     qed
 
@@ -4744,8 +4744,8 @@ proof -
         by (metis \<open>[[(f n) x (f (n + 1))]]\<close> \<open>f (n + 1) \<in> Q\<close> \<open>f n \<in> Q\<close> \<open>x = c\<close>)
       thus False
         using \<open>x=c\<close> \<open>[[(f(n)) x (f(n+1))]]\<close> assms(3) f_def s_def(2)
-          abc_only_cba1 fin_long_chain_def order_finite_chain
-        by (metis \<open>f n \<in> Q\<close> abc_bcd_acd abc_only_cba ch_all_betw_f)
+          abc_only_cba(1) fin_long_chain_def order_finite_chain
+        by (metis \<open>f n \<in> Q\<close> abc_bcd_acd abc_only_cba(1,2) ch_all_betw_f)
     qed
   qed
 
@@ -4791,7 +4791,7 @@ proof (rule conjI)
         hence "[[a x c]]"
           using inseg_axc \<open>s \<in> S\<close> assms by blast
         thus "x\<in>{}"
-          by (metis P1_def \<open>x \<in> P1\<close> abc_bcd_abd abc_only_cba f_def(2) fin_ch_betw pro_betw)
+          by (metis P1_def \<open>x \<in> P1\<close> abc_bcd_abd abc_only_cba(1) f_def(2) fin_ch_betw pro_betw)
       qed
       show "s\<inter>P2={}"
       proof (safe)
@@ -4799,7 +4799,7 @@ proof (rule conjI)
         hence "[[a x c]]"
           using inseg_axc \<open>s \<in> S\<close> assms by blast
         thus "x\<in>{}"
-          by (metis P2_def \<open>x \<in> P2\<close> abc_bcd_acd abc_only_cba2 f_def(2) fin_ch_betw pro_betw)
+          by (metis P2_def \<open>x \<in> P2\<close> abc_bcd_acd abc_only_cba(2) f_def(2) fin_ch_betw pro_betw)
       qed
       fix r assume "r\<in>S" "s\<noteq>r"
       show "s\<inter>r={}"
@@ -4816,7 +4816,7 @@ proof (rule conjI)
           have "[[(f n) (f m) (f(m+1))]]"
             using \<open>n < m\<close> assms(3) f_def fin_long_chain_def order_finite_chain rs_def(5) by auto
           have "n+1<m" (* NOTICE: this is astounding. in principle, r and s could be adjacent? must be the False in the assumptions. *)
-            using \<open>[[(f n) (f m) (f(m + 1))]]\<close> \<open>n < m\<close> abc_only_cba2 abd_bcd_abc y_betw
+            using \<open>[[(f n) (f m) (f(m + 1))]]\<close> \<open>n < m\<close> abc_only_cba(2) abd_bcd_abc y_betw
             by (metis Suc_eq_plus1 Suc_leI le_eq_less_or_eq)
           hence "[[(f n) (f(n+1)) (f m)]]"
             using f_def assms(3) rs_def(5)
@@ -4833,7 +4833,7 @@ proof (rule conjI)
           have "[[(f m) (f n) (f(n+1))]]"
             using \<open>n > m\<close> assms(3) f_def fin_long_chain_def order_finite_chain rs_def(4) by auto
           hence "m+1<n"
-            using  \<open>n > m\<close> abc_only_cba2 abd_bcd_abc y_betw
+            using  \<open>n > m\<close> abc_only_cba(2) abd_bcd_abc y_betw
             by (metis Suc_eq_plus1 Suc_leI le_eq_less_or_eq)
           hence "[[(f m) (f(m+1)) (f n)]]"
             using f_def assms(3) rs_def(4)
@@ -5131,7 +5131,7 @@ proof -
         using \<open>b = f 1\<close> lch_X assms(3) unfolding long_ch_by_ord_def ordering_def
         by force
       hence "b\<in>Y"
-        using \<open>[[a b p]]\<close> \<open>[[a p c]]\<close> abc_only_cba2 assms(4) by blast
+        using \<open>[[a b p]]\<close> \<open>[[a p c]]\<close> abc_only_cba(2) assms(4) by blast
   
       have "ordering f betw Y"
         unfolding ordering_def
@@ -5768,11 +5768,11 @@ proof (rule ccontr)
         using \<open>f 0 \<noteq> g 0\<close> \<open>x \<noteq> f 0\<close> \<open>x \<noteq> g 0\<close> all_aligned_on_semifin_chain
         by (metis ordering_def \<open>x \<in> X\<close> assms inf_chain_is_long long_ch_by_ord_def)
       moreover have "\<not>[[(f 0)(g 0)x]]"
-        using abc_only_cba1 abc_only_cba3 all_aligned_on_semifin_chain assms(2) fn
+        using abc_only_cba(1,3) all_aligned_on_semifin_chain assms(2) fn
         by (metis \<open>x\<in>X\<close> \<open>x\<noteq>f 0\<close> \<open>x\<noteq>g 0\<close>)
       moreover have "\<not>[[(g 0)(f 0)x]]"
         using fn gn \<open>x \<in> X\<close> \<open>x \<noteq> g 0\<close>
-        by (metis (no_types) abc_only_cba all_aligned_on_semifin_chain assms(1))
+        by (metis (no_types) abc_only_cba(1,2,4) all_aligned_on_semifin_chain assms(1))
       ultimately show ?thesis by blast
     qed
 
@@ -5782,10 +5782,10 @@ proof (rule ccontr)
       by (metis Suc_le_eq \<open>f 0 \<noteq> g 0\<close> assms(2) inf_chain_is_long lessI linorder_neqE_nat
           long_ch_by_ord_def not_le ordering_ord_ijk zero_less_Suc)
     then obtain n p where "f n = g 0" "f p = g m"
-      by (metis abc_abc_neq abc_only_cba1 abc_only_cba4 all_aligned_on_semifin_chain assms(1) gn)
+      by (metis abc_abc_neq abc_only_cba(1,4) all_aligned_on_semifin_chain assms(1) gn)
     hence "m<0 \<or> n<0"
       using all_aligned_on_semifin_chain assms(1) \<open>[[(g 0)(f 0)(g m)]]\<close>
-      by (metis abc_abc_neq abc_only_cba1 abc_only_cba4 fn)
+      by (metis abc_abc_neq abc_only_cba(1,4) fn)
     thus False by simp
   qed
 qed
@@ -5854,7 +5854,7 @@ proof -
                 using \<open>[[(g 0)(g m')(g 1)]]\<close> assms(2) index_order3 inf_chain_is_long by blast
             qed
             thus False
-              using `[[(g 0)(g m')(g 1)]]` abc_only_cba2 by blast
+              using `[[(g 0)(g m')(g 1)]]` abc_only_cba(2) by blast
           next
             assume "[[(f 0)(f i)(f ?i)]] \<and> [[(f 0)(g i)(g ?i)]]"
             have "[[(g 0)(f ?i)(g ?i)]]"
@@ -6397,12 +6397,12 @@ proof -
             using \<open>I=interval a b\<close> \<open>x\<in>I\<inter>J\<close> \<open>J=interval c d\<close> \<open>x\<in>I\<inter>J\<close>
              apply (simp add: interval_def seg_betw)+ done
           thus False
-            by (meson \<open>betw4 a b c d\<close> abc_only_cba3 abc_sym abd_bcd_abc)
+            by (meson \<open>betw4 a b c d\<close> abc_only_cba(3) abc_sym abd_bcd_abc)
         next
           assume "\<not>(x\<noteq>a \<and> x\<noteq>b \<and> x\<noteq>c \<and> x\<noteq>d)"
           thus False
             using interval_def seg_betw \<open>I = interval a b\<close> \<open>J = interval c d\<close> abcd_dcba_only(21)
-                 \<open>x \<in> I \<inter> J\<close> \<open>betw4 a b c d\<close> abc_bcd_abd abc_bcd_acd abc_only_cba1 abc_only_cba2
+                 \<open>x \<in> I \<inter> J\<close> \<open>betw4 a b c d\<close> abc_bcd_abd abc_bcd_acd abc_only_cba(1,2)
             by (metis (full_types) insert_iff Int_iff)
         qed
       qed 
@@ -6995,7 +6995,7 @@ proof -
         have "(c = b) \<or> [[(f 0) c b]]"
           using assms(4,5) closest_bound_f_def is_bound_def by auto
         hence "[[(f j) b c]] \<longrightarrow> [[x(f j)(f i)]]"
-          by (metis abc_bcd_acd abc_only_cba assms(5) is_bound_f_def neq0_conv)
+          by (metis abc_bcd_acd abc_only_cba(2) assms(5) is_bound_f_def neq0_conv)
         thus ?thesis
           using \<open>[[c b x]]\<close> \<open>[[(f i)(f j)b]]\<close> \<open>[[(f j) b c]] \<or> [[(f j) c b]]\<close> abc_bcd_acd abc_sym
           by blast
@@ -7055,7 +7055,7 @@ proof
     hence "c\<in>ray a b"
       using abc_abc_neq pro_betw ray_def by auto
     have "c\<notin>interval a b"
-      using \<open>[[a b c]]\<close> abc_abc_neq abc_only_cba2 interval_def seg_betw by auto
+      using \<open>[[a b c]]\<close> abc_abc_neq abc_only_cba(2) interval_def seg_betw by auto
     thus ?thesis
       using \<open>c \<in> ray a b\<close> by blast
   qed
@@ -7560,9 +7560,9 @@ proof -
       thus False
         apply (cases)
         using `[[y e z]]` `[[c d e]]` abc_only_cba betw4_weak betw4_strong apply metis
-        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_abd abc_only_cba abc_sym apply blast
-        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_abd abc_only_cba abc_sym apply blast
-        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_bcd abc_only_cba2 by blast
+        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_abd abc_only_cba(2) abc_sym apply blast
+        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_abd abc_only_cba(2,3) abc_sym apply blast
+        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_bcd abc_only_cba(2) by blast
     qed
     have "e\<in>Q"
       using \<open>[[c d e]]\<close> betw_c_in_path events(3-5) path_Q by blast
@@ -7722,7 +7722,7 @@ proof -
           using abd_bcd_abc \<open>[[(f i) (f j) (f (j + 1))]]\<close>
           by (meson \<open>e \<in> segment (f j) (f (j + 1))\<close> seg_betw) 
         thus False
-          using \<open>e \<in> segment (f i) (f (i + 1))\<close> \<open>j = i + 1\<close> abc_only_cba2 seg_betw
+          using \<open>e \<in> segment (f i) (f (i + 1))\<close> \<open>j = i + 1\<close> abc_only_cba(2) seg_betw
           by auto
       next assume "j\<noteq>i+1"
         have "i < card Q \<and> j < card Q \<and> (i+1) < card Q"
@@ -7749,7 +7749,7 @@ proof -
           moreover have "e\<in>?g j"
             using \<open>e \<in> ?g i\<close> asm(3) by blast
           ultimately show False
-            by (simp add: abc_only_cba1 seg_betw)
+            by (simp add: abc_only_cba(1) seg_betw)
         next
           assume "[[(f i) (f j) (f(i+1))]]"
           thus False
@@ -7770,7 +7770,7 @@ proof -
           moreover have "e\<in>?g j"
             using \<open>e \<in> ?g i\<close> asm(3) by blast
           ultimately show False
-            by (simp add: abc_only_cba1 seg_betw)
+            by (simp add: abc_only_cba(1) seg_betw)
         qed
       qed
     qed
