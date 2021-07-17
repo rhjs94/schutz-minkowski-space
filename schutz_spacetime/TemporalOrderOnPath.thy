@@ -1,5 +1,5 @@
 theory TemporalOrderOnPath
-(*  Title:      Ch3.thy
+(*  Title:      schutz_spacetime/TemporalOrderOnPath.thy
     Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
                 University of Edinburgh, 2021          
 *)

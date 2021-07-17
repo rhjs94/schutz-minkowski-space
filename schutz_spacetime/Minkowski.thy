@@ -1,4 +1,8 @@
 theory Minkowski
+(*  Title:      schutz_spacetime/Minkowski.thy
+    Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
+                University of Edinburgh, 2021          
+*)
 imports Main TernaryOrdering
 begin
 
