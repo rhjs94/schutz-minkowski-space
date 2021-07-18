@@ -1,8 +1,8 @@
-theory TernaryOrdering
 (*  Title:      schutz_spacetime/TernaryOrdering.thy
     Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
                 University of Edinburgh, 2021          
 *)
+theory TernaryOrdering
 imports Main Util
 
 begin
