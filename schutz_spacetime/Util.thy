@@ -9,7 +9,7 @@ imports Main
 
 begin
 
-text \<open>For multiple uses of conjI (goal splitting).\<close>
+text \<open>For multiple uses of \<open>conjI\<close> (goal splitting).\<close>
 
 lemma conjI3: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P1\<and>P2\<and>P3"
   by auto

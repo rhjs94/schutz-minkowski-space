@@ -139,7 +139,7 @@ end (* context MinkowskiBetweenness *)
 section "3.1 Order on a finite chain"
 context MinkowskiBetweenness begin
 
-subsection \<open>Theorem 1, p18\<close>
+subsection \<open>Theorem 1\<close>
 text \<open>
   See \<open>Minkowski.abc_only_cba\<close>.
   Proving it again here to show it can be done following the prose in Schutz.
@@ -167,7 +167,7 @@ proof -
   thus ?thesis using part_i part_ii part_iii by auto
 qed
 
-subsection \<open>Theorem 2, p19\<close>
+subsection \<open>Theorem 2\<close>
 text \<open>
   The lemma \<open>abc_bcd_acd\<close>, equal to the start of Schutz's proof, is given in \<open>Minkowski\<close> in order
   to prove some equivalences.
@@ -421,7 +421,7 @@ qed
 end (* context MinkowskiBetweenness *)
 
 
-section "Finite chain equivalence: local <-> global"
+section \<open>Finite chain equivalence: local \<open>\<leftrightarrow>\<close> global\<close>
 context MinkowskiBetweenness begin
 
 
@@ -453,7 +453,7 @@ end (*context MinkowskiBetweenness*)
 section "Preliminary Results for Kinematic Triangles and Paths/Betweenness"
 
 text \<open>
-  Theorem 3-3.2 (collinearity), p20
+  Theorem 3 (collinearity)
   First we prove some lemmas that will be very helpful.
 \<close>
 
@@ -712,8 +712,8 @@ lemma same_path_reachable:
 by (simp add: same_empty_unreach)
 
 text \<open>
-  If we have two paths crossing and a is on the crossing point, and b is on one of the paths,
-  then a is in the reachable part of the path b is on.
+  If we have two paths crossing and $a$ is on the crossing point, and $b$ is on one of the paths,
+  then $a$ is in the reachable part of the path $b$ is on.
 \<close>
 
 lemma same_path_reachable2:
@@ -939,7 +939,7 @@ end (* context MinkowskiPrimitive *)
 
 section "3.3 Boundedness of the unreachable set"
 
-subsection \<open>Theorem 4 (boundedness of the unreachable set), p20\<close>
+subsection \<open>Theorem 4 (boundedness of the unreachable set)\<close>
 text \<open>
   The same assumptions as I7, different conclusion.
   This doesn't just give us boundedness, it gives us another event outside of the unreachable
@@ -1382,7 +1382,7 @@ by (meson ab_neq_bc cross_once_notin path_ab path_bc path_ca paths_tri)
 
 text \<open>
   Schutz states it more like
-   \<open>\<lbrakk>tri_abc; bcd; cea\<rbrakk> \<Longrightarrow> (path de d e \<longrightarrow> \<exists>f\<in>de. [[a f b]]\<and>[[d e f]])\<close>
+   \<open>\<lbrakk>tri_abc; bcd; cea\<rbrakk> \<Longrightarrow> (path de d e \<longrightarrow> \<exists>f\<in>de. [[a f b]]\<and>[[d e f]])\<close>.
   Equivalent up to usage of \<open>impI\<close>.
 \<close>
 
@@ -1466,7 +1466,7 @@ context MinkowskiSpacetime begin
 
 subsection \<open>Theorem 8 (as in Veblen (1911) Theorem 6)\<close>
 text \<open>
-  Note a'b'c' don't necessarily form a triangle, as there still needs to be paths between them.
+  Note \<open>a'b'c'\<close> don't necessarily form a triangle, as there still needs to be paths between them.
 \<close>
 
 
@@ -1604,7 +1604,7 @@ qed
 subsection \<open>Theorem 9\<close>
 text \<open>
   We now begin working on the transitivity lemmas needed to prove Theorem 9.
-  Multiple lemmas below obtain primed variables (e.g. d'). These are starred in Schutz (e.g. d*),
+  Multiple lemmas below obtain primed variables (e.g. \<open>d'\<close>). These are starred in Schutz (e.g. \<open>d*\<close>),
   but that notation is already reserved in Isabelle.
 \<close>
 
@@ -2226,7 +2226,7 @@ proof -
   thus ?thesis using assms semifin_chain_def by blast
 qed
 
-text \<open>A reassurance that the starting point x is implied.\<close>
+text \<open>A reassurance that the starting point $x$ is implied.\<close>
 lemma long_inf_chain_is_semifin:
   assumes "long_ch_by_ord f X \<and> infinite X"
   shows "\<exists> x. [f[x..]X]"
@@ -3254,7 +3254,7 @@ proof -
   hence "[[a\<^sub>1 (f 1) a\<^sub>n]]"
     using order_finite_chain fin_long_chain_def long_ch_Y
     by auto
-  text \<open>Schutz has a step here that says \<open>[b a\<^sub>1 a\<^sub>2 a\<^sub>n]\<close> is a chain (using Thm 9).
+  text \<open>Schutz has a step here that says \<open>[b a\<^sub>1 a\<^sub>2 a\<^sub>n]\<close> is a chain (using Theorem 9).
     We have no easy way of denoting an ordered 4-element chain, so we skip this step
     using an ordering lemma from our script for 3.6, which Schutz doesn't list.\<close>
   hence "[[b a\<^sub>1 (f 1)]]"
@@ -4227,7 +4227,7 @@ proof -
 qed
 
 
-subsection \<open>Theorem 11 page 27\<close>
+subsection \<open>Theorem 11\<close>
 
 
 text \<open>
@@ -4720,7 +4720,7 @@ proof -
 qed
 
 text \<open>
-  We define `disjoint` to be the same as in HOL-Library.DisjointSets.
+  We define \<open>disjoint\<close> to be the same as in HOL-Library.DisjointSets.
   This saves importing a lot of baggage we don't need.
   The two lemmas below are just for safety.
 \<close>
@@ -4800,7 +4800,7 @@ qed
 
 text \<open>
   Schutz says "As in the proof of the previous theorem [...]" - does he mean to imply that this
-  should really be proved as induction? I can see that quite easily, induct on N, and add a segment
+  should really be proved as induction? I can see that quite easily, induct on $N$, and add a segment
   by either splitting up a segment or taking a piece out of a prolongation.
   But I think that might be too much trouble.
 \<close>
@@ -5037,7 +5037,7 @@ lemma (in MinkowskiChain) fin_long_ch_imp_fin_ch:
 
 text \<open>
   If we ever want to have chains less strongly identified by endpoints,
-  this result should generalise - a,c,x,z are only used to identify reversal/no-reversal cases.
+  this result should generalise - $a,c,x,z$ are only used to identify reversal/no-reversal cases.
 \<close>
 lemma (in MinkowskiSpacetime) chain_unique_induction_ax:
   assumes "card X \<ge> 3"
@@ -5233,7 +5233,7 @@ next
   qed
 qed
 
-text \<open>I'm really impressed sledgehammer/smt can solve this if I just tell them "Use symmetry!".\<close>
+text \<open>I'm really impressed \<open>sledgehammer\<close>/\<open>smt\<close> can solve this if I just tell them "Use symmetry!".\<close>
 
 lemma (in MinkowskiSpacetime) chain_unique_induction_cx:
   assumes "card X \<ge> 3"
@@ -5733,7 +5733,7 @@ section "Interlude: betw4 and WLOG"
 subsection "betw4 - strict and non-strict, basic lemmas"
 context MinkowskiBetweenness begin
 
-text \<open>Define additional notation for non-strict ordering - cf Schutz p.27.\<close>
+text \<open>Define additional notation for non-strict ordering - cf Schutz' monograph \cite[ p.~27]{schutz1997}.\<close>
 
 abbreviation nonstrict_betw_right :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[[_ _ _\<rbrakk>") where
   "nonstrict_betw_right a b c \<equiv> [[a b c]] \<or> b = c"
@@ -5834,7 +5834,7 @@ context MinkowskiBetweenness begin
 
 text \<open>
   This first one is really just trying to get a hang of how to write these things.
-  If you have a relation that does not care which way round the `endpoints` (if Q is the
+  If you have a relation that does not care which way round the ``endpoints'' (if $Q$ is the
   interval-relation) go, then anything you want to prove about both undistinguished endpoints,
   follows from a proof involving a single endpoint.
 \<close>
@@ -5858,7 +5858,7 @@ lemma wlog_element:
 
 text \<open>
   Summary of the two above. Use for early case splitting in proofs.
-  Doesn't need P to be symmetric - the context in the conclusion is explicitly symmetric.
+  Doesn't need $P$ to be symmetric - the context in the conclusion is explicitly symmetric.
 \<close>
 
 lemma wlog_two_sets_element:
@@ -6081,7 +6081,7 @@ subsection "WLOG for two intervals"
 context MinkowskiBetweenness begin
 
 text \<open>
-  This section just specifies the results for a generic relation Q
+  This section just specifies the results for a generic relation $Q$
   in the previous section to the interval relation.
 \<close>
 
@@ -6771,8 +6771,9 @@ qed
 
 text \<open>
   The definition \<open>closest_to\<close> in prose:
-  Pick any r\<in>R. The closest event c is such that there is no closer event in L,
-  i.e. all other events of L are further away from r. Thus in L, c is the element closest to R.
+  Pick any $r \in R$. The closest event $c$ is such that there is no closer event in $L$,
+  i.e. all other events of $L$ are further away from $r$.
+  Thus in $L$, $c$ is the element closest to $R$.
 \<close>
 definition closest_to :: "('a set) \<Rightarrow> 'a \<Rightarrow> ('a set) \<Rightarrow> bool"
   where "closest_to L c R \<equiv> c\<in>L \<and> (\<forall>r\<in>R. \<forall>l\<in>L-{c}. [[l c r]])"
@@ -6960,7 +6961,7 @@ proof (unfold closest_bound_f_def, safe)
 next
   fix Q\<^sub>b'
   assume "is_bound Q\<^sub>b' X" "Q\<^sub>b' \<noteq> c" 
-  then show "[[f 0 c Q\<^sub>b']]"
+  then show "[[(f 0) c Q\<^sub>b']]"
   by (metis (full_types) assms(2,4) closest_bound_def inf_chain_unique is_bound_f_def)
 qed
 
@@ -7136,7 +7137,7 @@ proof -
     show "?P A B"
     proof (rule_tac P="?P" and A=Q in wlog_endpoints_distinct)
 
-      text \<open>First, some technicalities: the relations P, I, R have the symmetry required.\<close>
+      text \<open>First, some technicalities: the relations $P, I, R$ have the symmetry required.\<close>
       show "\<And>a b I. ?I I a b \<Longrightarrow> ?I I b a" using abc_sym by blast
       show "\<And>a b A. A \<subseteq> Q \<Longrightarrow> ?I A a b \<Longrightarrow> b \<in> Q \<and> a \<in> Q" using on_path assms(5) by blast
       show "\<And>I J. ?R I \<Longrightarrow> ?R J \<Longrightarrow> ?P I J \<Longrightarrow> ?P J I" by (simp add: Un_commute)
@@ -7460,9 +7461,12 @@ proof -
   qed
 qed
 
+text \<open>
+  The assumption \<open>Q\<noteq>R\<close> in Theorem 14(iii) is somewhat implicit in Schutz.
+  If \<open>Q=R\<close>, \<open>\<emptyset> Q a\<close> is empty, so the third conjunct of the conclusion is meaningless.
+\<close>
 
 theorem (*14*) second_existence_thm_3:
-  text \<open>\<open>Q\<noteq>R\<close> is implicit in Schutz. If \<open>Q=R\<close>, \<open>\<emptyset> Q a\<close> is empty.\<close>
   assumes paths: "Q\<in>\<P>" "R\<in>\<P>" "Q\<noteq>R"
       and events: "x\<in>Q" "x\<in>R" "a\<in>R" "a\<noteq>x" "b\<notin>Q"
       and reachable: "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q"
@@ -7539,7 +7543,7 @@ locale MinkowskiDense = MinkowskiSpacetime +
 begin
 
 text \<open>
-  Path density: if a and b are connected by a path, then the segment between them is nonempty.
+  Path density: if $a$ and $b$ are connected by a path, then the segment between them is nonempty.
   Since Schutz insists on the number of segments in his segmentation (Theorem 11), we prove it here,
   showcasing where his missing assumption of path density fits in
   (it is used three times in \<open>number_of_segments\<close>, once in each separate meaningful ordering case).

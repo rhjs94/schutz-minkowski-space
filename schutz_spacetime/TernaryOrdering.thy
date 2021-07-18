@@ -137,8 +137,8 @@ lemma overlap_ordering_alt:
 by (meson assms overlap_ordering)
 
 text \<open>
-  The lemmas below are easy to prove for X = {}, and if I included that case then I would have
-  to write a conditional definition in place of {0..|X| - 1}.
+  The lemmas below are easy to prove for \<open>X = {}\<close>, and if I included that case then I would have
+  to write a conditional definition in place of \<open>{0..|X| - 1}\<close>.
 \<close>
 
 lemma finite_ordering_img: "\<lbrakk>X \<noteq> {}; finite X; ordering f ord X\<rbrakk> \<Longrightarrow> f ` {0..card X - 1} = X"
@@ -213,10 +213,10 @@ using inf_ordering_inj' assms by (metis injI)
 text \<open>
   The finite case is a little more difficult as I can't just choose some other natural number
   to form the third part of the betweenness relation and the initial simplification isn't as nice.
-  Note that I cannot prove inj f (over the whole type that f is defined on, i.e. natural numbers),
-  because I need to capture the m and n that obey specific requirements for the finite case.
-  In order to prove inj f, I would have to extend the definition for ordering to include m and n
-  beyond card X, such that it is still injective. That would probably not be very useful.
+  Note that I cannot prove \<open>inj f\<close> (over the whole type that \<open>f\<close> is defined on, i.e. natural numbers),
+  because I need to capture the \<open>m\<close> and \<open>n\<close> that obey specific requirements for the finite case.
+  In order to prove \<open>inj f\<close>, I would have to extend the definition for ordering to include \<open>m\<close> and \<open>n\<close>
+  beyond \<open>card X\<close>, such that it is still injective. That would probably not be very useful.
 \<close>
 
 lemma finite_ordering_inj:
