@@ -979,7 +979,7 @@ proof (rule ccontr)
   then obtain a b where "path R a b"
     using \<open>\<E> = Q\<close> path_R two_in_unreach unreach_ge2_then_ge2 by blast
   have "a\<in>Q" "b\<in>Q"
-    using \<open>\<E> = Q\<close> \<open>path R a b\<close> in_path_event apply blast+ done
+    using \<open>\<E> = Q\<close> \<open>path R a b\<close> in_path_event by blast+
   thus False using eq_paths
     using R_neq_Q \<open>path R a b\<close> path_Q by blast
 qed
@@ -1888,7 +1888,7 @@ next
   have "f\<in>c'e"
     using betw_c_in_path f_def c'd'_def(5) by blast
   have "c'\<in> ab" "d'\<in> ab"
-    using betw_a_in_path betw_c_in_path c'd'_def(1,2) path_ab apply blast+ done
+    using betw_a_in_path betw_c_in_path c'd'_def(1,2) path_ab by blast+
   have "f \<in> \<emptyset> c'e b"
     using no_path assms(1,4-9) path_S_2 \<open>f\<in>c'e\<close> \<open>c'\<in>ab\<close> \<open>d'\<in>ab\<close>
       abc_abc_neq betw_events eq_paths unreachable_bounded_path_only
@@ -5912,7 +5912,7 @@ proof -
   assume asm: "Q I a b" "Q J c d" "I \<subseteq> A" "J \<subseteq> A"
               "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
   have endpoints_on_path: "a\<in>A" "b\<in>A" "c\<in>A" "d\<in>A"
-    using Q_implies_path asm apply blast+ done
+    using Q_implies_path asm by blast+
   show "P I J"
   proof (cases) (* have to split like this, because the full some_betw4 is too large for Isabelle *)
     assume "betw4 b a c d \<or> betw4 b a d c \<or> betw4 b c a d \<or>
@@ -6117,7 +6117,7 @@ proof -
       by (meson assms(2))
     show "I = interval a b" "J = interval c d" "I\<subseteq>A" "J\<subseteq>A" "A\<in>\<P>"
         "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
-      using asm apply simp+ done
+      using asm by simp+
   qed
 qed
 
@@ -6203,7 +6203,7 @@ proof -
           assume "x\<noteq>a \<and> x\<noteq>b \<and> x\<noteq>c \<and> x\<noteq>d"
           hence "[[a x b]]" "[[c x d]]"
             using \<open>I=interval a b\<close> \<open>x\<in>I\<inter>J\<close> \<open>J=interval c d\<close> \<open>x\<in>I\<inter>J\<close>
-             apply (simp add: interval_def seg_betw)+ done
+            by (simp add: interval_def seg_betw)+
           thus False
             by (meson \<open>betw4 a b c d\<close> abc_only_cba(3) abc_sym abd_bcd_abc)
         next
@@ -7181,7 +7181,7 @@ proof -
               using \<open>betw4 a c d b\<close> abc_bcd_abd abc_bcd_acd abe_ade_bcd_ace
               by (meson UnE that(1,2))
             moreover have "a\<in>Q" "b\<in>Q"
-              using assms(5) on_path that(1-4) apply blast+ done
+              using assms(5) on_path that(1-4) by blast+
             ultimately show ?thesis by blast
           qed
         qed
@@ -7201,7 +7201,7 @@ proof -
       show "\<And>I J. ?R I \<Longrightarrow> ?R J \<Longrightarrow> ?P I J \<Longrightarrow> ?P J I" by (simp add: Un_commute)
 
       show "?I A a b" "?I B c d" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
-        using assms apply simp+ done
+        using assms by simp+
       show "\<not> (a \<noteq> b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d \<and> a \<noteq> c \<and> b \<noteq> d)"
         using \<open>\<not> (a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d)\<close> by blast
 
@@ -7693,7 +7693,7 @@ proof -
   have seg_facts: "P = (\<Union>S \<union> P1 \<union> P2 \<union> Q)" "(\<forall>x\<in>S. is_segment x)"
     "disjoint (S\<union>{P1,P2})" "P1\<noteq>P2" "P1\<notin>S" "P2\<notin>S"
     using show_segmentation [OF path_P Q_def f_def]
-    using P1_def P2_def S_def apply fastforce+ done
+    using P1_def P2_def S_def by fastforce+
   show "P = \<Union>S \<union> P1 \<union> P2 \<union> Q" by (simp add: seg_facts(1))
   show "disjoint (S\<union>{P1,P2})" "P1\<noteq>P2" "P1\<notin>S" "P2\<notin>S"
     using seg_facts(3-6) by blast+
