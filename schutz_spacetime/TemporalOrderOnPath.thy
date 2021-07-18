@@ -1211,7 +1211,7 @@ proof (induct "card X - 3" arbitrary: X)
     assume "[[c a b]]"
     thus ?thesis (* jep: sledgehammer had trouble with this case without explicitly telling it what
       assumptions to use, for some reason, and even then only one prover figured out "by auto". *)
-      using X_eq abc_neq(3) by auto
+      using X_eq abc_neq(3) by blast
   qed
 next
   case IH: (Suc n)
@@ -5429,7 +5429,7 @@ proof -
         unfolding ordering_def
       proof (rule conjI3)
         show "\<forall>n. (finite Y \<longrightarrow> n < card Y) \<longrightarrow> g n \<in> Y"
-          apply (safe) apply (simp add: \<open>finite Y\<close>)
+          apply (safe) apply (auto simp add: \<open>finite Y\<close>)
         proof -
           fix n assume "n<card Y"
           then obtain n' where "n+i = n'" "n'\<in>{i..j}"
@@ -5776,9 +5776,7 @@ lemma betw4_weak:
           \<or> [[a b d]] \<and> [[b c d]]
           \<or> [[a b d]] \<and> [[b c d]]"
   shows "betw4 a b c d"
-  using assms apply (rule disjE) using abc_acd_bcd apply blast
-  using assms apply (rule disjE) using abc_bcd_acd apply blast
-  by (meson abc_bcd_acd abd_bcd_abc)
+  using abc_acd_bcd abd_bcd_abc assms by blast
 
 lemma betw4_sym:
   fixes a::'a and b::'a and c::'a and d::'a
@@ -5792,7 +5790,7 @@ lemma abcd_dcba_only:
         "\<not>betw4 b a c d" "\<not>betw4 b a d c" "\<not>betw4 b c a d" "\<not>betw4 b c d a" "\<not>betw4 b d c a" "\<not>betw4 b d a c"
         "\<not>betw4 c a b d" "\<not>betw4 c a d b" "\<not>betw4 c b a d" "\<not>betw4 c b d a" "\<not>betw4 c d a b" "\<not>betw4 c d b a"
         "\<not>betw4 d a b c" "\<not>betw4 d a c b" "\<not>betw4 d b a c" "\<not>betw4 d b c a" "\<not>betw4 d c a b"
-  using abc_only_cba assms apply blast+ done
+  using abc_only_cba assms by blast+ 
 
 lemma some_betw4a:
   fixes a::'a and b::'a and c::'a and d::'a and P
@@ -6048,10 +6046,10 @@ proof -
     assume asm1: "I\<subseteq>A" "J\<subseteq>A"
     have two: "\<And>a b c d. \<lbrakk>Q I a b; Q J c d; a=b \<and> b=c \<and> c=d\<rbrakk> \<Longrightarrow> P I J"
             "\<And>a b c d. \<lbrakk>Q I a b; Q J c d; a=b \<and> b\<noteq>c \<and> c=d\<rbrakk> \<Longrightarrow> P I J"
-      using \<open>J \<subseteq> A\<close> \<open>I \<subseteq> A\<close> path_A assms(5) apply blast+ done
+      using \<open>J \<subseteq> A\<close> \<open>I \<subseteq> A\<close> path_A assms(5) by blast+ 
     have one: "\<And> a b c d. \<lbrakk>Q I a b; Q J c d; a=b \<and> b=c \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
           "\<And> a b c d. \<lbrakk>Q I a b; Q J c d; a=b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
-      using \<open>I \<subseteq> A\<close> \<open>J \<subseteq> A\<close> path_A assms(5) apply blast+ done
+      using \<open>I \<subseteq> A\<close> \<open>J \<subseteq> A\<close> path_A assms(5) by blast+ 
     have no: "\<And> a b c d. \<lbrakk>Q I a b; Q J c d; a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a=d\<rbrakk> \<Longrightarrow> P I J"
           "\<And> a b c d. \<lbrakk>Q I a b; Q J c d; a\<noteq>b \<and> b=c \<and> c\<noteq>d \<and> a=d\<rbrakk> \<Longrightarrow> P I J"
       using \<open>I \<subseteq> A\<close> \<open>J \<subseteq> A\<close> path_A last_case apply blast
@@ -6136,8 +6134,7 @@ proof -
   fix I J a b c d A
   assume asm: "?Q I a b" "?Q J c d" "I\<subseteq>A" "J\<subseteq>A" "A\<in>\<P>" "\<not>(a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d \<and> a\<noteq>c \<and> b\<noteq>d)"
   show "P I J"
-    apply (rule wlog_endpoints_degenerate)
-  proof -
+  proof (rule wlog_endpoints_degenerate)
     show "\<And>a b I. ?Q I a b \<Longrightarrow> ?Q I b a"
       by (simp add: int_sym)
     show "\<And>a b I. I \<subseteq> A \<Longrightarrow> ?Q I a b \<Longrightarrow> b \<in> A \<and> a \<in> A"
@@ -6146,7 +6143,7 @@ proof -
       using symmetry by blast
     show "I = interval a b" "J = interval c d" "I\<subseteq>A" "J\<subseteq>A" "A\<in>\<P>"
       "\<not> (a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d \<and> a\<noteq>c \<and> b\<noteq>d)"
-      using asm apply auto+ done
+      using asm by auto+ 
     show "\<And>I J a b c d. \<lbrakk>?Q I a b; ?Q J c d; I \<subseteq> A; J \<subseteq> A\<rbrakk> \<Longrightarrow>
         (a = b \<and> b = c \<and> c = d \<longrightarrow> P I J) \<and>
         (a = b \<and> b \<noteq> c \<and> c = d \<longrightarrow> P I J) \<and>
@@ -6191,8 +6188,7 @@ proof -
     have "(betw4 a b c d \<longrightarrow> ?prop I J)"
          "(betw4 a c b d \<longrightarrow> ?prop I J)"
          "(betw4 a c d b \<longrightarrow> ?prop I J)"
-      apply (rule impI) apply (rule_tac[2] impI) apply (rule_tac[3] impI)
-    proof -
+    proof (rule_tac [!] impI)
       assume "betw4 a b c d"
       have "I\<inter>J = {}"
       proof (rule ccontr)
@@ -6227,12 +6223,10 @@ proof -
         {
           assume "x=b \<or> x=c"
           hence "x\<in>I"
-            apply (rule disjE)
-            apply (simp add: \<open>I = interval a b\<close> ends_in_int)
             using \<open>betw4 a c b d\<close> \<open>I = interval a b\<close> interval_def seg_betw by auto
           have "x\<in>J"
-            using \<open>x=b \<or> x=c\<close> apply (rule disjE)
-            using \<open>betw4 a c b d\<close> \<open>J = interval c d\<close> interval_def seg_betw apply auto done
+            using \<open>x=b \<or> x=c\<close>
+            using \<open>betw4 a c b d\<close> \<open>J = interval c d\<close> interval_def seg_betw by auto 
           hence "x\<in>I \<and> x\<in>J" using \<open>x \<in> I\<close> by blast
         } moreover {
           assume  "\<not>(x=b \<or> x=c)"
@@ -6243,8 +6237,8 @@ proof -
           have "[[c x d]]"
             using \<open>betw4 a c b d\<close> \<open>[[c x b]]\<close> abc_acd_abd by blast
           have "x\<in>I" "x\<in>J"
-            using \<open>I = interval a b\<close> `[[a x b]]` interval_def seg_betw apply auto[1]
-            using \<open>J = interval c d\<close> \<open>[[c x d]]\<close> interval_def seg_betw by auto
+            using \<open>I = interval a b\<close> `[[a x b]]` \<open>J = interval c d\<close> \<open>[[c x d]]\<close> 
+                  interval_def seg_betw by auto
         }
         ultimately show "x\<in>I" "x\<in>J" by blast+
       next
@@ -6254,8 +6248,8 @@ proof -
         proof (cases)
           assume not_eq: "x\<noteq>a \<and> x\<noteq>b \<and> x\<noteq>c \<and> x\<noteq>d"
           have "[[a x b]]" "[[c x d]]"
-            using `x\<in>I` \<open>I = interval a b\<close> not_eq unfolding interval_def segment_def apply blast
-            using `x\<in>J` \<open>J = interval c d\<close> not_eq unfolding interval_def segment_def by blast
+            using `x\<in>I` \<open>I = interval a b\<close>  `x\<in>J` \<open>J = interval c d\<close> 
+                  not_eq unfolding interval_def segment_def by blast+
           hence "[[c x b]]"
             by (meson \<open>betw4 a c b d\<close> abc_bcd_acd betw4_weak)
           thus ?thesis
@@ -6345,8 +6339,7 @@ proof -
               \<and> ((a=b \<and> b=c \<and> c\<noteq>d) \<longrightarrow> ?p I J) \<and> ((a=b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d) \<longrightarrow> ?p I J)
               \<and> ((a\<noteq>b \<and> b=c \<and> c\<noteq>d \<and> a=d) \<longrightarrow> ?p I J)
               \<and> (([[a b c]] \<and> a=d) \<longrightarrow> ?p I J) \<and> (([[b a c]] \<and> a=d) \<longrightarrow> ?p I J)"
-      apply (rule conjI7) apply (rule_tac[1-7] impI)
-    proof -
+    proof (intro conjI7 impI)
       assume "a = b \<and> b = c \<and> c = d" thus "?p I J"
         using \<open>I = interval a b\<close> \<open>J = interval c d\<close> by auto
     next
@@ -6382,10 +6375,19 @@ proof -
             using \<open>I = interval a b\<close> \<open>x \<in> I\<close> interval_def seg_betw by auto
           consider "[[d x c]]"|"x=a \<or> x=b"
             using \<open>[[a b c]] \<and> a = d\<close> \<open>[[a x b]] \<or> x = a \<or> x = b\<close> abc_acd_abd by blast
-          thus "x\<in>J" apply (cases)
-            apply (simp add: \<open>J = interval c d\<close> abc_abc_neq abc_sym interval_def seg_betw)
-            apply (simp add: \<open>J = interval c d\<close> \<open>[[a b c]] \<and> a = d\<close> ends_in_int)
-            using \<open>J = interval c d\<close> \<open>[[d b c]]\<close> int_sym interval_def seg_betw by auto
+          thus "x\<in>J" 
+          proof (cases)
+            case 1
+            then show ?thesis 
+              by (simp add: \<open>J = interval c d\<close> abc_abc_neq abc_sym interval_def seg_betw)
+          next
+            case 2
+            then have "x \<in> interval c d"
+              using  \<open>[[a b c]] \<and> a = d\<close> int_sym interval_def seg_betw 
+              by force 
+            then show ?thesis
+              using \<open>J = interval c d\<close> by blast  
+          qed
         qed
         thus "?p I J" by blast
       qed
@@ -6492,7 +6494,7 @@ proof -
       then have "I\<in>S" "J\<in>S"
         by blast+
       then have "is_interval I" "is_interval J" "I\<subseteq>P" "J\<subseteq>P"
-           apply (simp add: "0.prems"(1))+ done
+           by (simp add: "0.prems"(1))+ 
       also have "I\<inter>J \<noteq> {}"
         using \<open>S={I,J}\<close> "0.prems"(3) by force
       then have "is_interval(I\<inter>J)"
@@ -6571,13 +6573,32 @@ proof -
     have inQ: "\<forall>x\<in>Q. [[x a b]] \<or> x=a \<or> [[a x b]] \<or> [[a b x\<rbrakk>"
       by (meson \<open>b \<in> Q\<close> \<open>b \<noteq> a\<close> abc_sym event_a path_Q some_betw)
     show ?thesis
-      apply safe
-      using inQ apply blast
-      apply (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_a_in_path event_a path_Q)
-      apply (simp add: event_a)
-      apply (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_b_in_path event_a path_Q)
-      apply (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_c_in_path event_a path_Q)
-      by (simp add: \<open>b \<in> Q\<close>)
+    proof (safe)
+      fix x
+      assume "x \<in> Q" "x \<noteq> a" "\<not> [[x a b]]" "\<not> [[a x b]]" "b \<noteq> x" 
+      then show "[[a b x]]"
+        using inQ by blast
+    next
+      fix x  
+      assume "[[x a b]]" 
+      then show "x \<in> Q"
+        by (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_a_in_path event_a path_Q)
+    next
+      show "a \<in> Q"
+        by (simp add: event_a)
+    next
+      fix x
+      assume "[[a x b]]"
+      then show  "x \<in> Q"
+        by (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_b_in_path event_a path_Q)
+    next
+      fix x
+      assume "[[a b x]]"
+      then show  "x \<in> Q"
+        by (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_c_in_path event_a path_Q)
+    next
+      show "b \<in> Q" using \<open>b \<in> Q\<close> .
+    qed
   qed
   have disjointLR: "?L \<inter> ?R = {}"
     using abc_abc_neq abc_only_cba by blast
@@ -6604,9 +6625,16 @@ proof -
           (\<forall>x\<in>?L. \<forall>y\<in>?L. \<not> [[x a y]])"
   proof (rule conjI6)
     show "is_ray_on ?L Q"
-      unfolding is_ray_on_def apply safe
-      apply (simp add: path_Q)
-      using \<open>b \<in> Q\<close> \<open>b \<noteq> a\<close> betw_a_in_path event_a path_Q apply blast
+    proof (unfold is_ray_on_def, safe)
+      show "Q \<in> \<P>" 
+        by (simp add: path_Q)
+    next
+      fix x 
+      assume "[[x a b]]" 
+      then show "x \<in> Q"
+        using \<open>b \<in> Q\<close> \<open>b \<noteq> a\<close> betw_a_in_path event_a path_Q by blast
+    next
+      show "is_ray {x. [[x a b]]}"
     proof -
       have "[[x a b]]"
         using \<open>x\<in>?L\<close> by simp
@@ -6640,13 +6668,32 @@ proof -
       qed
       thus "is_ray ?L" by auto
     qed
-    show "is_ray_on ?R Q"
-      unfolding is_ray_on_def
-      apply safe
-      apply (simp add: path_Q)
-      apply (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_b_in_path event_a path_Q)
-      apply (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_c_in_path event_a path_Q)
-      using \<open>b \<in> Q\<close> \<open>b \<noteq> a\<close> betw_a_in_path event_a path_Q apply blast
+  qed
+(*
+ 1. Q \<in> \<P>
+ 2. \<And>x. [[a x b]] \<Longrightarrow> x \<in> Q
+ 3. \<And>x. [[a b x]] \<Longrightarrow> x \<in> Q
+ 4. \<And>x. b \<in> Q
+ 5. is_ray {y. [[a y b]] \<or> [[a b y\<rbrakk>}
+*)
+  show "is_ray_on ?R Q"
+  proof (unfold is_ray_on_def, safe)
+    show "Q \<in> \<P>" 
+      by (simp add: path_Q)
+  next 
+    fix x 
+    assume "[[a x b]]" 
+    then show "x \<in> Q"
+      by (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_b_in_path event_a path_Q)
+  next
+    fix x
+    assume "[[a b x]]" 
+    then show "x \<in> Q"
+      by (simp add: \<open>b \<in> Q\<close> abc_abc_neq betw_c_in_path event_a path_Q)
+  next
+    show "b \<in> Q" using \<open>b \<in> Q\<close> .
+  next
+    show "is_ray {y. [[a y b]] \<or> [[a b y\<rbrakk>}"
     proof -
       have "[[a y b]] \<or> [[a b y]] \<or> y=b"
         using \<open>y\<in>?R\<close> by blast
@@ -6704,6 +6751,7 @@ proof -
       qed
       thus "is_ray ?R" by auto
     qed
+  qed
     show "(\<forall>r\<in>?R. \<forall>l\<in>?L. [[l a r]])"
       using abd_bcd_abc by blast
     show "\<forall>x\<in>?R. \<forall>y\<in>?R. \<not> [[x a y]]"
@@ -6901,9 +6949,15 @@ qed
 lemma closest_bound_any_f:
   assumes "Q\<in>\<P>" "[f[(f 0)..]X]" "X\<subseteq>Q" "closest_bound c X"
   shows "closest_bound_f c X f"
-  unfolding closest_bound_f_def apply safe
-  using bound_any_f assms closest_bound_def is_bound_def apply blast
+proof (unfold closest_bound_f_def, safe)
+  show "is_bound_f c X f"
+  using bound_any_f assms closest_bound_def is_bound_def by blast
+next
+  fix Q\<^sub>b'
+  assume "is_bound Q\<^sub>b' X" "Q\<^sub>b' \<noteq> c" 
+  then show "[[f 0 c Q\<^sub>b']]"
   by (metis (full_types) assms(2,4) closest_bound_def inf_chain_unique is_bound_f_def)
+qed
 
 end (* context MinkowskiSpacetime *)
 
@@ -6943,9 +6997,7 @@ proof -
   {
     assume "card X = 2"
     hence "short_ch X" "?a \<in> X \<and> ?d \<in> X" "?a \<noteq> ?d"
-      using X_def(1) short_ch_card_2 apply blast
-      using X_def(1,2,3,5) \<open>card X = 2\<close> short_ch_card_2 apply blast
-      using X_def(2,3) unreach(3) by blast
+      using X_def \<open>card X = 2\<close> short_ch_card_2  unreach(3) by blast+
   }
   hence "[f[Q\<^sub>x..Q\<^sub>z]X]"
     unfolding fin_chain_def
@@ -7047,14 +7099,20 @@ proof -
       assume "\<not> (card A \<le> 1 \<and> finite A)"
       hence asmA: "card A > 1 \<or> infinite A"
         by linarith
-      obtain x y where "x\<in>A" "y\<in>A" "x\<noteq>y"
-        using asmA apply (rule disjE)
-        using asmA numeral_2_eq_2 apply (metis One_nat_def Suc_le_eq card_le_Suc_iff insert_iff)
+      then obtain x y where "x\<in>A" "y\<in>A" "x\<noteq>y"
+      proof 
+        assume "1 < card A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
+        then show ?thesis 
+          by (metis One_nat_def Suc_le_eq card_le_Suc_iff insert_iff)
+      next
+        assume "infinite A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
+        then show ?thesis 
         using infinite_imp_nonempty by (metis finite_insert finite_subset singletonI subsetI)
+    qed
       have "x\<in>Q" "y\<in>Q"
         using \<open>A \<subseteq> Q\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close> by auto
       have "[[a x b]]" "[[a y b]]"
-         apply (simp add: \<open>(1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [[a x b]])\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close>)+ done
+        by (simp add: \<open>(1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [[a x b]])\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close>)+ 
       hence "betw4 a x y b \<or> betw4 a y x b"
         using \<open>x \<noteq> y\<close> abd_acd_abcdacbd by blast
       hence "a\<in>Q \<and> b\<in>Q"
@@ -7076,7 +7134,7 @@ proof -
 
     (* Next, the lemma/case assumptions have to be repeated for Isabelle *)
       show "?I A a b" "?I B c d" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
-        using assms apply simp+ done
+        using assms by simp+ 
       show "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
         using \<open>a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<close> by simp
 
@@ -7095,7 +7153,7 @@ proof -
             have "\<forall>x\<in> I\<union>J. [[a x d]]"
               by (metis Un_iff asm betw4_strong betw4_weak that(1) that(2))
             moreover have "a\<in>Q" "d\<in>Q"
-              using assms(5) on_path that(1-4) apply blast+ done
+              using assms(5) on_path that(1-4) by blast+ 
             ultimately show ?thesis by blast
           qed
         next
@@ -7104,7 +7162,7 @@ proof -
             have "\<forall>x\<in> I\<union>J. [[a x d]]"
               by (metis Un_iff \<open>betw4 a c b d\<close> abc_bcd_abd abc_bcd_acd betw4_weak that(1,2))
             moreover have "a\<in>Q" "d\<in>Q"
-              using assms(5) on_path that(1-4) apply blast+ done
+              using assms(5) on_path that(1-4) by blast+ 
             ultimately show ?thesis by blast
           qed
         next
@@ -7159,35 +7217,35 @@ proof -
         hence "\<forall>x\<in> I\<union>J. [[c x d]]"
           using abc_abc_neq that(1,2) by fastforce
         moreover have "c\<in>Q" "d\<in>Q"
-          using on_path \<open>a = b \<and> b = c \<and> c \<noteq> d\<close> that(1,3) abc_abc_neq apply metis+ done
+          using on_path \<open>a = b \<and> b = c \<and> c \<noteq> d\<close> that(1,3) abc_abc_neq by metis+ 
         ultimately show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [[l x u]]" by blast
       next
         assume "a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d"
         hence "\<forall>x\<in> I\<union>J. [[c x d]]"
           using abc_abc_neq that(1,2) by fastforce
         moreover have "c\<in>Q" "d\<in>Q"
-          using on_path \<open>a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d\<close> that(1,3) abc_abc_neq apply metis+ done
+          using on_path \<open>a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d\<close> that(1,3) abc_abc_neq by metis+ 
         ultimately show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [[l x u]]" by blast
       next
         assume "a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d"
         hence "\<forall>x\<in> I\<union>J. [[c x d]]"
           using abc_sym that(1,2) by auto
         moreover have "c\<in>Q" "d\<in>Q"
-          using on_path \<open>a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d\<close> that(1,3) abc_abc_neq apply metis+ done
+          using on_path \<open>a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d\<close> that(1,3) abc_abc_neq by metis+ 
         ultimately show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [[l x u]]" by blast
       next
         assume "[[a b c]] \<and> a = d"
         hence "\<forall>x\<in> I\<union>J. [[c x d]]"
           by (metis UnE abc_acd_abd abc_sym that(1,2))
         moreover have "c\<in>Q" "d\<in>Q"
-          using on_path that(2,4) apply blast+ done
+          using on_path that(2,4) by blast+ 
         ultimately show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [[l x u]]" by blast
       next
         assume "[[b a c]] \<and> a = d"
         hence "\<forall>x\<in> I\<union>J. [[c x b]]"
           using  abc_sym abd_bcd_abc betw4_strong that(1,2) by (metis Un_iff)
         moreover have "c\<in>Q" "b\<in>Q"
-          using on_path that apply blast+ done
+          using on_path that by blast+ 
         ultimately show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [[l x u]]" by blast
       qed
     qed
@@ -7238,9 +7296,13 @@ proof -
       using unreachable_set_bounded [where Q=Q and b=a and Qx=la and Qy=Qy]
       using \<open>Qy \<in> \<emptyset> Q a\<close> asm in_path_event path_Q by blast
     have "la \<notin> \<emptyset> Q a \<and> ua \<notin> \<emptyset> Q a \<and> (\<forall>x\<in>\<emptyset> Q a. (x\<noteq>la \<and> x\<noteq>ua) \<longrightarrow> [[la x ua]])"
-      apply (rule conjI) apply (rule_tac[2] conjI)
-      using \<open>la \<in> Q - \<emptyset> Q a\<close> apply blast
-      using \<open>ua \<in> Q - \<emptyset> Q a\<close> apply blast
+    proof (intro conjI)
+      show "la \<notin> \<emptyset> Q a"
+        using \<open>la \<in> Q - \<emptyset> Q a\<close> by force
+    next
+      show "ua \<notin> \<emptyset> Q a"
+        using \<open>ua \<in> Q - \<emptyset> Q a\<close> by force
+    next show "\<forall>x\<in>\<emptyset> Q a. x \<noteq> la \<and> x \<noteq> ua \<longrightarrow> [[la x ua]]"
     proof (safe)
       fix x assume "x\<in>\<emptyset> Q a" "x\<noteq>la" "x\<noteq>ua"
       {
@@ -7276,6 +7338,7 @@ proof -
       }
       ultimately show "[[la x ua]]" by blast
     qed
+  qed
     thus ?thesis using \<open>la \<in> Q - \<emptyset> Q a\<close> \<open>ua \<in> Q - \<emptyset> Q a\<close> by force
   qed
 
@@ -7322,13 +7385,13 @@ proof -
     using second_existence_thm_1 [where Q=Q and a=a and b=b]
     using path_Q events(1,2) reachable by blast
   have "y\<notin>(\<emptyset> Q a)\<union>(\<emptyset> Q b)" "z\<notin>(\<emptyset> Q a)\<union>(\<emptyset> Q b)"
-    apply (meson Un_iff \<open>(\<forall>x\<in>\<emptyset> Q a. [[z x y]]) \<and> (\<forall>x\<in>\<emptyset> Q b. [[z x y]])\<close> abc_abc_neq)+ done
+    by (meson Un_iff \<open>(\<forall>x\<in>\<emptyset> Q a. [[z x y]]) \<and> (\<forall>x\<in>\<emptyset> Q b. [[z x y]])\<close> abc_abc_neq)+ 
   let ?P = "\<lambda>e ae be. (e\<in>Q \<and> path ae a e \<and> path be b e \<and> [[c d e]])"
 
   have exist_ay: "\<exists>ay. path ay a y"
     if "a\<notin>Q" "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" "y\<notin>(\<emptyset> Q a)" "y\<in>Q"
     for a y
-    apply (rule ccontr) using in_path_event path_Q that unreachable_bounded_path_only
+    using in_path_event path_Q that unreachable_bounded_path_only
     by blast
 
   have "[[c d y]] \<or> \<lbrakk>y c d]] \<or> [[c y d\<rbrakk>"
@@ -7351,7 +7414,7 @@ proof -
   next
     assume "[[c d z]]"
     have "z\<notin>(\<emptyset> Q a)" "z\<notin>(\<emptyset> Q b)"
-      using \<open>z \<notin> \<emptyset> Q a \<union> \<emptyset> Q b\<close> apply blast+ done
+      using \<open>z \<notin> \<emptyset> Q a \<union> \<emptyset> Q b\<close> by blast+ 
     then obtain az bz where "path az a z" "path bz b z"
       using `z\<in>Q` exist_ay events(1,2) reachable(1,2) by blast
     have "?P z az bz"
@@ -7369,20 +7432,16 @@ proof -
         I think this is because it cannot be easily/automatically reconciled with non-strict
         notation.*)
       assume "[[y e z]]"
-      consider "(\<lbrakk>y c d]] \<and> \<lbrakk>z c d]])" | "(\<lbrakk>y c d]] \<and> [[c z d\<rbrakk>)" |
+      moreover consider "(\<lbrakk>y c d]] \<and> \<lbrakk>z c d]])" | "(\<lbrakk>y c d]] \<and> [[c z d\<rbrakk>)" |
                "([[c y d\<rbrakk> \<and> \<lbrakk>z c d]])" | "([[c y d\<rbrakk> \<and> [[c z d\<rbrakk>)"
         using \<open>(\<lbrakk>y c d]] \<or> [[c y d\<rbrakk>) \<and> (\<lbrakk>z c d]] \<or> [[c z d\<rbrakk>)\<close> by linarith
-      thus False
-        apply (cases)
-        using `[[y e z]]` `[[c d e]]` abc_only_cba betw4_weak betw4_strong apply metis
-        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_abd abc_only_cba(2) abc_sym apply blast
-        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_abd abc_only_cba(2,3) abc_sym apply blast
-        using \<open>[[c d e]]\<close> \<open>[[y e z]]\<close> abc_acd_bcd abc_only_cba(2) by blast
+      ultimately show False
+        by (smt \<open>[[c d e]]\<close> abc_ac_neq betw4_strong betw4_weak)
     qed
     have "e\<in>Q"
       using \<open>[[c d e]]\<close> betw_c_in_path events(3-5) path_Q by blast
     have "e\<notin> \<emptyset> Q a" "e\<notin> \<emptyset> Q b"
-      using bounds_yz \<open>\<not> [[y e z]]\<close> abc_sym apply blast+ done
+      using bounds_yz \<open>\<not> [[y e z]]\<close> abc_sym by blast+ 
     hence ex_aebe: "\<exists>ae be. path ae a e \<and> path be b e"
       using \<open>e \<in> Q\<close> events(1,2) in_path_event path_Q reachable(1,2) unreachable_bounded_path_only
       by metis
