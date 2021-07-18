@@ -3233,8 +3233,8 @@ proof -
     using between_chain X_is all_neq chain3 in_path path_Q by auto
 qed
 
+text \<open>This is case (i) of the induction in Theorem 10.\<close>
 
-(* This is case (i) of the induction in theorem 10 *)
 lemma (*for 10*) chain_append_at_left_edge:
   assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
       and bY: "[[b a\<^sub>1 a\<^sub>n]]"
@@ -3254,9 +3254,9 @@ proof -
   hence "[[a\<^sub>1 (f 1) a\<^sub>n]]"
     using order_finite_chain fin_long_chain_def long_ch_Y
     by auto
-  (* Schutz has a step here that says [b a\<^sub>1 a\<^sub>2 a\<^sub>n] is a chain (using thm 9).
-     We have no easy way of denoting an ordered 4-element chain, so we skip this step
-     using an ordering lemma from our code for 3.6, which Schutz doesn't list. *)
+  text \<open>Schutz has a step here that says \<open>[b a\<^sub>1 a\<^sub>2 a\<^sub>n]\<close> is a chain (using Thm 9).
+    We have no easy way of denoting an ordered 4-element chain, so we skip this step
+    using an ordering lemma from our script for 3.6, which Schutz doesn't list.\<close>
   hence "[[b a\<^sub>1 (f 1)]]"
     using bY abd_bcd_abc by blast
   have "ordering2 g betw ?X"
@@ -3332,10 +3332,12 @@ proof -
     by (metis card.insert diff_Suc_1 finite_insert insert_iff less_trans nat_less_le)
 qed
 
-(* This is case (iii) of the induction in theorem 10 *)
-(* Schutz says merely "The proof for this case is similar to that for Case (i)."
-   Thus I feel free to use a result on symmetry, rather than going through
-   the pain of Case (i) (chain_append_at_left_edge) again. *)
+text \<open>
+  This is case (iii) of the induction in Theorem 10.
+  Schutz says merely ``The proof for this case is similar to that for Case (i).''
+  Thus I feel free to use a result on symmetry, rather than going through
+  the pain of Case (i) (\<open>chain_append_at_left_edge\<close>) again.
+\<close>
 lemma (*for 10*) chain_append_at_right_edge:
   assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
       and Yb: "[[a\<^sub>1 a\<^sub>n b]]"
@@ -3447,7 +3449,7 @@ proof -
     by (metis (no_types, lifting) One_nat_def antisym card2_either_elt1_or_elt2 diff_is_0_eq'
         not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
 
-(* consider all indices of chain elements between a\<^sub>1 and b *)
+  text \<open>We consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>, and find the maximal one.\<close>
   let ?S = "{k::nat. [[a\<^sub>1 (f k) b]] \<and> k < card Y}"
   obtain S where S_def: "S=?S"
     by simp (* just to check this Isabelle-exists *)
@@ -3603,7 +3605,7 @@ proof -
     by (metis (no_types, lifting) One_nat_def antisym card2_either_elt1_or_elt2 diff_is_0_eq'
         not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
 
-(* consider all indices of chain elements between a\<^sub>1 and b *)
+  text \<open>Again we consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>.\<close>
   let ?S = "{k::nat. [[a\<^sub>n (f k) b]] \<and> k < card Y}"
   obtain S where S_def: "S=?S"
     by simp (* just to check this Isabelle-exists *)
@@ -3839,7 +3841,7 @@ proof -
 qed
 
 
-(* This is case (ii) of the induction in theorem 10 *)
+text \<open>This is case (ii) of the induction in Theorem 10.\<close>
 lemma (*for 10*) chain_append_inside:
   assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
       and Y_def: "b\<notin>Y"
@@ -3875,8 +3877,8 @@ proof -
         using \<open>k < card Y\<close> \<open>k \<noteq> 0\<close> \<open>k \<noteq> 1\<close> long_ch_Y fin_Y order_finite_chain
         unfolding fin_long_chain_def
         by auto
-      (* In fact, the comprehension below gives the order of elements too.
-         Our notation and thm9 are too weak to say that just now. *)
+      text \<open>In fact, the comprehension below gives the order of elements too.
+         Our notation and Theorem 9 are too weak to say that just now.\<close>
       have ch_with_b: "ch {a\<^sub>1, (f (k-1)), b, (f k)}" using chain4
         using k_def(1) abc_ex_path_unique between_chain cross_once_notin
         by (smt \<open>[[a\<^sub>1 (f (k - 1)) (f k)]]\<close> abc_abc_neq insert_absorb2)
@@ -4018,7 +4020,7 @@ proof -
     proof (clarify)
       fix n n' n'' assume  a: "(finite ?X \<longrightarrow> (Suc (Suc n)) < card ?X)"
       
-      (* Two-case splits for later *)
+      text \<open>Introduce the two-case splits used later.\<close>
       have  cases_sn: "Suc n\<le>k-1 \<or> Suc n=k" if "n\<le>k-1"
         using \<open>k \<noteq> 0\<close> that by linarith
       have cases_ssn: "Suc(Suc n)\<le>k-1 \<or> Suc(Suc n)=k" if "n\<le>k-1" "Suc n\<le>k-1"
@@ -4459,7 +4461,7 @@ proof -
   have points_neq: "a\<noteq>b \<and> b\<noteq>c \<and> a\<noteq>c"
     using f_def fin_long_chain_def by auto
 
-  (* The proof in two parts: subset inclusion one way, then the other. *)
+  text \<open>The proof in two parts: subset inclusion one way, then the other.\<close>
   { fix x assume "x\<in>P"
     have "[[a x c]] \<or> [[b a x]] \<or> [[b c x]] \<or> x=a \<or> x=c"
       using in_P some_betw path_P points_neq \<open>x \<in> P\<close> abc_sym
@@ -6028,7 +6030,8 @@ lemma wlog_endpoints_degenerate:
             \<not>(a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d \<and> a\<noteq>c \<and> b\<noteq>d)\<rbrakk> \<Longrightarrow> P I J"
 proof -
 
-  (* first extract some of the assumptions of this lemma into the form of other lemmas' assumptions *)
+  text \<open>We first extract some of the assumptions of this lemma into the form
+  of other WLOG lemmas' assumptions.\<close>
   have ord1: "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
               [[a b c]] \<and> a=d\<rbrakk> \<Longrightarrow> P I J"
     using assms(5) by auto
@@ -6043,7 +6046,7 @@ proof -
             \<not>(a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d \<and> a\<noteq>c \<and> b\<noteq>d)\<rbrakk> \<Longrightarrow> P I J"
   proof -
 
-    (* fix the sets on the path, obtain assumptions of wlog_endpoints_degenerate1 *)
+    text \<open>Fix the sets on the path, and obtain the assumptions of \<open>wlog_endpoints_degenerate1\<close>.\<close>
     fix I J
     assume asm1: "I\<subseteq>A" "J\<subseteq>A"
     have two: "\<And>a b c d. \<lbrakk>Q I a b; Q J c d; a=b \<and> b=c \<and> c=d\<rbrakk> \<Longrightarrow> P I J"
@@ -6057,7 +6060,7 @@ proof -
       using \<open>I \<subseteq> A\<close> \<open>J \<subseteq> A\<close> path_A last_case apply blast
       using \<open>I \<subseteq> A\<close> \<open>J \<subseteq> A\<close> path_A assms(5) by auto
 
-    (* now unwrap the remaining inner language and finish the proof *)
+    text \<open>Now unwrap the remaining object logic and finish the proof.\<close>
     fix a b c d
     assume asm2: "Q I a b" "Q J c d" "\<not>(a\<noteq>b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d \<and> a\<noteq>c \<and> b\<noteq>d)"
     show "P I J"
@@ -6562,8 +6565,9 @@ theorem (*12(i)*) two_rays:
                 \<and> (\<forall>x\<in>R. \<forall>y\<in>R. \<not> [[x a y]])     \<^cancel>\<open>but a is not betw any two events \<dots>\<close>
                 \<and> (\<forall>x\<in>L. \<forall>y\<in>L. \<not> [[x a y]]))"   \<^cancel>\<open>\<dots> of the same ray\<close>
 proof -
+  text \<open>Schutz here uses Theorem 6, but we don't need it.\<close>
   obtain b where "b\<in>\<E>" and "b\<in>Q" and "b\<noteq>a"
-    using event_a ge2_events in_path_event path_Q by blast (*Schutz here uses thm 6, unnecessarily*)
+    using event_a ge2_events in_path_event path_Q by blast
   let ?L = "{x. [[x a b]]}"
   let ?R = "{y. [[a y b]] \<or> [[a b y\<rbrakk>}"
   have "Q = ?L \<union> {a} \<union> ?R"
@@ -6717,12 +6721,13 @@ proof -
     by (metis (mono_tags, lifting))
 qed
 
-
+text \<open>
+  The definition \<open>closest_to\<close> in prose:
+  Pick any r\<in>R. The closest event c is such that there is no closer event in L,
+  i.e. all other events of L are further away from r. Thus in L, c is the element closest to R.
+\<close>
 definition closest_to :: "('a set) \<Rightarrow> 'a \<Rightarrow> ('a set) \<Rightarrow> bool"
-    (* Pick any r\<in>R. The closest event c is such that there is no closer event in L,
-       i.e. all other events of L are further away from r. *)
   where "closest_to L c R \<equiv> c\<in>L \<and> (\<forall>r\<in>R. \<forall>l\<in>L-{c}. [[l c r]])"
-(* In L, c is the element closest to R *)
 
 
 lemma int_on_path:
@@ -6921,7 +6926,7 @@ theorem (*13*) unreach_connected:
     shows "Q\<^sub>y \<in> \<emptyset> Q b"
 proof -
 
-(* First we obtain the chain from I6. *)
+  text \<open>First we obtain the chain from I6.\<close>
   have in_Q: "Q\<^sub>x\<in>Q \<and> Q\<^sub>y\<in>Q \<and> Q\<^sub>z\<in>Q"
     using betw_b_in_path path_Q unreach(1,2,3) unreach_on_path xyz by blast
   hence event_y: "Q\<^sub>y\<in>\<E>"
@@ -6935,9 +6940,11 @@ proof -
   obtain N where "N=card X" "N\<ge>2"
     using X_def(2,3) unreach(3) by fastforce
 
-(* Then we have to manually show the bounds, defined via indices only, are in the obtained chain.
-   This step made me add the two-element-chain-case to I6 in Minkowski.thy;
-   this case is referenced here as X_def(5). *)
+  text \<open>
+  Then we have to manually show the bounds, defined via indices only, are in the obtained chain.
+  This step made me add the two-element-chain-case to I6 in \<open>Minkowski.thy\<close>;
+  this case is referenced here as \<open>X_def(5)\<close>.
+\<close>
   let ?a = "f 0"
   let ?d = "f (card X - 1)"
   {
@@ -6951,8 +6958,9 @@ proof -
     unfolding fin_chain_def
     by (metis X_def(1-3,5) ch_by_ord_def fin_X fin_long_chain_def get_fin_long_ch_bounds unreach(3))
 
-(* Further on, we split the proof into two cases, namely the split Schutz absorbs into his
-   non-strict ordering. This is the statement we use disjE with. *)
+  text \<open>
+  Further on, we split the proof into two cases, namely the split Schutz absorbs into his
+  non-strict ordering. Just below is the statement we use \<open>disjE\<close> with.\<close>
   have y_cases: "Q\<^sub>y\<in>X \<or> Q\<^sub>y\<notin>X" by blast
   have y_int: "Q\<^sub>y\<in>interval Q\<^sub>x Q\<^sub>z"
     using interval_def seg_betw xyz by auto
@@ -6962,13 +6970,14 @@ proof -
 
   show ?thesis
   proof (cases)
-(* As per, we treat short chains separately, and they have their own bit in I6. *)
+    text \<open>As usual, we treat short chains separately, and they have their own clause in I6.\<close>
     assume "N=2"
     thus ?thesis
       using X_def(1,5) xyz \<open>N = card X\<close> event_y short_ch_card_2 by auto
   next
-(* This is where Schutz obtains the chain from theorem 11. We instead use the chain we already have
-   with only a part of thm 11, namely int_split_to_segs. ?S is defined like in segmentation. *)
+    text \<open>
+  This is where Schutz obtains the chain from Theorem 11. We instead use the chain we already have
+  with only a part of Theorem 11, namely \<open>int_split_to_segs\<close>. \<open>?S\<close> is defined like in \<open>segmentation\<close>.\<close>
     assume "N\<noteq>2"
     hence "N\<ge>3" using \<open>2 \<le> N\<close> by auto
     have "2\<le>card X" using \<open>2 \<le> N\<close> \<open>N = card X\<close> by blast
@@ -7069,18 +7078,18 @@ proof -
     show "?P A B"
     proof (rule_tac P="?P" and A=Q in wlog_endpoints_distinct)
 
-    (* First, some technicalities: the relations P, I, R have the symmetry required *)
+      text \<open>First, some technicalities: the relations P, I, R have the symmetry required.\<close>
       show "\<And>a b I. ?I I a b \<Longrightarrow> ?I I b a" using abc_sym by blast
       show "\<And>a b A. A \<subseteq> Q \<Longrightarrow> ?I A a b \<Longrightarrow> b \<in> Q \<and> a \<in> Q" using on_path assms(5) by blast
       show "\<And>I J. ?R I \<Longrightarrow> ?R J \<Longrightarrow> ?P I J \<Longrightarrow> ?P J I" by (simp add: Un_commute)
 
-    (* Next, the lemma/case assumptions have to be repeated for Isabelle *)
+      text \<open>Next, the lemma/case assumptions have to be repeated for Isabelle.\<close>
       show "?I A a b" "?I B c d" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
         using assms apply simp+ done
       show "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
         using \<open>a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<close> by simp
 
-    (* Finally, the important bit: proofs for the necessary cases of betweenness *)
+      text \<open>Finally, the important bit: proofs for the necessary cases of betweenness.\<close>
       show "?P I J"
         if "?I I a b" "?I J c d"  "I\<subseteq>Q" "J\<subseteq>Q"
           and "betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b"
@@ -7126,18 +7135,19 @@ proof -
     show "?P A B"
     proof (rule_tac P="?P" and A=Q in wlog_endpoints_degenerate)
 
-    (* First, some technicalities: the relations P, I, R have the symmetry required *)
+      text \<open>
+        This case follows the same pattern as above: the next five \<open>show\<close> statements
+        are effectively bookkeeping.\<close>
       show "\<And>a b I. ?I I a b \<Longrightarrow> ?I I b a" using abc_sym by blast
       show "\<And>a b A. A \<subseteq> Q \<Longrightarrow> ?I A a b \<Longrightarrow> b \<in> Q \<and> a \<in> Q" using on_path \<open>Q\<in>\<P>\<close> by blast
       show "\<And>I J. ?R I \<Longrightarrow> ?R J \<Longrightarrow> ?P I J \<Longrightarrow> ?P J I" by (simp add: Un_commute)
 
-    (* Next, the lemma/case assumptions have to be repeated for Isabelle *)
       show "?I A a b" "?I B c d" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
         using assms apply simp+ done
       show "\<not> (a \<noteq> b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d \<and> a \<noteq> c \<and> b \<noteq> d)"
         using \<open>\<not> (a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d)\<close> by blast
 
-    (* Finally, the important bit: proofs for the necessary cases of degeneracy *)
+      text \<open>Again, this is the important bit: proofs for the necessary cases of degeneracy.\<close>
       show "(a = b \<and> b = c \<and> c = d \<longrightarrow> ?P I J) \<and> (a = b \<and> b \<noteq> c \<and> c = d \<longrightarrow> ?P I J) \<and>
           (a = b \<and> b = c \<and> c \<noteq> d \<longrightarrow> ?P I J) \<and> (a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d \<longrightarrow> ?P I J) \<and>
           (a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d \<longrightarrow> ?P I J) \<and>
@@ -7218,14 +7228,14 @@ theorem (*14i*) second_existence_thm_1:
       and reachable: "path_ex a q1" "path_ex b q2" "q1\<in>Q" "q2\<in>Q" (* "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" *)(*  "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q" *)
     shows "\<exists>y\<in>Q. \<exists>z\<in>Q. (\<forall>x\<in>\<emptyset> Q a. [[y x z]]) \<and> (\<forall>x\<in>\<emptyset> Q b. [[y x z]])"
 proof -
-(* slightly annoying: Schutz implicitly extends `bounded` to sets, so his statements are neater *)
+  text \<open>Slightly annoying: Schutz implicitly extends \<open>bounded\<close> to sets, so his statements are neater.\<close>
 
 (* alternative way of saying reachable *)
   have "\<exists>q\<in>Q. q\<notin>(\<emptyset> Q a)" "\<exists>q\<in>Q. q\<notin>(\<emptyset> Q b)"
     using cross_in_reachable reachable by blast+
 
-(* helper statement for obtaining `bounds` in both directions of both unreachable sets *)
-(* notice this needs theorem 13 right now, Schutz claims only thm 4. is this necessary? *)
+  text \<open>This is a helper statement for obtaining bounds in both directions of both unreachable sets.
+  Notice this needs Theorem 13 right now, Schutz claims only Theorem 4. I think this is necessary?\<close>
   have get_bds: "\<exists>la\<in>Q. \<exists>ua\<in>Q. la\<notin>\<emptyset> Q a \<and> ua\<notin>\<emptyset> Q a \<and> (\<forall>x\<in>\<emptyset> Q a. [[la x ua]])"
     if asm: "a\<notin>Q" "path_ex a q" "q\<in>Q"
     for a q
@@ -7365,9 +7375,9 @@ proof -
     then obtain e where "[[c d e]]" by auto
     have "\<not>[[y e z]]"
     proof (rule notI)
-      (*Notice thm10 is not needed for this proof, and does not seem to help sledgehammer.
+      text \<open>Notice Theorem 10 is not needed for this proof, and does not seem to help \<open>sledgehammer\<close>.
         I think this is because it cannot be easily/automatically reconciled with non-strict
-        notation.*)
+        notation.\<close>
       assume "[[y e z]]"
       consider "(\<lbrakk>y c d]] \<and> \<lbrakk>z c d]])" | "(\<lbrakk>y c d]] \<and> [[c z d\<rbrakk>)" |
                "([[c y d\<rbrakk> \<and> \<lbrakk>z c d]])" | "([[c y d\<rbrakk> \<and> [[c z d\<rbrakk>)"
@@ -7393,7 +7403,7 @@ qed
 
 
 theorem (*14*) second_existence_thm_3:
-(* Q\<noteq>R is implicit in Schutz. If Q=R, (\<emptyset> Q a) is empty. *)
+  text \<open>\<open>Q\<noteq>R\<close> is implicit in Schutz. If \<open>Q=R\<close>, \<open>\<emptyset> Q a\<close> is empty.\<close>
   assumes paths: "Q\<in>\<P>" "R\<in>\<P>" "Q\<noteq>R"
       and events: "x\<in>Q" "x\<in>R" "a\<in>R" "a\<noteq>x" "b\<notin>Q"
       and reachable: "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q"
