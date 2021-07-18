@@ -1,8 +1,8 @@
-theory Util
 (*  Title:      schutz_spacetime/Util.thy
     Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
                 University of Edinburgh, 2021          
 *)
+theory Util
 imports Main
 
 (* Some "utility" proofs -- little proofs that come in handy every now and then. *)

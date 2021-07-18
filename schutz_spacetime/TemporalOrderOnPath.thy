@@ -1,8 +1,8 @@
-theory TemporalOrderOnPath
 (*  Title:      schutz_spacetime/TemporalOrderOnPath.thy
     Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
                 University of Edinburgh, 2021          
 *)
+theory TemporalOrderOnPath
 imports Main Minkowski TernaryOrdering
 begin
 
@@ -2455,8 +2455,8 @@ proof -
 qed
 
 text \<open>
-  Notice that this whole proof would be unnecessary if includig path-belongingness in the definition,
-  as Schutz does. This would also keep path-belongingness independent of axiom O1 and O4,
+  Notice that this whole proof would be unnecessary if including path-belongingness in the
+  definition, as Schutz does. This would also keep path-belongingness independent of axiom O1 and O4,
   thus enabling an independent statement of axiom O6, which perhaps we now lose. In exchange,
   our definition is slightly weaker (for \<open>card X \<ge> 3\<close> and \<open>infinite X\<close>).
 \<close>
