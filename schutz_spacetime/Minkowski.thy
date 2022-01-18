@@ -366,18 +366,18 @@ text \<open>
 \<close>
 
 locale MinkowskiBetweenness = MinkowskiPrimitive +
-  fixes betw :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[[_ _ _]]")
+  fixes betw :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_;_;_]")
       (* O1 *) (*notice this is not only for events, but all things with same data type*)
-  assumes abc_ex_path: "[[a b c]] \<Longrightarrow> \<exists>Q\<in>\<P>. a \<in> Q \<and> b \<in> Q \<and> c \<in> Q"
+  assumes abc_ex_path: "[a;b;c] \<Longrightarrow> \<exists>Q\<in>\<P>. a \<in> Q \<and> b \<in> Q \<and> c \<in> Q"
       (* O2 *)
-      and abc_sym: "[[a b c]] \<Longrightarrow> [[c b a]]"
+      and abc_sym: "[a;b;c] \<Longrightarrow> [c;b;a]"
       (* O3, relaxed, as O3 can be proven from this. *)
-      and abc_ac_neq: "[[a b c]] \<Longrightarrow> a \<noteq> c"
+      and abc_ac_neq: "[a;b;c] \<Longrightarrow> a \<noteq> c"
       (* O4 *)
-      and abc_bcd_abd [intro]: "\<lbrakk>[[a b c]]; [[b c d]]\<rbrakk> \<Longrightarrow> [[a b d]]"
+      and abc_bcd_abd [intro]: "\<lbrakk>[a;b;c]; [b;c;d]\<rbrakk> \<Longrightarrow> [a;b;d]"
       (* O5, relaxed; exhausting all six options is not necessary thanks to abc_sym. *)
       and some_betw: "\<lbrakk>Q \<in> \<P>; a \<in> Q; b \<in> Q; c \<in> Q; a \<noteq> b; a \<noteq> c; b \<noteq> c\<rbrakk>
-               \<Longrightarrow> [[a b c]] \<or> [[b c a]] \<or> [[c a b]]"
+               \<Longrightarrow> [a;b;c] \<or> [b;c;a] \<or> [c;a;b]"
 begin
 
 text \<open>
@@ -388,7 +388,7 @@ text \<open>
 \<close>
 
 lemma betw_events:
-  assumes abc: "[[a b c]]"
+  assumes abc: "[a;b;c]"
   shows "a \<in> \<E> \<and> b \<in> \<E> \<and> c \<in> \<E>"
 proof -
   have "\<exists>Q\<in>\<P>. a \<in> Q \<and> b \<in> Q \<and> c \<in> Q" using abc_ex_path abc by simp
@@ -399,40 +399,40 @@ text \<open>This shows the shorter version of O5 is equivalent.\<close>
 
 lemma O5_still_O5 [no_atp]:
   "((Q \<in> \<P> \<and> {a,b,c} \<subseteq> Q \<and> a \<in> \<E> \<and> b \<in> \<E> \<and> c \<in> \<E> \<and> a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c)
-     \<longrightarrow> [[a b c]] \<or> [[b c a]] \<or> [[c a b]])
+     \<longrightarrow> [a;b;c] \<or> [b;c;a] \<or> [c;a;b])
    =
    ((Q \<in> \<P> \<and> {a,b,c} \<subseteq> Q \<and> a \<in> \<E> \<and> b \<in> \<E> \<and> c \<in> \<E> \<and> a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c)
-     \<longrightarrow> [[a b c]] \<or> [[b c a]] \<or> [[c a b]] \<or> [[c b a]] \<or> [[a c b]] \<or> [[b a c]])"
+     \<longrightarrow> [a;b;c] \<or> [b;c;a] \<or> [c;a;b] \<or> [c;b;a] \<or> [a;c;b] \<or> [b;a;c])"
 by (auto simp add: abc_sym)
 
 lemma some_betw_xor:
    "\<lbrakk>Q \<in> \<P>; a \<in> Q; b \<in> Q; c \<in> Q; a \<noteq> b; a \<noteq> c; b \<noteq> c\<rbrakk>
-               \<Longrightarrow> ([[a b c]] \<and> \<not> [[b c a]] \<and> \<not> [[c a b]])
-                 \<or> ([[b c a]] \<and> \<not> [[a b c]] \<and> \<not> [[c a b]])
-                 \<or> ([[c a b]] \<and> \<not> [[a b c]] \<and> \<not> [[b c a]])"
+               \<Longrightarrow> ([a;b;c] \<and> \<not> [b;c;a] \<and> \<not> [c;a;b])
+                 \<or> ([b;c;a] \<and> \<not> [a;b;c] \<and> \<not> [c;a;b])
+                 \<or> ([c;a;b] \<and> \<not> [a;b;c] \<and> \<not> [b;c;a])"
 by (meson abc_ac_neq abc_bcd_abd some_betw)
 
 text \<open>The lemma \<open>abc_abc_neq\<close> is the full O3 as stated by Schutz.\<close>
 lemma abc_abc_neq:
-  assumes abc: "[[a b c]]"
+  assumes abc: "[a;b;c]"
   shows "a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c"
 using abc_sym abc_ac_neq assms abc_bcd_abd by blast
 
 
 lemma abc_bcd_acd:
-  assumes abc: "[[a b c]]"
-      and bcd: "[[b c d]]"
-  shows "[[a c d]]"
+  assumes abc: "[a;b;c]"
+      and bcd: "[b;c;d]"
+  shows "[a;c;d]"
 proof -
-  have cba: "[[c b a]]" using abc_sym abc by simp
-  have dcb: "[[d c b]]" using abc_sym bcd by simp
-  have "[[d c a]]" using abc_bcd_abd dcb cba by blast
+  have cba: "[c;b;a]" using abc_sym abc by simp
+  have dcb: "[d;c;b]" using abc_sym bcd by simp
+  have "[d;c;a]" using abc_bcd_abd dcb cba by blast
   thus ?thesis using abc_sym by simp
 qed
 
 lemma abc_only_cba:
-  assumes "[[a b c]]"
-    shows "\<not> [[b a c]]" "\<not> [[a c b]]" "\<not> [[b c a]]" "\<not> [[c a b]]"
+  assumes "[a;b;c]"
+    shows "\<not> [b;a;c]" "\<not> [a;c;b]" "\<not> [b;c;a]" "\<not> [c;a;b]"
 using abc_sym abc_abc_neq abc_bcd_abd assms by blast+
 
 
@@ -440,7 +440,7 @@ section "Betweenness: Unreachable Subset Via a Path"
 
 definition unreachable_subset_via :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a set"
                                      ("\<emptyset> _ from _ via _ at _" [100, 100, 100, 100] 100) where
-  "unreachable_subset_via Q Qa R x \<equiv> {Qy. [[x Qy Qa]] \<and> (\<exists>Rw\<in>R. Qa \<in> \<emptyset> Q Rw \<and> Qy \<in> \<emptyset> Q Rw)}"
+  "unreachable_subset_via Q Qa R x \<equiv> {Qy. [x;Qy;Qa] \<and> (\<exists>Rw\<in>R. Qa \<in> \<emptyset> Q Rw \<and> Qy \<in> \<emptyset> Q Rw)}"
 
 
 
@@ -499,7 +499,7 @@ qed
 
 lemma fin_ch_betw:
   assumes "[f[a..b..c]X]"
-  shows "[[a b c]]"
+  shows "[a;b;c]"
 proof -
   obtain nb where n_def: "nb\<noteq>0" "nb<card X - 1" "f nb = b"
     using assms index_middle_element by blast
@@ -575,20 +575,20 @@ subsection "Chains using betweenness"
 text \<open>Old definitions of chains. Shown equivalent to \<open>fin_long_chain_2\<close> in TemporalOrderOnPath.thy.\<close>
 
 definition chain_with :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[.. _ .. _ .. _ ..]_]") where
-  "chain_with x y z X \<equiv> [[x y z]] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
+  "chain_with x y z X \<equiv> [x;y;z] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
 definition finite_chain_with3 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[_ .. _ .. _]_]") where
-  "finite_chain_with3 x y z X \<equiv> [[..x..y..z..]X] \<and> \<not>(\<exists>w\<in>X. [[w x y]] \<or> [[y z w]])"
+  "finite_chain_with3 x y z X \<equiv> [[..x..y..z..]X] \<and> \<not>(\<exists>w\<in>X. [w;x;y] \<or> [y;z;w])"
 
-lemma long_chain_betw: "[[..a..b..c..]X] \<Longrightarrow> [[a b c]]"
+lemma long_chain_betw: "[[..a..b..c..]X] \<Longrightarrow> [a;b;c]"
 by (simp add: chain_with_def)
 
-lemma finite_chain3_betw: "[[a..b..c]X] \<Longrightarrow> [[a b c]]"
+lemma finite_chain3_betw: "[[a..b..c]X] \<Longrightarrow> [a;b;c]"
 by (simp add: chain_with_def finite_chain_with3_def)
 
 definition finite_chain_with2 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[_ .. _]_]") where
   "finite_chain_with2 x z X \<equiv> \<exists>y\<in>X. [[x..y..z]X]"
 
-lemma finite_chain2_betw: "[[a..c]X] \<Longrightarrow> \<exists>b. [[a b c]]"
+lemma finite_chain2_betw: "[[a..c]X] \<Longrightarrow> \<exists>b. [a;b;c]"
   using finite_chain_with2_def finite_chain3_betw by meson
 
 
@@ -602,7 +602,7 @@ text \<open>
   that segments are never empty.
 \<close>
 definition segment :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set"
-  where "segment a b \<equiv> {x::'a. \<exists>ab. [[a x b]] \<and> x\<in>ab \<and> path ab a b}"
+  where "segment a b \<equiv> {x::'a. \<exists>ab. [a;x;b] \<and> x\<in>ab \<and> path ab a b}"
 
 abbreviation is_segment :: "'a set \<Rightarrow> bool"
   where "is_segment ab \<equiv> (\<exists>a b. ab = segment a b)"
@@ -614,7 +614,7 @@ abbreviation is_interval :: "'a set \<Rightarrow> bool"
   where "is_interval ab \<equiv> (\<exists>a b. ab = interval a b)"
 
 definition prolongation :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set"
-  where "prolongation a b \<equiv> {x::'a. \<exists>ab. [[a b x]] \<and> x\<in>ab \<and> path ab a b}"
+  where "prolongation a b \<equiv> {x::'a. \<exists>ab. [a;b;x] \<and> x\<in>ab \<and> path ab a b}"
 
 abbreviation is_prolongation :: "'a set \<Rightarrow> bool"
   where "is_prolongation ab \<equiv> \<exists>a b. ab = prolongation a b"
@@ -643,10 +643,10 @@ lemma ends_notin_segment: "a \<notin> segment a b \<and> b \<notin> segment a b"
 lemma ends_in_int: "a \<in> interval a b \<and> b \<in> interval a b"
   using interval_def by auto
 
-lemma seg_betw: "x \<in> segment a b \<longleftrightarrow> [[a x b]]"
+lemma seg_betw: "x \<in> segment a b \<longleftrightarrow> [a;x;b]"
   using segment_def abc_abc_neq abc_ex_path by fastforce
 
-lemma pro_betw: "x \<in> prolongation a b \<longleftrightarrow> [[a b x]]"
+lemma pro_betw: "x \<in> prolongation a b \<longleftrightarrow> [a;b;x]"
   using prolongation_def abc_abc_neq abc_ex_path by fastforce
 
 lemma seg_sym: "segment a b = segment b a"
@@ -689,9 +689,9 @@ proof -
   obtain x y where "x\<in>segment a b" "y\<in>segment a b" "x\<noteq>y"
     using assms(1) numeral_2_eq_2
     by (metis card.infinite card_le_Suc0_iff_eq not_less_eq_eq not_numeral_le_zero)
-  have "[[a x b]]"
+  have "[a;x;b]"
     using \<open>x \<in> segment a b\<close> seg_betw by auto
-  have "[[a y b]]"
+  have "[a;y;b]"
     using \<open>y \<in> segment a b\<close> seg_betw by auto
   have "x\<in>P \<and> y\<in>P"
     using \<open>x \<in> segment a b\<close> \<open>y \<in> segment a b\<close> assms(2) by blast
@@ -719,11 +719,11 @@ qed
 
 lemma ray_cases:
   assumes "x \<in> ray a b"
-  shows "[[a x b]] \<or> [[a b x]] \<or> x = b"
+  shows "[a;x;b] \<or> [a;b;x] \<or> x = b"
 proof -
   have "x\<in>segment a b \<or> x\<in> prolongation a b \<or> x=b"
     using assms ray_def by auto
-  thus "[[a x b]] \<or> [[a b x]] \<or> x = b"
+  thus "[a;x;b] \<or> [a;b;x] \<or> x = b"
     using pro_betw seg_betw by auto
 qed
 
@@ -736,20 +736,20 @@ proof -
     using assms by blast
   have "\<exists>ab. path ab a b \<and> ray a b \<subseteq> ab"
   proof -
-    have betw_cases: "[[a x b]] \<or> [[a b x]]" using ray_cases assms
+    have betw_cases: "[a;x;b] \<or> [a;b;x]" using ray_cases assms
       by blast
     then obtain ab where "path ab a b"
       using abc_abc_neq abc_ex_path by blast
     have "?r \<subseteq> ab" using betw_cases
     proof (rule disjE)
-      assume "[[a x b]]"
+      assume "[a;x;b]"
       show "?r \<subseteq> ab"
       proof
         fix x assume "x\<in>?r"
         show "x\<in>ab"
           by (metis \<open>path ab a b\<close> \<open>x \<in> ray a b\<close> abc_ex_path eq_paths ray_cases)
       qed
-    next assume "[[a b x]]"
+    next assume "[a;b;x]"
       show "?r \<subseteq> ab"
       proof
         fix x assume "x\<in>?r"
@@ -772,7 +772,7 @@ text \<open>O6 supposedly serves the same purpose as Pasch's axiom.\<close>
 
 locale MinkowskiChain = MinkowskiBetweenness +
   assumes O6: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
-                \<exists>d\<in>S. [[b c d]] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [[c e a]])\<rbrakk>
+                \<exists>d\<in>S. [b;c;d] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [c;e;a])\<rbrakk>
                \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>X. [[a..f..b]X]"
 begin
 
@@ -836,7 +836,7 @@ locale MinkowskiUnreachable = MinkowskiChain +
                \<Longrightarrow> \<exists>X. \<exists>f. ch_by_ord f X \<and> f 0 = Qx \<and> f (card X - 1) = Qz
                          \<and> (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b
                               \<and> (\<forall>Qy\<in>\<E>. [[(f(i-1)) Qy (f i)]] \<longrightarrow> Qy \<in> \<emptyset> Q b))
-                         \<and> (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [[Qx Qy Qz]] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+                         \<and> (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
       and I7: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> Q - \<emptyset> Q b; Qy \<in> \<emptyset> Q b\<rbrakk>
                \<Longrightarrow> \<exists>g X Qn. [g[Qx..Qy..Qn]X] \<and> Qn \<in> Q - \<emptyset> Q b"
 begin
