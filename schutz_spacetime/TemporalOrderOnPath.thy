@@ -189,16 +189,16 @@ theorem order_finite_chain:
   assumes chX: "long_ch_by_ord f X"
       and finiteX: "finite X"
       and ordered_nats: "0 \<le> (i::nat) \<and> i < j \<and> j < l \<and> l < card X"
-  shows "[[(f i) (f j) (f l)]]"
+  shows "[f i; f j; f l]"
   by (metis chX long_ch_by_ord_def ordered_nats ordering_ord_ijk)
 
 (* Theorem 2 (with helper lemmas for induction) for local chains *)
 lemma thm2_ind1:
   assumes chX: "long_ch_by_ord2 f X"
       and finiteX: "finite X"
-    shows "\<forall>j i. ((i::nat) < j \<and> j < card X - 1) \<longrightarrow> [[(f i) (f j) (f (j + 1))]]"
+    shows "\<forall>j i. ((i::nat) < j \<and> j < card X - 1) \<longrightarrow> [f i; f j; f (j + 1)]"
 proof (rule allI)+
-  let ?P = "\<lambda> i j. [[(f i) (f j) (f (j+1))]]"
+  let ?P = "\<lambda> i j. [f i; f j; f (j+1)]"
   fix i j
   show "(i<j \<and> j<card X -1) \<longrightarrow> ?P i j"
   proof (induct j)
@@ -236,10 +236,10 @@ qed
 lemma thm2_ind2:
   assumes chX: "long_ch_by_ord2 f X"
       and finiteX: "finite X"
-    shows "\<forall>m l. (0<(l-m) \<and> (l-m) < l \<and> l < card X) \<longrightarrow> [[(f ((l-m)-1)) (f (l-m)) (f l)]]"
+    shows "\<forall>m l. (0<(l-m) \<and> (l-m) < l \<and> l < card X) \<longrightarrow> [f (l-m-1); f (l-m); (f l)]"
 proof (rule allI)+
   fix l m
-  let ?P = "\<lambda> k l. [[(f (k-1)) (f k) (f l)]]"
+  let ?P = "\<lambda> k l. [f (k-1); f k; f l]"
   let ?n = "card X"
   let ?k = "(l::nat)-m"
   show "0 < ?k \<and> ?k < l \<and> l < ?n \<longrightarrow> ?P ?k l"
@@ -252,7 +252,7 @@ proof (rule allI)+
     proof (clarify)
       assume asm: "0 < l - Suc m" "l - Suc m < l" "l < ?n"
       have "Suc m = 1 \<or> Suc m > 1" by linarith
-      thus "[[(f (l - Suc m - 1)) (f (l - Suc m)) (f l)]]" (is ?goal)
+      thus "[f (l - Suc m - 1); f (l - Suc m); f l]" (is ?goal)
       proof
         assume "Suc m = 1"
         show ?goal
@@ -271,17 +271,17 @@ proof (rule allI)+
           apply (rule_tac a="f l" and c="f(l - Suc m - 1)" in abc_sym)
           apply (rule_tac a="f l" and c="f(l-Suc m)" and d="f(l-Suc m-1)" and b="f(l-m)" in abc_bcd_acd)
         proof -
-          have "[[(f(l-m-1)) (f(l-m)) (f l)]]"
+          have "[f(l-m-1); f(l-m); f l]"
             using Suc.hyps \<open>1 < Suc m\<close> asm(1,3) by force
-          thus "[[(f l) (f(l - m)) (f(l - Suc m))]]"
+          thus "[f l; f(l - m); f(l - Suc m)]"
             using abc_sym One_nat_def diff_zero minus_nat.simps(2)
             by metis
           have "Suc(l - Suc m - 1) = l - Suc m" "Suc(l - Suc m) = l-m"
             using Suc_pred asm(1) by presburger+
-          hence "[[(f(l - Suc m - 1)) (f(l - Suc m)) (f(l - m))]]"
+          hence "[f(l - Suc m - 1); f(l - Suc m); f(l - m)]"
             using chX unfolding long_ch_by_ord2_def ordering2_def
             by (meson asm(3) less_imp_diff_less)
-          thus "[[(f(l - m)) (f(l - Suc m)) (f(l - Suc m - 1))]]"
+          thus "[f(l - m); f(l - Suc m); f(l - Suc m - 1)]"
             using abc_sym by blast
         qed
       qed
@@ -293,7 +293,7 @@ lemma thm2_ind2b:
   assumes chX: "long_ch_by_ord2 f X"
       and finiteX: "finite X"
       and ordered_nats: "0<k \<and> k<l \<and> l < card X"
-    shows "[[(f (k-1)) (f k) (f l)]]"
+    shows "[f (k-1); f k; f l]"
   using thm2_ind2 finiteX chX ordered_nats
   by (metis diff_diff_cancel less_imp_le)
 
@@ -307,15 +307,15 @@ theorem (*2*) order_finite_chain2:
   assumes chX: "long_ch_by_ord2 f X"
       and finiteX: "finite X"
       and ordered_nats: "0 \<le> (i::nat) \<and> i < j \<and> j < l \<and> l < card X"
-    shows "[[(f i) (f j) (f l)]]"
+    shows "[f i; f j; f l]"
 proof -
   let ?n = "card X - 1"
   have ord1: "0\<le>i \<and> i<j \<and> j<?n"
     using ordered_nats by linarith
-  have e2: "[[(f i) (f j) (f (j+1))]]" using thm2_ind1
+  have e2: "[f i; f j; f (j+1)]" using thm2_ind1
     using Suc_eq_plus1 chX finiteX ord1
     by presburger
-  have e3: "\<forall>k. 0<k \<and> k<l \<longrightarrow> [[(f (k-1)) (f k) (f l)]]"
+  have e3: "\<forall>k. 0<k \<and> k<l \<longrightarrow> [f (k-1); f k; f l]"
     using thm2_ind2b chX finiteX ordered_nats
     by blast
   have "j<l-1 \<or> j=l-1"
@@ -323,7 +323,7 @@ proof -
   thus ?thesis
   proof
     assume "j<l-1"
-    have  "[[(f j) (f (j+1)) (f l)]]"
+    have  "[f j; f (j+1); f l]"
       using e3 abc_abc_neq ordered_nats
       using \<open>j < l - 1\<close> less_diff_conv by auto
     thus ?thesis
@@ -383,7 +383,7 @@ theorem (*2ii*) index_injective:
     shows "f i \<noteq> f j"
 proof (cases)
   assume "Suc i < j"
-  then have "[[(f i) (f (Suc(i))) (f j)]]"
+  then have "[f i; f (Suc(i)); f j]"
     using order_finite_chain2 chX finiteX indices(2) by blast
   then show ?thesis
     using abc_abc_neq by blast

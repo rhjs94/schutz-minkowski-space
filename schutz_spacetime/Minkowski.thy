@@ -503,7 +503,7 @@ lemma fin_ch_betw:
 proof -
   obtain nb where n_def: "nb\<noteq>0" "nb<card X - 1" "f nb = b"
     using assms index_middle_element by blast
-  have "[[(f 0) (f nb) (f (card X - 1))]]"
+  have "[f 0; f nb; f (card X - 1)]"
     using fin_long_chain_def long_ch_by_ord_def assms n_def ordering_ord_ijk zero_less_iff_neq_zero
     by fastforce
   thus ?thesis using assms fin_long_chain_def n_def(3) by auto
@@ -781,7 +781,7 @@ section "Chains: (Closest) Bounds"
 
 definition is_bound_f :: "'a \<Rightarrow> 'a set \<Rightarrow> (nat\<Rightarrow>'a) \<Rightarrow> bool" where
   "is_bound_f Q\<^sub>b Q f \<equiv>
-    \<forall>i j ::nat. [f[(f 0)..]Q] \<and> (i<j \<longrightarrow> [[(f i) (f j) Q\<^sub>b]])"
+    \<forall>i j ::nat. [f[(f 0)..]Q] \<and> (i<j \<longrightarrow> [f i; f j; Q\<^sub>b])"
 
 
 definition is_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
@@ -814,7 +814,7 @@ definition closest_bound_f :: "'a \<Rightarrow> 'a set \<Rightarrow> (nat\<Right
 \<^cancel>\<open>Q is an infinite chain indexed by f bound by Q\<^sub>b\<close>
     is_bound_f Q\<^sub>b Q f \<and>
 \<^cancel>\<open>Any other bound must be further from the start of the chain than the closest bound\<close>
-    (\<forall> Q\<^sub>b'. (is_bound Q\<^sub>b' Q \<and> Q\<^sub>b' \<noteq> Q\<^sub>b) \<longrightarrow> [[(f 0) Q\<^sub>b Q\<^sub>b']])"
+    (\<forall> Q\<^sub>b'. (is_bound Q\<^sub>b' Q \<and> Q\<^sub>b' \<noteq> Q\<^sub>b) \<longrightarrow> [f 0; Q\<^sub>b; Q\<^sub>b'])"
 
 
 definition closest_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
@@ -822,7 +822,7 @@ definition closest_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
 \<^cancel>\<open>Q is an infinite chain indexed by f bound by Q\<^sub>b\<close>
     \<exists>f. is_bound_f Q\<^sub>b Q f \<and>
 \<^cancel>\<open>Any other bound must be further from the start of the chain than the closest bound\<close>
-    (\<forall> Q\<^sub>b'. (is_bound Q\<^sub>b' Q \<and> Q\<^sub>b' \<noteq> Q\<^sub>b) \<longrightarrow> [[(f 0) Q\<^sub>b Q\<^sub>b']])"
+    (\<forall> Q\<^sub>b'. (is_bound Q\<^sub>b' Q \<and> Q\<^sub>b' \<noteq> Q\<^sub>b) \<longrightarrow> [f 0; Q\<^sub>b; Q\<^sub>b'])"
 
 end (*MinkowskiChain*)
 
@@ -835,7 +835,7 @@ locale MinkowskiUnreachable = MinkowskiChain +
       and I6: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> (\<emptyset> Q b); Qz \<in> (\<emptyset> Q b); Qx\<noteq>Qz\<rbrakk>
                \<Longrightarrow> \<exists>X. \<exists>f. ch_by_ord f X \<and> f 0 = Qx \<and> f (card X - 1) = Qz
                          \<and> (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b
-                              \<and> (\<forall>Qy\<in>\<E>. [[(f(i-1)) Qy (f i)]] \<longrightarrow> Qy \<in> \<emptyset> Q b))
+                              \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))
                          \<and> (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
       and I7: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> Q - \<emptyset> Q b; Qy \<in> \<emptyset> Q b\<rbrakk>
                \<Longrightarrow> \<exists>g X Qn. [g[Qx..Qy..Qn]X] \<and> Qn \<in> Q - \<emptyset> Q b"
