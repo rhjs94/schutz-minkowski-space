@@ -5588,15 +5588,15 @@ proof (rule ccontr)
     have gn: "\<forall>n. g n \<in> X"
       by (metis ordering_def assms(2) inf_chain_is_long long_ch_by_ord_def)
 
-    have "[(g; 0)x(f; 0)]"
+    have "[g 0; x; f 0]"
     proof -
-      have "[(f; 0)(g; 0)x] \<or> [(g; 0)(f; 0)x] \<or> [(g; 0)x(f; 0)]"
+      have "[f 0; g 0; x] \<or> [g 0; f 0; x] \<or> [g 0; x; f 0]"
         using \<open>f 0 \<noteq> g 0\<close> \<open>x \<noteq> f 0\<close> \<open>x \<noteq> g 0\<close> all_aligned_on_semifin_chain
         by (metis ordering_def \<open>x \<in> X\<close> assms inf_chain_is_long long_ch_by_ord_def)
-      moreover have "\<not>[(f; 0)(g; 0)x]"
+      moreover have "\<not>[f 0; g 0; x]"
         using abc_only_cba(1,3) all_aligned_on_semifin_chain assms(2) fn
         by (metis \<open>x\<in>X\<close> \<open>x\<noteq>f 0\<close> \<open>x\<noteq>g 0\<close>)
-      moreover have "\<not>[(g; 0)(f; 0)x]"
+      moreover have "\<not>[g 0; f 0; x]"
         using fn gn \<open>x \<in> X\<close> \<open>x \<noteq> g 0\<close>
         by (metis (no_types) abc_only_cba(1,2,4) all_aligned_on_semifin_chain assms(1))
       ultimately show ?thesis by blast
@@ -5704,7 +5704,7 @@ proof -
               using \<open>(f 0)\<in>X \<and> g?i\<in>X \<and> f?i\<in>X\<close> assms(2)
               by (metis ordering_def inf_chain_is_long long_ch_by_ord_def)
             hence "[g i; g m; g ?i]"
-              using abc_acd_bcd \<open>[(f; 0)(f; i)(f?i)] \<and> [f 0; g i; g ?i]\<close> \<open>[g 0; f ?i; g ?i]\<close>
+              using abc_acd_bcd \<open>[f 0;f i;f ?i] \<and> [f 0; g i; g ?i]\<close> \<open>[g 0; f ?i; g ?i]\<close>
               by (metis \<open>f 0 = g 0\<close> \<open>f i = g i\<close>)
             have "[g i; g ?i; g m]"
             proof -
@@ -6839,12 +6839,12 @@ proof -
       show "[f[f 0..]X]"
         by (simp add: assms(2))
       assume "i<j"
-      hence "[(f; i)(f; j)b]"
+      hence "[f i; f j; b]"
         using assms(5) is_bound_f_def by blast
       hence "[f j; b; c] \<or> [f j; c; b]"
         using \<open>i < j\<close> abc_abd_bcdbdc assms(4,6) closest_bound_f_def is_bound_f_def by auto
-      thus "[(f; i)(f; j)(x)]"
-        by (meson \<open>[c;x;b]\<close> \<open>[(f; i)(f; j)b]\<close> abc_bcd_acd abc_sym abd_bcd_abc)
+      thus "[f i; f j; x]"
+        by (meson \<open>[c;x;b]\<close> \<open>[f i; f j; b]\<close> abc_bcd_acd abc_sym abd_bcd_abc)
     qed
   } moreover {
     assume "[c;b;x]"
@@ -6854,18 +6854,18 @@ proof -
       show "[f[f 0..]X]"
         by (simp add: assms(2))
       assume "i<j"
-      hence "[(f; i)(f; j)b]"
+      hence "[f i; f j; b]"
         using assms(5) is_bound_f_def by blast
       hence "[f j; b; c] \<or> [f j; c; b]"
         using \<open>i < j\<close> abc_abd_bcdbdc assms(4,6) closest_bound_f_def is_bound_f_def by auto
-      thus "[(f; i)(f; j)(x)]"
+      thus "[f i; f j; x]"
       proof -
         have "(c = b) \<or> [f 0; c; b]"
           using assms(4,5) closest_bound_f_def is_bound_def by auto
-        hence "[f j; b; c] \<longrightarrow> [x(f; j)(f; i)]"
+        hence "[f j; b; c] \<longrightarrow> [x; f j; f i]"
           by (metis abc_bcd_acd abc_only_cba(2) assms(5) is_bound_f_def neq0_conv)
         thus ?thesis
-          using \<open>[c;b;x]\<close> \<open>[(f; i)(f; j)b]\<close> \<open>[f j; b; c] \<or> [f j; c; b]\<close> abc_bcd_acd abc_sym
+          using \<open>[c;b;x]\<close> \<open>[f i; f j; b]\<close> \<open>[f j; b; c] \<or> [f j; c; b]\<close> abc_bcd_acd abc_sym
           by blast
       qed
     qed
@@ -6944,9 +6944,9 @@ proof -
     fix i j::nat
     show "[f[f 0 ..]X]" by (simp add: assms(2))
     assume "i<j"
-    have "[(g; i)(g; j)c]"
+    have "[g i; g j; c]"
       using \<open>i < j\<close> \<open>is_bound_f c X g\<close> is_bound_f_def by blast
-    thus "[(f; i)(f; j)c]"
+    thus "[f i; f j; c]"
       using inf_chain_unique \<open>[g[g 0 ..]X]\<close> assms(2) by force
   qed
 qed
@@ -6987,7 +6987,7 @@ proof -
   hence event_y: "Q\<^sub>y\<in>\<E>"
     using in_path_event path_Q by blast
   obtain X f where X_def: "ch_by_ord f X" "f 0 = Q\<^sub>x" "f (card X - 1) = Q\<^sub>z"
-      "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [[(f (i - 1)) Qy (f i)]] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+      "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
       "short_ch X \<longrightarrow> Q\<^sub>x \<in> X \<and> Q\<^sub>z \<in> X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b)"
     using I6 [OF assms(1-6)] by blast
   hence fin_X: "finite X"
@@ -7073,7 +7073,7 @@ proof -
           show "(i'+1) \<in> {1..card X - 1}"
             using i'_def(1)
             by (simp add: \<open>N = card X\<close>)
-          show "[[(f((i'+1) - 1)) Q\<^sub>y (f(i'+1))]]"
+          show "[f((i'+1) - 1); Q\<^sub>y; f(i'+1)]"
             using i'_def(2) \<open>Q\<^sub>y\<in>s\<close> seg_betw by simp
         qed
       qed
@@ -7601,17 +7601,17 @@ proof -
       show False
       proof (cases)
         assume "j=i+1"
-        hence "[[(f i) (f j) (f (j+1))]]"
+        hence "[f i; f j; f (j+1)]"
           using asm(2) assms fin_long_chain_def order_finite_chain `?N\<ge>3`
           by (metis (no_types, lifting) One_nat_def Suc_diff_Suc Suc_less_eq add.commute
               add_leD2 atLeastAtMost_iff card.remove card_Diff_singleton less_Suc_eq_le
               less_add_one numeral_2_eq_2 numeral_3_eq_3 plus_1_eq_Suc)
         obtain e where "e\<in>?g j" using segment_nonempty abc_ex_path asm(3)
-          by (metis \<open>[[(f i) (f j) (f (j + 1))]]\<close> \<open>f i \<noteq> f j\<close> \<open>j = i + 1\<close>)
+          by (metis \<open>[f i; f j; f (j+1)]\<close> \<open>f i \<noteq> f j\<close> \<open>j = i + 1\<close>)
         hence "e\<in>?g i"
           using asm(3) by blast
         have "[f i; f j; e]"
-          using abd_bcd_abc \<open>[[(f i) (f j) (f (j + 1))]]\<close>
+          using abd_bcd_abc \<open>[f i; f j; f (j+1)]\<close>
           by (meson \<open>e \<in> segment (f j) (f (j + 1))\<close> seg_betw) 
         thus False
           using \<open>e \<in> segment (f i) (f (i + 1))\<close> \<open>j = i + 1\<close> abc_only_cba(2) seg_betw
