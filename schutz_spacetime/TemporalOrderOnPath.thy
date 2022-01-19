@@ -5524,7 +5524,7 @@ proof -
     proof (cases)
       assume "i<j"
       then obtain k where "k>j" by blast
-      hence "[[(f i)(f j)(f k)]]"
+      hence "[f i; f j; f k]"
         using \<open>i < j\<close> assms(1) inf_chain_is_long long_ch_by_ord_def ordering_ord_ijk by fastforce
       thus "?P i j"
         using abc_abc_neq by blast
@@ -5564,21 +5564,21 @@ proof (rule ccontr)
   thus False
   proof (rule disjE)
     assume "x=f 0"
-    hence "[[(g 0)(f 0)(g 2)]]"
+    hence "[g 0; f 0; g 2]"
       using \<open>x=g 1\<close> \<open>x=f 0\<close> assms(2) inf_chain_is_long long_ch_by_ord_def ordering_ord_ijk
       by fastforce
     then obtain m n where "f m = g 0" "f n = g 2"
       by (metis ordering_def assms(1) assms(2) inf_chain_is_long long_ch_by_ord_def)
-    hence "[[(f m)(f 0)(f n)]]"
-      by (simp add: \<open>[[(g 0)(f 0)(g 2)]]\<close>)
+    hence "[f m; f 0; f n]"
+      by (simp add: \<open>[g 0; f 0; g 2]\<close>)
     hence "m\<noteq>n"
       using abc_abc_neq by blast
     have "m>0 \<and> n>0"
-      using \<open>[[(f m)(f 0)(f n)]]\<close> abc_abc_neq neq0_conv by blast
+      using \<open>[f m; f 0; f n]\<close> abc_abc_neq neq0_conv by blast
     hence "(0<m \<and> m<n) \<or> (0<n \<and> n<m)"
       using \<open>m \<noteq> n\<close> by auto
     thus False
-      using `[[(f m)(f 0)(f n)]]` assms(1) index_order3 inf_chain_is_long by blast
+      using `[f m; f 0; f n]` assms(1) index_order3 inf_chain_is_long by blast
   next
     assume "x\<noteq>f 0"
 
@@ -5604,13 +5604,13 @@ proof (rule ccontr)
 
     obtain m m' where "g m' = f 0" "m = Suc m'"
       using ordering_def assms inf_chain_is_long long_ch_by_ord_def by metis
-    hence "[[(g 0)(f 0)(g m)]]"
+    hence "[g 0; f 0; g m]"
       by (metis Suc_le_eq \<open>f 0 \<noteq> g 0\<close> assms(2) inf_chain_is_long lessI linorder_neqE_nat
           long_ch_by_ord_def not_le ordering_ord_ijk zero_less_Suc)
     then obtain n p where "f n = g 0" "f p = g m"
       by (metis abc_abc_neq abc_only_cba(1,4) all_aligned_on_semifin_chain assms(1) gn)
     hence "m<0 \<or> n<0"
-      using all_aligned_on_semifin_chain assms(1) \<open>[[(g 0)(f 0)(g m)]]\<close>
+      using all_aligned_on_semifin_chain assms(1) \<open>[g 0; f 0; g m]\<close>
       by (metis abc_abc_neq abc_only_cba(1,4) fn)
     thus False by simp
   qed
@@ -5637,19 +5637,19 @@ proof -
           let ?i = "Suc i"
           have "f 0\<in>X \<and> g?i\<in>X \<and> f?i\<in>X"
             by (metis ordering_def assms(1) assms(2) inf_chain_is_long long_ch_by_ord_def)
-          hence "[[(f 0)(f ?i)(g ?i)]] \<or> [[(f 0)(g ?i)(f ?i)]] \<or> [[(f ?i)(f 0)(g ?i)]]"
+          hence "[f 0; f ?i; g ?i] \<or> [f 0; g ?i; f ?i] \<or> [f ?i; f 0; g ?i]"
             using all_aligned_on_semifin_chain assms(1,2) i_neq_j_imp_events_neq_inf
             by (metis \<open>f?i \<noteq>g?i\<close> \<open>f 0 = g 0\<close>)
-          hence "[[(f 0)(f ?i)(g ?i)]] \<or> [[(f 0)(g ?i)(f ?i)]]"
+          hence "[f 0; f ?i; g ?i] \<or> [f 0; g ?i; f ?i]"
             using all_aligned_on_semifin_chain asm(2)
             by (metis \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> abc_abc_neq)
-          have "([[(f 0)(f i)(f ?i)]] \<and> [[(f 0)(g i)(g ?i)]]) \<or> i=0"
+          have "([f 0; f i; f ?i] \<and> [f 0; g i; g ?i]) \<or> i=0"
             using long_ch_by_ord_def ordering_ord_ijk asm(1,2)
             by (metis Suc_inject Suc_lessI Suc_less_eq inf_chain_is_long lessI zero_less_Suc)
           thus False
           proof (rule disjE)
             assume "i=0"
-            have "[[(g 0)(f 1)(g 1)]]"
+            have "[g 0; f 1; g 1]"
             proof -
               obtain x where "x = g 1" by simp
               hence "x\<in>X"
@@ -5661,29 +5661,29 @@ proof -
               have "m>1"
                 using assms(2) i_neq_j_imp_events_neq_inf \<open>f?i \<noteq> g?i\<close>
                 by (metis One_nat_def Suc_lessI \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>i = 0\<close> \<open>x = g 1\<close> neq0_conv)
-              thus "[[(g 0)(f 1)(g 1)]]"
-                using \<open>[[(f 0)(f?i)(g?i)]] \<or> [[(f 0)(g?i)(f?i)]]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>i=0\<close> \<open>x = g 1\<close>
+              thus "[g 0; f 1; g 1]"
+                using \<open>[f 0; f?i; g?i] \<or> [f 0; g?i; f?i]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>i=0\<close> \<open>x = g 1\<close>
                 by (metis One_nat_def assms(1) gr_implies_not_zero index_order3 inf_chain_is_long order.asym)
             qed
             have "f 1 \<in> X"
               using \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> \<open>i = 0\<close> by auto
             then obtain m' where "g m' = f 1"
               by (metis ordering_def assms(2) inf_chain_is_long long_ch_by_ord_def)
-            hence "[[(g 0)(g m')(g 1)]]"
-              using \<open>[[(g 0)(f 1)(g 1)]]\<close> by auto
-            have "[[(g 0)(g 1)(g m')]]"
+            hence "[g 0; g m'; g 1]"
+              using \<open>[g 0; f 1; g 1]\<close> by auto
+            have "[g 0; g 1; g m']"
             proof -
               have "m' \<noteq> 1 \<and> m' \<noteq> 0"
-                using `[[(g 0)(g m')(g 1)]]` by (meson abc_abc_neq)
+                using `[g 0; g m'; g 1]` by (meson abc_abc_neq)
               hence "m'>1" by auto
-              thus "[[(g 0)(g 1)(g m')]]"
-                using \<open>[[(g 0)(g m')(g 1)]]\<close> assms(2) index_order3 inf_chain_is_long by blast
+              thus "[g 0; g 1; g m']"
+                using \<open>[g 0; g m'; g 1]\<close> assms(2) index_order3 inf_chain_is_long by blast
             qed
             thus False
-              using `[[(g 0)(g m')(g 1)]]` abc_only_cba(2) by blast
+              using `[g 0; g m'; g 1]` abc_only_cba(2) by blast
           next
-            assume "[[(f 0)(f i)(f ?i)]] \<and> [[(f 0)(g i)(g ?i)]]"
-            have "[[(g 0)(f ?i)(g ?i)]]"
+            assume "[f 0; f i; f ?i] \<and> [f 0; g i; g ?i]"
+            have "[g 0; f ?i; g ?i]"
             proof -
               obtain x where "x = g ?i" by simp
               hence "x\<in>X"
@@ -5694,27 +5694,27 @@ proof -
                 using \<open>x = g ?i\<close> by blast
               have "m>?i"
                 using assms(2) i_neq_j_imp_events_neq_inf \<open>f?i \<noteq> g?i\<close>
-                by (metis Suc_lessI \<open>[[(f 0)(f i)(f ?i)]] \<and> [[(f 0)(g i)(g ?i)]]\<close> \<open>f i = g i\<close> \<open>f m = x\<close>
+                by (metis Suc_lessI \<open>[f 0; f i; f ?i] \<and> [f 0; g i; g ?i]\<close> \<open>f i = g i\<close> \<open>f m = x\<close>
                     \<open>x = g (Suc i)\<close> assms(1) index_order3 less_nat_zero_code semifin_chain_def)
-              thus "[[(g 0)(f ?i)(g ?i)]]"
-                using \<open>[[(f 0)(f?i)(g?i)]] \<or> [[(f 0)(g?i)(f?i)]]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>x = g ?i\<close>
+              thus "[g 0; f ?i; g ?i]"
+                using \<open>[f 0; f?i; g?i] \<or> [f 0; g?i; f?i]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>x = g ?i\<close>
                 by (metis assms(1) gr_implies_not_zero index_order3 inf_chain_is_long order.asym)
             qed
             obtain m where "g m = f ?i"
               using \<open>(f 0)\<in>X \<and> g?i\<in>X \<and> f?i\<in>X\<close> assms(2)
               by (metis ordering_def inf_chain_is_long long_ch_by_ord_def)
-            hence "[[(g i)(g m)(g ?i)]]"
-              using abc_acd_bcd \<open>[(f; 0)(f; i)(f?i)] \<and> [[(f 0)(g i)(g ?i)]]\<close> \<open>[[(g 0)(f ?i)(g ?i)]]\<close>
+            hence "[g i; g m; g ?i]"
+              using abc_acd_bcd \<open>[(f; 0)(f; i)(f?i)] \<and> [f 0; g i; g ?i]\<close> \<open>[g 0; f ?i; g ?i]\<close>
               by (metis \<open>f 0 = g 0\<close> \<open>f i = g i\<close>)
-            have "[[(g i)(g ?i)(g m)]]"
+            have "[g i; g ?i; g m]"
             proof -
               have "m>?i"
-                using \<open>[[(g i)(g m)(g ?i)]]\<close> assms(2) index_order3 inf_chain_is_long by fastforce
+                using \<open>[g i; g m; g ?i]\<close> assms(2) index_order3 inf_chain_is_long by fastforce
               thus ?thesis
                 using assms(2) inf_chain_is_long long_ch_by_ord_def ordering_ord_ijk by fastforce
             qed
             thus False
-              using \<open>[[(g i)(g m)(g ?i)]]\<close> abc_only_cba by blast
+              using \<open>[g i; g m; g ?i]\<close> abc_only_cba by blast
           qed
         qed
       qed
