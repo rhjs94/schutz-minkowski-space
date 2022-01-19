@@ -366,7 +366,7 @@ qed
 
 
 lemma fin_chain_card_geq_2:
-  assumes "[f[a..b]X]"
+  assumes "[f\<leadsto>X|a..b]"
   shows "card X \<ge> 2"
   using fin_chain_def apply (cases "short_ch X")
   using short_ch_card_2
@@ -2593,7 +2593,7 @@ proof -
 qed
 
 lemma chain_bounds_unique2:
-  assumes "[f[a..c]X]" "[g[x..z]X]" "card X \<ge> 3"
+  assumes "[f\<leadsto>X|a..c]" "[g\<leadsto>X|x..z]" "card X \<ge> 3"
   shows "(a=x \<and> c=z) \<or> (a=z \<and> c=x)"
   using chain_bounds_unique
   by (metis abc_ac_neq assms(1,2) ch_all_betw_f fin_chain_def points_in_chain short_ch_def)
@@ -4213,13 +4213,13 @@ qed
 
 lemma path_finsubset_chain2:
   assumes "Q \<in> \<P>" and "X \<subseteq> Q" and "card X \<ge> 2"
-  obtains f a b where "[f[a..b]X]"
+  obtains f a b where "[f\<leadsto>X|a..b]"
 proof -
   have finX: "finite X"
     by (metis assms(3) card.infinite rel_simps(28))
   have ch_X: "ch X"
     using path_finsubset_chain[OF assms] by blast
-  obtain f a b where f_def: "[f[a..b]X]" "a\<in>X \<and> b\<in>X"
+  obtain f a b where f_def: "[f\<leadsto>X|a..b]" "a\<in>X \<and> b\<in>X"
     using assms finX ch_X ch_some_betw get_fin_long_ch_bounds ch_long_if_card_ge3
     by (metis ch_by_ord_def ch_def fin_chain_def short_ch_def)
   thus ?thesis
@@ -4238,7 +4238,7 @@ text \<open>
 lemma (*for 11*) segmentation_ex_N2:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "finite (Q::'a set)" "card Q = N" "Q\<subseteq>P" "N=2"
-      and f_def: "[f[a..b]Q]"
+      and f_def: "[f\<leadsto>Q|a..b]"
       and S_def: "S = {segment a b}"
       and P1_def: "P1 = prolongation b a"
       and P2_def: "P2 = prolongation a b"
@@ -4808,7 +4808,7 @@ text \<open>
 theorem (*11*) show_segmentation:  
   assumes path_P: "P\<in>\<P>"
       and Q_def: "Q\<subseteq>P"
-      and f_def: "[f[a..b]Q]"
+      and f_def: "[f\<leadsto>Q|a..b]"
     fixes P1 defines P1_def: "P1 \<equiv> prolongation b a"
     fixes P2 defines P2_def: "P2 \<equiv> prolongation a b"
     fixes S  defines S_def: "S \<equiv> if card Q=2 then {segment a b}
@@ -4876,7 +4876,7 @@ theorem (*11*) segmentation:
                      (\<forall>x\<in>S. is_segment x) \<and> is_prolongation P1 \<and> is_prolongation P2"
 proof -
   let ?N = "card Q"
-  obtain f a b where f_def: "[f[a..b]Q]"
+  obtain f a b where f_def: "[f\<leadsto>Q|a..b]"
     using path_finsubset_chain2[OF path_P Q_def(2,1)]
     by metis
   let ?S = "if ?N=2 then {segment a b} else {segment (f i) (f (i+1)) | i. i<card Q-1}"
@@ -4884,7 +4884,7 @@ proof -
   let ?P2 = "prolongation a b"
   have from_seg: "P = ((\<Union>?S) \<union> ?P1 \<union> ?P2 \<union> Q)" "(\<forall>x\<in>?S. is_segment x)"
           "disjoint (?S\<union>{?P1,?P2})" "?P1\<noteq>?P2" "?P1\<notin>?S" "?P2\<notin>?S"
-    using show_segmentation[OF path_P Q_def(2) `[f[a..b]Q]`]
+    using show_segmentation[OF path_P Q_def(2) `[f\<leadsto>Q|a..b]`]
     by force+
   thus ?thesis
     by blast
@@ -4898,8 +4898,8 @@ end (* context MinkowskiSpacetime *)
 section "Chains are unique up to reversal"
 
 lemma (in MinkowskiSpacetime) chain_remove_at_right_edge:
-  assumes "[f[a..c]X]" "f (card X - 2) = p" "3 \<le> card X" "X = insert c Y" "c\<notin>Y"
-  shows "[f[a..p]Y]"
+  assumes "[f\<leadsto>X|a..c]" "f (card X - 2) = p" "3 \<le> card X" "X = insert c Y" "c\<notin>Y"
+  shows "[f\<leadsto>Y|a..p]"
 proof -
 
   have lch_X: "long_ch_by_ord f X"
@@ -5031,7 +5031,7 @@ qed
 
 lemma (in MinkowskiChain) fin_long_ch_imp_fin_ch:
   assumes "[f\<leadsto>X|a..b..c]"
-  shows "[f[a..c]X]"
+  shows "[f\<leadsto>X|a..c]"
   using assms fin_chain_def points_in_chain by auto
 
 
@@ -5042,8 +5042,8 @@ text \<open>
 lemma (in MinkowskiSpacetime) chain_unique_induction_ax:
   assumes "card X \<ge> 3"
       and "i < card X"
-      and "[f[a..c]X]"
-      and "[g[x..z]X]"
+      and "[f\<leadsto>X|a..c]"
+      and "[g\<leadsto>X|x..z]"
       and "a = x \<or> c = z"
     shows "f i = g i"
 using assms
@@ -5145,7 +5145,7 @@ next
   have "p\<in>Y"
     using \<open>X = insert c Y\<close> \<open>[a;p;c]\<close> abc_abc_neq lch_fX p_def IH.prems(1,3) Y_def(2)
     by (metis chain_remove_at_right_edge fin_chain_def points_in_chain)
-  have "[f[a..p]Y]"
+  have "[f\<leadsto>Y|a..p]"
     using chain_remove_at_right_edge [where f=f and a=a and c=c and X=X and p=p and Y=Y]
     using fin_long_ch_imp_fin_ch  [where f=f and a=a and c=c and b=b and X=X]
     using f_ch p_def \<open>card X \<ge> 3\<close> Y_def
@@ -5238,8 +5238,8 @@ text \<open>I'm really impressed \<open>sledgehammer\<close>/\<open>smt\<close> 
 lemma (in MinkowskiSpacetime) chain_unique_induction_cx:
   assumes "card X \<ge> 3"
       and "i < card X"
-      and "[f[a..c]X]"
-      and "[g[x..z]X]"
+      and "[f\<leadsto>X|a..c]"
+      and "[g\<leadsto>X|x..z]"
       and "c = x \<or> a = z"
     shows "f i = g (card X - i - 1)"
   using chain_sym chain_unique_induction_ax
@@ -5256,8 +5256,8 @@ text \<open>
 \<close>
 
 lemma (in MinkowskiSpacetime) chain_unique_upto_rev_cases:
-  assumes ch_f: "[f[a..c]X]"
-      and ch_g: "[g[x..z]X]"
+  assumes ch_f: "[f\<leadsto>X|a..c]"
+      and ch_g: "[g\<leadsto>X|x..z]"
       and card_X: "card X \<ge> 3"
       and valid_index: "i < card X"
   shows "((a=x \<or> c=z) \<longrightarrow> (f i = g i))" "((a=z \<or> c=x) \<longrightarrow> (f i = g (card X - i - 1)))"
@@ -5274,7 +5274,7 @@ proof -
 qed
 
 lemma (in MinkowskiSpacetime) chain_unique_upto_rev:
-  assumes "[f[a..c]X]" "[g[x..z]X]" "card X \<ge> 3" "i < card X"
+  assumes "[f\<leadsto>X|a..c]" "[g\<leadsto>X|x..z]" "card X \<ge> 3" "i < card X"
   shows "f i = g i \<or> f i = g (card X - i - 1)" "a=x\<and>c=z \<or> c=x\<and>a=z"
 proof -
   have "(a=x \<or> c=z) \<or> (a=z \<or> c=x)"
@@ -5394,7 +5394,7 @@ qed
 lemma fin_long_subchain_of_semifin:
   assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i+1" "Y=f`{i..j}"
     "g = (\<lambda>n. f(n+i))"
-  shows "[g[(f i)..(f j)]Y]" (* "j=i+1 \<longrightarrow> short_ch Y" "j>i+1 \<longrightarrow> fin_long_ch_by_ord g Y" *)
+  shows "[g\<leadsto>Y|(f i)..(f j)]" (* "j=i+1 \<longrightarrow> short_ch Y" "j>i+1 \<longrightarrow> fin_long_ch_by_ord g Y" *)
 proof -
   obtain k where "k=i+1" by simp
   hence ind_ord: "i<k \<and> k<j" using assms(3) by simp
@@ -7007,7 +7007,7 @@ proof -
     hence "short_ch X" "?a \<in> X \<and> ?d \<in> X" "?a \<noteq> ?d"
       using X_def \<open>card X = 2\<close> short_ch_card_2  unreach(3) by blast+
   }
-  hence "[f[Q\<^sub>x..Q\<^sub>z]X]"
+  hence "[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]"
     unfolding fin_chain_def
     by (metis X_def(1-3,5) ch_by_ord_def fin_X fin_long_chain_def get_fin_long_ch_bounds unreach(3))
 
@@ -7055,7 +7055,7 @@ proof -
       have "Q\<^sub>y\<in>\<Union>?S"
       proof -
         obtain c where "[f\<leadsto>X|Q\<^sub>x..c..Q\<^sub>z]"
-          using X_def(1) \<open>N = card X\<close> \<open>N\<noteq>2\<close> \<open>[f[Q\<^sub>x..Q\<^sub>z]X]\<close> fin_chain_def short_ch_card_2 by auto
+          using X_def(1) \<open>N = card X\<close> \<open>N\<noteq>2\<close> \<open>[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]\<close> fin_chain_def short_ch_card_2 by auto
         have "interval Q\<^sub>x Q\<^sub>z = \<Union>?S \<union> X"
           using int_split_to_segs [OF `[f\<leadsto>X|Q\<^sub>x..c..Q\<^sub>z]`] by auto
         thus ?thesis
@@ -7678,7 +7678,7 @@ qed
 theorem (*11*) segmentation_card:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "Q\<subseteq>P"
-      and f_def: "[f[a..b]Q]" (* This always exists given card Q > 2 *)
+      and f_def: "[f\<leadsto>Q|a..b]" (* This always exists given card Q > 2 *)
     fixes P1 defines P1_def: "P1 \<equiv> prolongation b a"
     fixes P2 defines  P2_def: "P2 \<equiv> prolongation a b"
     fixes S defines S_def: "S \<equiv> (if card Q=2 then {segment a b} else {segment (f i) (f (i+1)) | i. i<card Q-1})"
@@ -7716,7 +7716,7 @@ proof -
       using assms ch_by_ord_def fin_chain_def short_ch_card_2 \<open>2 \<le> card Q\<close> \<open>card Q \<noteq> 2\<close>
       by force
     show ?thesis
-      using number_of_segments [OF assms(1,2) `[f\<leadsto>Q|a..c..b]`]
+      using number_of_segments [OF assms(1,2) \<open>[f\<leadsto>Q|a..c..b]\<close>]
       using S_def \<open>card Q \<noteq> 2\<close> by presburger
   qed
   thus "card S = card Q - 1 \<and> Ball S is_segment"

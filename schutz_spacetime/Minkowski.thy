@@ -484,12 +484,6 @@ definition fin_long_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Right
     x\<noteq>y \<and> x\<noteq>z \<and> y\<noteq>z
     \<and> finite Q \<and> long_ch_by_ord f Q
     \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"
-(*definition fin_long_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool"
-  ("[_\<leadsto>_|_ .. _ ..  _]") where
-  "fin_long_chain f x y z Q \<equiv>
-    x\<noteq>y \<and> x\<noteq>z \<and> y\<noteq>z
-    \<and> finite Q \<and> long_ch_by_ord f Q
-    \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"*)
 
 lemma index_middle_element:
   assumes "[f\<leadsto>X|a..b..c]"
@@ -530,10 +524,14 @@ lemma chain_sym:
 definition fin_long_chain_2:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" where
   "fin_long_chain_2 x y z Q \<equiv> \<exists>f. [f\<leadsto>Q|x..y..z]"
 
-definition fin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[_[_ .. _]_]") where
-  "fin_chain f x y Q \<equiv>
+definition fin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ .. _]") where
+  "fin_chain f Q x y \<equiv>
     (short_ch Q \<and> x\<in>Q \<and> y\<in>Q \<and> x\<noteq>y)
     \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"
+(*definition fin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[_\<leadsto>_|_ .. _]") where
+  "fin_chain f x y Q \<equiv>
+    (short_ch Q \<and> x\<in>Q \<and> y\<in>Q \<and> x\<noteq>y)
+    \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"*)
 
 lemma points_in_chain:
   assumes "[f\<leadsto>Q|x..y..z]"
