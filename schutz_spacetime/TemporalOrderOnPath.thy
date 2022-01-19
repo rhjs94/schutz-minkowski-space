@@ -411,7 +411,7 @@ next
     assume "\<not>Suc j = card X"
     then have "Suc j < card X"
       using Suc_lessI indices(2) by blast
-    then have "[[(f i) (f j) (f(Suc j))]]"
+    then have "[f i; f j; f(Suc j)]"
       using chX finiteX indices(1) order_finite_chain2 by blast
     thus ?thesis
       using abc_abc_neq by blast
@@ -2254,7 +2254,7 @@ proof -
       by (metis TernaryOrdering.ordering_def a assms(1) b inf_chain_is_long long_ch_by_ord_def)
     have "(0<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<or> (0<n\<^sub>z \<and> n\<^sub>z<n\<^sub>y)"
       using \<open>f n\<^sub>y = y\<close> \<open>f n\<^sub>z = z\<close> assms less_linear semifin_chain_def xy xz yz  by auto
-    hence "[[(f 0) (f n\<^sub>y) (f n\<^sub>z)]] \<or> [[(f 0) (f n\<^sub>z) (f n\<^sub>y)]]"
+    hence "[f 0; f n\<^sub>y; f n\<^sub>z] \<or> [f 0; f n\<^sub>z; f n\<^sub>y]"
       using ordering_def assms(1) long_ch_by_ord_def semifin_chain_def
       by (metis long_ch_by_ord_def)
     thus "[x;y;z] \<or> [x;z;y]"
@@ -2373,11 +2373,11 @@ proof -
         (n\<^sub>z<n\<^sub>y \<and> n\<^sub>y<n\<^sub>x) \<or> (n\<^sub>y<n\<^sub>z \<and> n\<^sub>z<n\<^sub>x) \<or> (n\<^sub>y<n\<^sub>x \<and> n\<^sub>x<n\<^sub>z)"
     using fx fy fz assms less_linear
     by metis
-  have int_imp_1: "(n\<^sub>x<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<and> long_ch_by_ord f X \<and> n\<^sub>z < card X \<longrightarrow> [[(f n\<^sub>x) (f n\<^sub>y) (f n\<^sub>z)]]"
+  have int_imp_1: "(n\<^sub>x<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<and> long_ch_by_ord f X \<and> n\<^sub>z < card X \<longrightarrow> [f n\<^sub>x; f n\<^sub>y; f n\<^sub>z]"
     using assms long_ch_by_ord_def ordering_def
     by metis
-  hence "[[(f n\<^sub>x) (f n\<^sub>y) (f n\<^sub>z)]] \<or> [[(f n\<^sub>x) (f n\<^sub>z) (f n\<^sub>y)]] \<or> [[(f n\<^sub>z) (f n\<^sub>x) (f n\<^sub>y)]] \<or>
-         [[(f n\<^sub>z) (f n\<^sub>y) (f n\<^sub>x)]] \<or> [[(f n\<^sub>y) (f n\<^sub>z) (f n\<^sub>x)]] \<or> [[(f n\<^sub>y) (f n\<^sub>x) (f n\<^sub>z)]]"
+  hence "[f n\<^sub>x; f n\<^sub>y; f n\<^sub>z] \<or> [f n\<^sub>x; f n\<^sub>z; f n\<^sub>y] \<or> [f n\<^sub>z; f n\<^sub>x; f n\<^sub>y] \<or>
+         [f n\<^sub>z; f n\<^sub>y; f n\<^sub>x] \<or> [f n\<^sub>y; f n\<^sub>z; f n\<^sub>x] \<or> [f n\<^sub>y; f n\<^sub>x; f n\<^sub>z]"
   proof -
     have f1: "\<And>n na nb. \<not> n < na \<or> \<not> nb < n \<or> \<not> na < card X \<or> [f nb; f n; f na]"
       by (metis (no_types) ordering_def \<open>long_ch_by_ord f X\<close> long_ch_by_ord_def)
@@ -3293,7 +3293,7 @@ proof -
       qed
     } moreover {
       fix n n' n'' assume "(finite ?X \<longrightarrow> n'' < card ?X)" "Suc n = n' \<and> Suc n' = n''"
-      hence "[[(g n) (g n') (g n'')]]"
+      hence "[g n; g n'; g n'']"
         using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def long_ch_Y ordering_ord_ijk
         by (smt (verit, ccfv_threshold) fin_long_chain_def long_ch_by_ord_def
             One_nat_def card.insert diff_Suc_Suc diff_diff_cancel diff_is_0_eq
@@ -5003,13 +5003,13 @@ proof -
         assume "(n::nat)<n'" "n'<n''"
         {
           assume "infinite Y"
-          show "[[(f n) (f n') (f n'')]]"
+          show "[f n; f n'; f n'']"
             using \<open>\<And>n. infinite Y \<Longrightarrow> f n \<in> Y\<close> \<open>infinite Y\<close> assms(5) bound_ind by blast
         } {
           assume "n'' < card Y"
-          show "[[(f n) (f n') (f n'')]]"
+          show "[f n; f n'; f n'']"
             using \<open>n < n'\<close> \<open>n' < n''\<close> \<open>n'' < card Y\<close> assms(4,5) lch_X order_finite_chain
-            using \<open>infinite Y \<Longrightarrow> [[(f n) (f n') (f n'')]]\<close> by fastforce
+            using \<open>infinite Y \<Longrightarrow> [f n; f n'; f n'']\<close> by fastforce
         }
       qed
       hence lch_Y: "long_ch_by_ord f Y"
