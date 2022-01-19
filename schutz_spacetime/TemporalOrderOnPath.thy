@@ -3814,16 +3814,16 @@ proof -
         using \<open>n\<^sub>b < n\<^sub>c\<close> \<open>n\<^sub>b \<noteq> n\<^sub>c - 1\<close> by linarith
       hence "f(n\<^sub>c-1)\<noteq>a\<^sub>0 \<and> a\<^sub>0\<noteq>x"
         using bound_indices
-        by (metis \<open>[[(f n\<^sub>b) (f (n\<^sub>c - 1)) (f n\<^sub>c)]]\<close> abc_abc_neq abd_bcd_abc b_def(1,2) ch_all_betw_f
+        by (metis \<open>[f n\<^sub>b; f (n\<^sub>c - 1); f n\<^sub>c]\<close> abc_abc_neq abd_bcd_abc b_def(1,2) ch_all_betw_f
             long_ch_Y nb_def(2) nc_def(2))
       have "x\<noteq>f(n\<^sub>c-1)"
         using x_def(1) nc_def(3) long_ch_Y
         unfolding fin_long_chain_def long_ch_by_ord_def ordering_def
         by (metis less_imp_diff_less)
-      hence "[[a\<^sub>0 (f (n\<^sub>c-1)) x]]"
+      hence "[a\<^sub>0; f (n\<^sub>c-1); x]"
         using some_betw P_def(1,2) abc_abc_neq abc_acd_bcd abc_bcd_acd abc_sym b_def(1,2)
               c_def(1,2) ch_all_betw_f in_mono long_ch_Y nc_def(2) betw_b_in_path
-        by (smt \<open>[[(f n\<^sub>b) (f (n\<^sub>c-1)) (f n\<^sub>c)]]\<close> \<open>\<not> [[a\<^sub>0 x (f (n\<^sub>c-1))]]\<close> \<open>x \<in> P\<close> \<open>f(n\<^sub>c-1)\<noteq>a\<^sub>0 \<and> a\<^sub>0\<noteq>x\<close>)
+        by (smt \<open>[f n\<^sub>b; f (n\<^sub>c - 1); f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0; x; f (n\<^sub>c-1)]\<close> \<open>x \<in> P\<close> \<open>f(n\<^sub>c-1)\<noteq>a\<^sub>0 \<and> a\<^sub>0\<noteq>x\<close>)
       hence "[(f(n\<^sub>c-1)); x; a\<^sub>n]"
         using abc_acd_bcd x_def(2) by blast
       thus False using nb_def(1)
@@ -3867,13 +3867,13 @@ proof -
     using abc_abc_neq bound_indices k_def
     by metis
 
-  have b_middle: "[[(f (k-1)) b (f k)]]"
+  have b_middle: "[f(k-1); b; f k]"
   proof (cases)
-    assume "k=1" show "[[(f (k-1)) b (f k)]]"
+    assume "k=1" show "[f(k-1); b; f k]"
       using \<open>[a\<^sub>1; b; f k]\<close> \<open>k = 1\<close> bound_indices by auto
-  next assume "k\<noteq>1" show "[[(f (k-1)) b (f k)]]"
+  next assume "k\<noteq>1" show "[f(k-1); b; f k]"
     proof -
-      have "[[a\<^sub>1 (f (k-1)) (f k)]]" using bound_indices
+      have a1k: "[a\<^sub>1; f (k-1); f k]" using bound_indices
         using \<open>k < card Y\<close> \<open>k \<noteq> 0\<close> \<open>k \<noteq> 1\<close> long_ch_Y fin_Y order_finite_chain
         unfolding fin_long_chain_def
         by auto
@@ -3881,7 +3881,7 @@ proof -
          Our notation and Theorem 9 are too weak to say that just now.\<close>
       have ch_with_b: "ch {a\<^sub>1, (f (k-1)), b, (f k)}" using chain4
         using k_def(1) abc_ex_path_unique between_chain cross_once_notin
-        by (smt \<open>[[a\<^sub>1 (f (k - 1)) (f k)]]\<close> abc_abc_neq insert_absorb2)
+        by (smt \<open>[a\<^sub>1; f (k-1); f k]\<close> abc_abc_neq insert_absorb2)
 (*TODO: the proof below needs extra assumptions, but we should still try to get rid of smt above. *)
       (* proof -
         have "a\<^sub>1\<in>Q \<and> a\<^sub>n\<in>Q \<and> b\<in>Q"
@@ -3903,45 +3903,45 @@ proof -
       qed *)
       have "f (k-1) \<noteq> b \<and> (f k) \<noteq> (f (k-1)) \<and> b \<noteq> (f k)"
         using abc_abc_neq f_def k_def(2) Y_def
-        by (metis ordering_def \<open>[[a\<^sub>1 (f (k - 1)) (f k)]]\<close> less_imp_diff_less long_ch_by_ord_def)
-      hence some_ord_bk: "[[(f (k-1)) b (f k)]] \<or> [[b (f (k-1)) (f k)]] \<or> [[(f (k-1)) (f k) b]]"
+        by (metis ordering_def \<open>[a\<^sub>1; f (k-1); f k]\<close> less_imp_diff_less long_ch_by_ord_def)
+      hence some_ord_bk: "[f(k-1); b; f k] \<or> [b; f (k-1); f k] \<or> [f (k-1); f k; b]"
         using chain_on_path ch_with_b some_betw Y_def unfolding ch_def
         by (metis abc_sym insert_subset)
-      thus "[[(f (k-1)) b (f k)]]"
+      thus "[f(k-1); b; f k]"
       proof -
         have "\<not> [a\<^sub>1; f k; b]"
           by (simp add: \<open>[a\<^sub>1; b; f k]\<close> abc_only_cba(2))
         thus ?thesis
           using some_ord_bk k_def abc_bcd_acd abd_bcd_abc bound_indices
           by (metis diff_is_0_eq' diff_less less_imp_diff_less less_irrefl_nat not_less
-              zero_less_diff zero_less_one \<open>[a\<^sub>1; b; f k]\<close> \<open>[[a\<^sub>1 (f (k - 1)) (f k)]]\<close>)
+              zero_less_diff zero_less_one \<open>[a\<^sub>1; b; f k]\<close> a1k)
       qed
     qed
   qed
   (* not xor but it works anyway *)
   let "?case1 \<or> ?case2" = "k-2 \<ge> 0 \<or> k+1 \<le> card Y -1"
 
-  have b_right: "[[(f (k-2)) (f (k-1)) b]]" if "k \<ge> 2"
+  have b_right: "[f (k-2); f (k-1); b]" if "k \<ge> 2"
   proof -
     have "k-1 < (k::nat)"
       using \<open>k \<noteq> 0\<close> diff_less zero_less_one by blast
     hence "k-2 < k-1"
       using \<open>2 \<le> k\<close> by linarith
-    have "[[(f (k-2)) (f (k-1)) (f k)]]"
+    have "[f (k-2); f (k-1); b]"
       using f_def k_def(2) \<open>k-2 < k-1\<close> \<open>k-1 < k\<close> unfolding long_ch_by_ord_def ordering_def
-      by blast
-    thus "[[(f (k-2)) (f (k-1)) b]]"
-      using \<open>[[(f (k - 1)) b (f k)]]\<close> abd_bcd_abc
+      by (meson abd_bcd_abc b_middle)
+    thus "[f (k-2); f (k-1); b]"
+      using \<open>[f(k - 1); b; f k]\<close> abd_bcd_abc
       by blast
   qed
 
-  have b_left: "[[b (f k) (f (k+1))]]" if "k+1 \<le> card Y -1"
+  have b_left: "[b; f k; f (k+1)]" if "k+1 \<le> card Y -1"
   proof -
-    have "[[(f (k-1)) (f k) (f (k+1))]]"
+    have "[f (k-1); f k; f (k+1)]"
       using \<open>k \<noteq> 0\<close> f_def fin_Y order_finite_chain that
       by auto
-    thus "[[b (f k) (f (k+1))]]"
-      using \<open>[[(f (k - 1)) b (f k)]]\<close> abc_acd_bcd
+    thus "[b; f k; f (k+1)]"
+      using \<open>[f (k - 1); b; f k]\<close> abc_acd_bcd
       by blast
   qed
 
@@ -4016,7 +4016,7 @@ proof -
       qed
     qed
     moreover have "\<forall>n n' n''. (finite ?X \<longrightarrow> n'' < card ?X) \<and> Suc n = n' \<and> Suc n' = n''
-          \<longrightarrow> [[(g n) (g (Suc n)) (g (Suc (Suc n)))]]"
+          \<longrightarrow> [g n; g (Suc n); g (Suc (Suc n))]"
     proof (clarify)
       fix n n' n'' assume  a: "(finite ?X \<longrightarrow> (Suc (Suc n)) < card ?X)"
       
@@ -4028,7 +4028,7 @@ proof -
 
       consider "n\<le>k-1" | "n\<ge>k+1" | "n=k"
         by linarith
-      then show "[[(g n) (g (Suc n)) (g (Suc (Suc n)))]]"
+      then show "[g n; g (Suc n); g (Suc (Suc n))]"
       proof (cases)
         assume "n\<le>k-1" show ?thesis
           using cases_sn
@@ -4398,11 +4398,11 @@ proof
         by (meson add_lessD1)
       have "[a; f y; c] \<or> y=0"
         using \<open>y <?N - 1\<close> assms(2) f_def fin_long_chain_def order_finite_chain by auto
-      moreover have "[[a (f (y+1)) c]] \<or> y = ?N-2"
+      moreover have "[a; f (y+1); c] \<or> y = ?N-2"
         using \<open>y + 1 < card Q\<close> assms(2) f_def fin_long_chain_def order_finite_chain
         by (smt One_nat_def Suc_diff_1 Suc_eq_plus1 diff_Suc_eq_diff_pred gr_implies_not0
             lessI less_Suc_eq_le linorder_neqE_nat not_le numeral_2_eq_2)
-      ultimately consider "y=0"|"y=?N-2"|"([a; f y; c] \<and> [[a (f (y+1)) c]])"
+      ultimately consider "y=0"|"y=?N-2"|"([a; f y; c] \<and> [a; f (y+1); c])"
         by linarith
       hence "[a;p;c]"
       proof (cases)
@@ -4577,7 +4577,7 @@ proof -
       hence "[a; (f(n+1)); c]"
         using f_def fin_long_chain_def assms(3) order_finite_chain seg_betw that(1)
           abc_abc_neq abc_only_cba ch_all_betw_f
-        by (metis \<open>[[(f n) x (f (n + 1))]]\<close> \<open>f (n + 1) \<in> Q\<close> \<open>f n \<in> Q\<close> \<open>x = c\<close>)
+        by (metis \<open>[f n; x; f (n + 1)]\<close> \<open>f (n + 1) \<in> Q\<close> \<open>f n \<in> Q\<close> \<open>x = c\<close>)
       thus False
         using \<open>x=c\<close> \<open>[(f(n)); x; (f(n+1))]\<close> assms(3) f_def s_def(2)
           abc_only_cba(1) fin_long_chain_def order_finite_chain
@@ -4652,14 +4652,14 @@ proof (rule conjI)
           have "[f n; f m; (f(m+1))]"
             using \<open>n < m\<close> assms(3) f_def fin_long_chain_def order_finite_chain rs_def(5) by auto
           have "n+1<m" (* NOTICE: this is astounding. in principle, r and s could be adjacent? must be the False in the assumptions. *)
-            using \<open>[[(f n) (f m) (f(m + 1))]]\<close> \<open>n < m\<close> abc_only_cba(2) abd_bcd_abc y_betw
+            using \<open>[f n; f m; f(m + 1)]\<close> \<open>n < m\<close> abc_only_cba(2) abd_bcd_abc y_betw
             by (metis Suc_eq_plus1 Suc_leI le_eq_less_or_eq)
           hence "[f n; (f(n+1)); f m]"
             using f_def assms(3) rs_def(5)
             unfolding fin_long_chain_def long_ch_by_ord_def ordering_def
             by (metis add_lessD1 less_add_one less_diff_conv)
           hence "[f n; (f(n+1)); y]"
-            using \<open>[[(f n) (f m) (f(m + 1))]]\<close> abc_acd_abd abd_bcd_abc y_betw
+            using \<open>[f n; f m; f(m + 1)]\<close> abc_acd_abd abd_bcd_abc y_betw
             by blast
           thus ?thesis
             using abc_only_cba y_betw by blast
@@ -4676,7 +4676,7 @@ proof (rule conjI)
             unfolding fin_long_chain_def long_ch_by_ord_def ordering_def
             by (metis add_lessD1 less_add_one less_diff_conv)
           hence "[f m; (f(m+1)); y]"
-            using \<open>[[(f m) (f n) (f(n + 1))]]\<close> abc_acd_abd abd_bcd_abc y_betw
+            using \<open>[f m; f n; f(n + 1)]\<close> abc_acd_abd abd_bcd_abc y_betw
             by blast
           thus ?thesis
             using abc_only_cba y_betw by blast
@@ -5321,14 +5321,14 @@ proof (safe)
       hence "x<y"
         using \<open>x \<noteq> y\<close> le_imp_less_or_eq by blast
       obtain n where "n>y" by blast
-      hence "[[(f x)(f y)(f n)]]"
+      hence "[f x; f y; f n]"
         using assms(1) \<open>x<y\<close> inf_chain_is_long long_ch_by_ord_def ordering_ord_ijk by fastforce
       hence "?P x y"
         using abc_abc_neq by blast
     } moreover { (* TODO: use a wlog theorem for sets instead? *)
       assume "x>y"
       obtain n where "n>x" by blast
-      hence "[[(f y)(f x)(f n)]]"
+      hence "[f y; f x; f n]"
         using assms(1) \<open>x>y\<close> inf_chain_is_long long_ch_by_ord_def ordering_ord_ijk by fastforce
       hence "?P y x"
         using abc_abc_neq by blast
@@ -5360,7 +5360,7 @@ proof -
     obtain l where "f l \<in> X" "l\<noteq>m" "l\<noteq>n"
       using assms(1) inf_chain_is_long
       by (metis ordering_def le_eq_less_or_eq lessI long_ch_by_ord_def not_less_eq_eq)
-    hence "[[(f l)(f m)(f n)]] \<or> [[(f m)(f l)(f n)]] \<or> [[(f l)(f n)(f m)]]"
+    hence "[f l; f m; f n] \<or> [f m; f l; f n] \<or> [f l; f n; f m]"
       using \<open>f m = f n\<close> \<open>m\<noteq>n\<close> 
       using abc_abc_neq assms(1) inf_chain_is_long inf_ordering_inj' long_ch_by_ord_def
       by blast
@@ -5480,16 +5480,16 @@ proof -
             qed
           qed
         qed
-        show "\<forall>n n' n''. (finite Y \<longrightarrow> n'' < card Y) \<and> n<n' \<and> n'<n'' \<longrightarrow> [[(g n)(g n')(g n'')]]"
+        show "\<forall>n n' n''. (finite Y \<longrightarrow> n'' < card Y) \<and> n<n' \<and> n'<n'' \<longrightarrow> [g n; g n'; g n'']"
           apply (safe) using \<open>finite Y\<close> apply blast
         proof -
           fix l m n
           assume "l<m" "m<n" "n<card Y"
           hence "l+i<m+i" "m+i<n+i"
             apply simp by (simp add: \<open>m < n\<close>)
-          hence "[[(f(l+i))(f(m+i))(f(n+i))]]"
+          hence "[f(l+i); f(m+i); f(n+i)]"
             using assms(1) inf_chain_is_long long_ch_by_ord_def ordering_ord_ijk by fastforce
-          thus "[[(g l)(g m)(g n)]]"
+          thus "[g l; g m; g n]"
             using assms(5) by blast
         qed
       qed
