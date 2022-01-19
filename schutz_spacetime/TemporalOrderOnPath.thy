@@ -2505,7 +2505,7 @@ qed
 
 
 lemma ch_all_betw_f:
-  assumes "[f[x..yy..z]X]" and "y\<in>X" and "y\<noteq>x" and "y\<noteq>z"
+  assumes "[f\<leadsto>X|x..yy..z]" and "y\<in>X" and "y\<noteq>x" and "y\<noteq>z"
   shows "[x;y;z]"
 proof (rule ccontr)
   assume asm: "\<not> [x;y;z]"
@@ -2527,7 +2527,7 @@ qed
 lemma get_fin_long_ch_bounds:
   assumes "long_ch_by_ord f X"
       and "finite X"
-    shows "\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. [f[x..y..z]X]"
+    shows "\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. [f\<leadsto>X|x..y..z]"
 proof -
   obtain x where "x = f 0" by simp
   obtain z where "z = f (card X - 1)" by simp
@@ -2548,7 +2548,7 @@ proof -
   moreover have "n<card X - 1"
     using y_def \<open>f n = y\<close> \<open>n < card X\<close> \<open>z = f (card X - 1)\<close> assms(2)
     by (metis card.remove card_Diff_singleton less_SucE)
-  ultimately have "[f[x..y..z]X]"
+  ultimately have "[f\<leadsto>X|x..y..z]"
     using long_ch_by_ord_def y_def \<open>x = f 0\<close> \<open>z = f (card X - 1)\<close> abc_abc_neq assms ordering_ord_ijk
     unfolding fin_long_chain_def
     by (metis (no_types, lifting) card_gt_0_iff diff_less equals0D zero_less_one)
@@ -2561,7 +2561,7 @@ lemma get_fin_long_ch_bounds2:
   assumes "long_ch_by_ord f X"
       and "finite X"
     obtains x y z n\<^sub>x n\<^sub>y n\<^sub>z
-    where "x\<in>X \<and> y\<in>X \<and> z\<in>X \<and> [f[x..y..z]X] \<and> f n\<^sub>x = x \<and> f n\<^sub>y = y \<and> f n\<^sub>z = z"
+    where "x\<in>X \<and> y\<in>X \<and> z\<in>X \<and> [f\<leadsto>X|x..y..z] \<and> f n\<^sub>x = x \<and> f n\<^sub>y = y \<and> f n\<^sub>z = z"
   by (meson assms(1) assms(2) fin_long_chain_def get_fin_long_ch_bounds index_middle_element)
 
 lemma long_ch_card_ge3:
@@ -2569,7 +2569,7 @@ lemma long_ch_card_ge3:
   shows "long_ch_by_ord f X \<longleftrightarrow> card X \<ge> 3"
 proof
   assume "long_ch_by_ord f X"
-  then obtain a b c where "[f[a..b..c]X]"
+  then obtain a b c where "[f\<leadsto>X|a..b..c]"
     using get_fin_long_ch_bounds assms(2) by blast
   thus "3 \<le> card X"
     by (metis (no_types) One_nat_def card_eq_0_iff diff_Suc_1 empty_iff
@@ -2583,7 +2583,7 @@ next
 qed
 
 lemma chain_bounds_unique:
-  assumes "[f[a..b..c]X]" "[g[x..y..z]X]"
+  assumes "[f\<leadsto>X|a..b..c]" "[g\<leadsto>X|x..y..z]"
   shows "(a=x \<and> c=z) \<or> (a=z \<and> c=x)"
 proof -
   have "\<forall>p\<in>X. (a = p \<or> p = c) \<or> [a;p;c]"
@@ -2816,7 +2816,7 @@ qed
 
 lemma (in MinkowskiSpacetime) with3_and_index_is_fin_chain:
   assumes "f 0 = a" and "ch_by_ord f X" and "finite_chain_with3 a b c X"
-  shows "[f[a..b..c]X]"
+  shows "[f\<leadsto>X|a..b..c]"
 proof -
   have "finite X"
     using ordering_def assms old_fin_chain_finite
@@ -2867,17 +2867,17 @@ qed
 
 lemma (in MinkowskiSpacetime) g_from_with3:
   assumes "finite_chain_with3 a b c X"
-  obtains g where "[g[a..b..c]X] \<or> [g[c..b..a]X]"
+  obtains g where "[g\<leadsto>X|a..b..c] \<or> [g\<leadsto>X|c..b..a]"
 proof -
   have old_chain_sym: "finite_chain_with3 c b a X"
     by (metis abc_sym assms chain_with_def finite_chain_with3_def)
   obtain f where f_def: "(f 0 = a \<or> f 0 = c) \<and> ch_by_ord f X"
     using index_from_with3 assms
     by blast
-  hence "f 0 = a \<longrightarrow> [f[a..b..c]X]"
+  hence "f 0 = a \<longrightarrow> [f\<leadsto>X|a..b..c]"
     using with3_and_index_is_fin_chain f_def assms
     by simp
-  moreover have "f 0 = c \<longrightarrow> [f[c..b..a]X]"
+  moreover have "f 0 = c \<longrightarrow> [f\<leadsto>X|c..b..a]"
     using with3_and_index_is_fin_chain f_def assms old_chain_sym
     by simp
   ultimately show ?thesis
@@ -2888,27 +2888,27 @@ qed
 
 lemma (in MinkowskiSpacetime) equiv_chain_2a:
   assumes "finite_chain_with3 a b c X"
-  obtains f where "[f[a..b..c]X]"
+  obtains f where "[f\<leadsto>X|a..b..c]"
 proof -
-  obtain g where "[g[a..b..c]X] \<or> [g[c..b..a]X]"
+  obtain g where "[g\<leadsto>X|a..b..c] \<or> [g\<leadsto>X|c..b..a]"
     using assms g_from_with3 by blast
   thus ?thesis
   proof (* in two cases *)
-    assume "[g[a..b..c]X]"
+    assume "[g\<leadsto>X|a..b..c]"
     show ?thesis
-      using \<open>[g[a .. b .. c]X]\<close> that
+      using \<open>[g\<leadsto>X|a .. b .. c]\<close> that
       by blast
   next
-    assume "[g[c..b..a]X]"
+    assume "[g\<leadsto>X|c..b..a]"
     show ?thesis
-      using \<open>[g[c .. b .. a]X]\<close> chain_sym that
+      using \<open>[g\<leadsto>X|c .. b .. a]\<close> chain_sym that
       by blast
   qed
 qed
 
 
 lemma equiv_chain_2b:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
   shows "finite_chain_with3 a b c X"
 proof -
   have aligned: "[a;b;c]"
@@ -2968,7 +2968,7 @@ qed
 
 
 lemma (in MinkowskiSpacetime) equiv_chain_2:
-  "\<exists>f. [f[a..b..c]X] \<longleftrightarrow> [[a..b..c]X]"
+  "\<exists>f. [f\<leadsto>X|a..b..c] \<longleftrightarrow> [[a..b..c]X]"
   using equiv_chain_2a equiv_chain_2b
   by meson
 
@@ -2979,7 +2979,7 @@ section "Results for segments, rays and chains"
 context MinkowskiChain begin
 
 lemma inside_not_bound:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
       and "j<card X"
     shows "j>0 \<Longrightarrow> f j \<noteq> a" "j<card X - 1 \<Longrightarrow> f j \<noteq> c"
 proof -
@@ -3021,7 +3021,7 @@ qed
 
 
 lemma some_betw2:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
       and "j<card X" "j>0" "f j \<noteq> b"
     shows "[a; b; f j] \<or> [a; f j; b]"
 proof -
@@ -3042,7 +3042,7 @@ proof -
 qed
 
 lemma i_le_j_events_neq1:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
       and "i<j" "j<card X" "f j \<noteq> b" (* this just means you need to pick b well *)
     shows "f i \<noteq> f j"
 proof -
@@ -3069,7 +3069,7 @@ proof -
 qed
 
 lemma i_le_j_events_neq:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
       and "i<j" "j<card X"
     shows "f i \<noteq> f j"
 proof -
@@ -3103,14 +3103,14 @@ proof -
 qed
 
 lemma indices_neq_imp_events_neq:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
       and "i\<noteq>j" "j<card X" "i<card X"
     shows "f i \<noteq> f j"
   by (metis assms i_le_j_events_neq less_linear)
 
 
 lemma index_order2:
-  assumes "[f[x..y..z]X]" and "f a = x" and "f b = y" and "f c = z"
+  assumes "[f\<leadsto>X|x..y..z]" and "f a = x" and "f b = y" and "f c = z"
       and "finite X \<longrightarrow> a < card X" and "finite X \<longrightarrow> b < card X" and "finite X \<longrightarrow> c < card X"
     shows "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
   using index_order [where x=x and y=y and z=z and a=a and b=b and c=c and f=f and X=X]
@@ -3236,10 +3236,10 @@ qed
 text \<open>This is case (i) of the induction in Theorem 10.\<close>
 
 lemma (*for 10*) chain_append_at_left_edge:
-  assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
+  assumes long_ch_Y: "[f\<leadsto>Y|a\<^sub>1..a..a\<^sub>n]"
       and bY: "[b; a\<^sub>1; a\<^sub>n]"
     fixes g defines g_def: "g \<equiv> (\<lambda>j::nat. if j\<ge>1 then f (j-1) else b)"
-    shows "[g[b .. a\<^sub>1 .. a\<^sub>n](insert b Y)]"
+    shows "[g\<leadsto>(insert b Y)|b .. a\<^sub>1 .. a\<^sub>n]"
 proof -
   let ?X = "insert b Y"
   have "b\<notin>Y"
@@ -3339,10 +3339,10 @@ text \<open>
   the pain of Case (i) (\<open>chain_append_at_left_edge\<close>) again.
 \<close>
 lemma (*for 10*) chain_append_at_right_edge:
-  assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
+  assumes long_ch_Y: "[f\<leadsto>Y|a\<^sub>1..a..a\<^sub>n]"
       and Yb: "[a\<^sub>1; a\<^sub>n; b]"
     fixes g defines g_def: "g \<equiv> (\<lambda>j::nat. if j \<le> (card Y - 1) then f j else b)"
-    shows "[g[a\<^sub>1 .. a\<^sub>n .. b](insert b Y)]"
+    shows "[g\<leadsto>(insert b Y)|a\<^sub>1 .. a\<^sub>n .. b]"
 proof -
   let ?X = "insert b Y"
   have "b\<notin>Y"
@@ -3357,17 +3357,17 @@ proof -
     using fin_long_chain_def long_ch_Y by auto
   have "Suc (card Y) = card ?X"
     using \<open>b\<notin>Y\<close> fin_X fin_long_chain_def long_ch_Y by auto
-  obtain f2 where f2_def: "[f2[a\<^sub>n..a..a\<^sub>1]Y]" "f2=(\<lambda>n. f (card Y - 1 - n))"
+  obtain f2 where f2_def: "[f2\<leadsto>Y|a\<^sub>n..a..a\<^sub>1]" "f2=(\<lambda>n. f (card Y - 1 - n))"
     using chain_sym long_ch_Y by blast
   obtain g2 where g2_def: "g2 = (\<lambda>j::nat. if j\<ge>1 then f2 (j-1) else b)"
     by simp
   have "[b; a\<^sub>n; a\<^sub>1]"
     using abc_sym Yb by blast
-  hence g2_ord_X: "[g2[b .. a\<^sub>n .. a\<^sub>1]?X]"
+  hence g2_ord_X: "[g2\<leadsto>?X|b .. a\<^sub>n .. a\<^sub>1]"
     using chain_append_at_left_edge [where a\<^sub>1="a\<^sub>n" and a\<^sub>n="a\<^sub>1" and f="f2"]
       fin_X \<open>b\<notin>Y\<close> f2_def g2_def
     by blast
-  then obtain g1 where g1_def: "[g1[a\<^sub>1..a\<^sub>n..b]?X]" "g1=(\<lambda>n. g2 (card ?X - 1 - n))"
+  then obtain g1 where g1_def: "[g1\<leadsto>?X|a\<^sub>1..a\<^sub>n..b]" "g1=(\<lambda>n. g2 (card ?X - 1 - n))"
     using chain_sym by blast
   have sYX: "(card Y) = (card ?X) - 1"
     using assms(2,3) fin_long_chain_def long_ch_Y \<open>Suc (card Y) = card ?X\<close> by linarith
@@ -3403,7 +3403,7 @@ qed
 
 
 lemma S_is_dense:
-  assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
+  assumes long_ch_Y: "[f\<leadsto>Y|a\<^sub>1..a..a\<^sub>n]"
       and S_def: "S = {k::nat. [a\<^sub>1; f k; b] \<and> k < card Y}"
       and k_def: "S\<noteq>{}" "k = Max S"
       and k'_def: "k'>0" "k'<k"
@@ -3434,7 +3434,7 @@ qed
 
 
 lemma (*for 10*) smallest_k_ex:
-  assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
+  assumes long_ch_Y: "[f\<leadsto>Y|a\<^sub>1..a..a\<^sub>n]"
       and Y_def: "b\<notin>Y"
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
     shows "\<exists>k>0. [a\<^sub>1; b; f k] \<and> k < card Y \<and> \<not>(\<exists>k'<k. [a\<^sub>1; b; f k'])"
@@ -3590,7 +3590,7 @@ qed
 
 (* TODO: there's definitely a way of doing this using chain_sym and smallest_k_ex. *)
 lemma greatest_k_ex:
-  assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
+  assumes long_ch_Y: "[f\<leadsto>Y|a\<^sub>1..a..a\<^sub>n]"
       and Y_def: "b\<notin>Y"
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
     shows "\<exists>k. [f k; b; a\<^sub>n] \<and> k < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>k \<and> [f k'; b; a\<^sub>n])"
@@ -3737,7 +3737,7 @@ qed
 
 
 lemma get_closest_chain_events:
-  assumes long_ch_Y: "[f[a\<^sub>0..a..a\<^sub>n]Y]"
+  assumes long_ch_Y: "[f\<leadsto>Y|a\<^sub>0..a..a\<^sub>n]"
       and x_def: "x\<notin>Y" "[a\<^sub>0; x; a\<^sub>n]"
     obtains n\<^sub>b n\<^sub>c b c
       where "b=f n\<^sub>b" "c=f n\<^sub>c" "[b;x;c]" "b\<in>Y" "c\<in>Y" "n\<^sub>b = n\<^sub>c - 1" "n\<^sub>c<card Y" "n\<^sub>c>0"
@@ -3843,13 +3843,13 @@ qed
 
 text \<open>This is case (ii) of the induction in Theorem 10.\<close>
 lemma (*for 10*) chain_append_inside:
-  assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
+  assumes long_ch_Y: "[f\<leadsto>Y|a\<^sub>1..a..a\<^sub>n]"
       and Y_def: "b\<notin>Y"
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
       and k_def: "[a\<^sub>1; b; f k]" "k < card Y" "\<not>(\<exists>k'. (0::nat)<k' \<and> k'<k \<and> [a\<^sub>1; b; f k'])"
     fixes g
   defines g_def: "g \<equiv> (\<lambda>j::nat. if (j\<le>k-1) then f j else (if (j=k) then b else f (j-1)))"
-    shows "[g[a\<^sub>1 .. b .. a\<^sub>n]insert b Y]"
+    shows "[g\<leadsto>insert b Y|a\<^sub>1 .. b .. a\<^sub>n]"
 proof -
   let ?X = "insert b Y"
   have fin_X: "finite ?X"
@@ -4086,7 +4086,7 @@ proof -
   hence "long_ch_by_ord2 g ?X"
     using Y_def f_def long_ch_by_ord2_def long_ch_by_ord_def
     by auto
-  thus "[g[a\<^sub>1..b..a\<^sub>n]?X]"
+  thus "[g\<leadsto>?X|a\<^sub>1..b..a\<^sub>n]"
       unfolding fin_long_chain_def
       using ch_equiv fin_X \<open>a\<^sub>1 \<noteq> a\<^sub>n \<and> a\<^sub>1 \<noteq> b \<and> b \<noteq> a\<^sub>n\<close> bound_indices k_def(2) Y_def g_def
       by simp
@@ -4155,7 +4155,7 @@ proof -
 
       then obtain f where f_ords: "long_ch_by_ord f Y"
         using ch_long_if_card_ge3 \<open>4 \<le> card Y\<close> by fastforce
-      then obtain a\<^sub>1 a a\<^sub>n where long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
+      then obtain a\<^sub>1 a a\<^sub>n where long_ch_Y: "[f\<leadsto>Y|a\<^sub>1..a..a\<^sub>n]"
         using \<open>4 \<le> card Y\<close> get_fin_long_ch_bounds by fastforce
       hence bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
         by (simp add: fin_long_chain_def)
@@ -4172,7 +4172,7 @@ proof -
         have X_eq': "X = Y \<union> {b}"
           using X_eq by auto
         let ?g = "\<lambda>j. if j \<ge> 1 then f (j - 1) else b"
-        have "[?g[b..a\<^sub>1..a\<^sub>n]X]"
+        have "[?g\<leadsto>X|b..a\<^sub>1..a\<^sub>n]"
           using chain_append_at_left_edge IH.prems(4) X_eq' \<open>[b; a\<^sub>1; a\<^sub>n]\<close> \<open>b \<notin> Y\<close> long_ch_Y X_eq
           by presburger
         thus "ch X"
@@ -4181,7 +4181,7 @@ proof -
         (* case (ii) *)
         assume "[a\<^sub>1; a\<^sub>n; b]"
         let ?g = "\<lambda>j. if j \<le> (card X - 2) then f j else b"
-        have "[?g[a\<^sub>1..a\<^sub>n..b]X]"
+        have "[?g\<leadsto>X|a\<^sub>1..a\<^sub>n..b]"
           using chain_append_at_right_edge IH.prems(4) X_eq \<open>[a\<^sub>1; a\<^sub>n; b]\<close> \<open>b \<notin> Y\<close> long_ch_Y
           by auto
         thus "ch X"
@@ -4199,8 +4199,8 @@ proof -
                                         else if j = k
                                           then b else f (j - 1))"
           by simp
-        hence "[g[a\<^sub>1..b..a\<^sub>n]X]"
-          using chain_append_inside [of f a\<^sub>1 a a\<^sub>n Y b k] IH.prems(4) X_eq
+        hence "[g\<leadsto>X|a\<^sub>1..b..a\<^sub>n]"
+          using chain_append_inside [of f Y a\<^sub>1 a a\<^sub>n b k] IH.prems(4) X_eq
             \<open>[a\<^sub>1; b; a\<^sub>n]\<close> \<open>b \<notin> Y\<close> k_def long_ch_Y
           by auto
         thus "ch X"
@@ -4321,7 +4321,7 @@ qed
 
 
 lemma int_split_to_segs:
-  assumes f_def: "[f[a..b..c]Q]"
+  assumes f_def: "[f\<leadsto>Q|a..b..c]"
   fixes S defines S_def: "S \<equiv> {segment (f i) (f(i+1)) | i. i<card Q-1}"
   shows "interval a c = (\<Union>S) \<union> Q"
 proof
@@ -4447,7 +4447,7 @@ qed
 lemma (*for 11*) path_is_union:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "finite (Q::'a set)" "card Q = N" "Q\<subseteq>P" "N\<ge>3"
-      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f[a..b..c]Q]"
+      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f\<leadsto>Q|a..b..c]"
       and S_def: "S = {s. \<exists>i<(N-1). s = segment (f i) (f (i+1))}"
       and P1_def: "P1 = prolongation b a"
       and P2_def: "P2 = prolongation b c"
@@ -4531,7 +4531,7 @@ qed
 lemma (*for 11*) inseg_axc:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "finite (Q::'a set)" "card Q = N" "Q\<subseteq>P" "N\<ge>3"
-      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f[a..b..c]Q]"
+      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f\<leadsto>Q|a..b..c]"
       and S_def: "S = {s. \<exists>i<(N-1). s = segment (f i) (f (i+1))}"
       and x_def: "x\<in>s" "s\<in>S"
     shows "[a;x;c]"
@@ -4602,7 +4602,7 @@ qed
 lemma disjoint_segmentation:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "finite (Q::'a set)" "card Q = N" "Q\<subseteq>P" "N\<ge>3"
-      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f[a..b..c]Q]"
+      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f\<leadsto>Q|a..b..c]"
       and S_def: "S = {s. \<exists>i<(N-1). s = segment (f i) (f (i+1))}"
       and P1_def: "P1 = prolongation b a"
       and P2_def: "P2 = prolongation b c"
@@ -4691,7 +4691,7 @@ qed
 lemma (*for 11*) segmentation_ex_Nge3:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "finite (Q::'a set)" "card Q = N" "Q\<subseteq>P" "N\<ge>3"
-      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f[a..b..c]Q]"
+      and f_def: "a\<in>Q \<and> b\<in>Q \<and> c\<in>Q" "[f\<leadsto>Q|a..b..c]"
       and S_def: "S = {s. \<exists>i<(N-1). s = segment (f i) (f (i+1))}"
       and P1_def: "P1 = prolongation b a"
       and P2_def: "P2 = prolongation b c"
@@ -4842,7 +4842,7 @@ proof -
     assume "card Q \<noteq> 2"
     hence "card Q \<ge> 3"
       using card_Q by auto
-    then obtain c where c_def: "[f[a..c..b]Q]"
+    then obtain c where c_def: "[f\<leadsto>Q|a..c..b]"
       using assms(3,5) \<open>a\<noteq>b\<close>
       by (metis f_def fin_chain_def short_ch_def three_in_set3)
     have pro_equiv: "P1 = prolongation c a \<and> P2 = prolongation c b"
@@ -4959,7 +4959,7 @@ proof -
       using assms(3) by auto
   
     obtain b where "b = f 1" by simp
-    have "\<exists>b. [f[a..b..p]Y]"
+    have "\<exists>b. [f\<leadsto>Y|a..b..p]"
     proof
       have "[a;b;p]"
         using bound_ind \<open>b = f 1\<close> \<open>3 \<noteq> card X\<close> assms(2,3) lch_X order_finite_chain
@@ -5017,7 +5017,7 @@ proof -
           long_ch_by_ord_def zero_into_ordering
         by fastforce
   
-      show "[f[a..b..p]Y]"
+      show "[f\<leadsto>Y|a..b..p]"
         using all_neq lch_Y bound_ind \<open>b\<in>Y\<close> assms(2,3,4,5) unfolding fin_long_chain_def
         by (metis Diff_insert_absorb One_nat_def add_leD1 card.infinite finite_insert plus_1_eq_Suc
             diff_diff_left card_Diff_singleton not_one_le_zero insertI1 numeral_2_eq_2 numeral_3_eq_3)
@@ -5030,7 +5030,7 @@ qed
 
 
 lemma (in MinkowskiChain) fin_long_ch_imp_fin_ch:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
   shows "[f[a..c]X]"
   using assms fin_chain_def points_in_chain by auto
 
@@ -5052,9 +5052,9 @@ proof (induct "card X - 3" arbitrary: X a c x z)
   have "card X = 3"
     using Nil.hyps Nil.prems(1) by auto
 
-  obtain b where f_ch: "[f[a..b..c]X]"
+  obtain b where f_ch: "[f\<leadsto>X|a..b..c]"
     by (metis Nil.prems(1,3) fin_chain_def short_ch_def three_in_set3)
-  obtain y where g_ch: "[g[x..y..z]X]"
+  obtain y where g_ch: "[g\<leadsto>X|x..y..z]"
     using Nil.prems fin_chain_def short_ch_card_2
     by (metis Suc_n_not_le_n ch_by_ord_def numeral_2_eq_2 numeral_3_eq_3)
 
@@ -5109,10 +5109,10 @@ next
   have "card X \<ge> 4"
     using IH.hyps(2) by linarith
 
-  obtain b where f_ch: "[f[a..b..c]X]"
+  obtain b where f_ch: "[f\<leadsto>X|a..b..c]"
     using \<open>ch_by_ord f X\<close> IH(3,5) fin_chain_def short_ch_card_2
     by auto
-  obtain y where g_ch: "[g[x..y..z]X]"
+  obtain y where g_ch: "[g\<leadsto>X|x..y..z]"
     using \<open>ch_by_ord f X\<close> IH.prems(1,4) fin_chain_def short_ch_card_2
     by auto
 
@@ -5398,7 +5398,7 @@ lemma fin_long_subchain_of_semifin:
 proof -
   obtain k where "k=i+1" by simp
   hence ind_ord: "i<k \<and> k<j" using assms(3) by simp
-  have "[g[(f i) .. (f k) .. (f j)]Y]"
+  have "[g\<leadsto>Y|(f i) .. (f k) .. (f j)]"
   proof -
     have "f i \<noteq> f k \<and> f i \<noteq> f j \<and> f k \<noteq> f j"
     proof -
@@ -7054,10 +7054,10 @@ proof -
 
       have "Q\<^sub>y\<in>\<Union>?S"
       proof -
-        obtain c where "[f[Q\<^sub>x..c..Q\<^sub>z]X]"
+        obtain c where "[f\<leadsto>X|Q\<^sub>x..c..Q\<^sub>z]"
           using X_def(1) \<open>N = card X\<close> \<open>N\<noteq>2\<close> \<open>[f[Q\<^sub>x..Q\<^sub>z]X]\<close> fin_chain_def short_ch_card_2 by auto
         have "interval Q\<^sub>x Q\<^sub>z = \<Union>?S \<union> X"
-          using int_split_to_segs [OF `[f[Q\<^sub>x..c..Q\<^sub>z]X]`] by auto
+          using int_split_to_segs [OF `[f\<leadsto>X|Q\<^sub>x..c..Q\<^sub>z]`] by auto
         thus ?thesis
           using \<open>Q\<^sub>y\<notin>X\<close> y_int by blast
       qed
@@ -7558,7 +7558,7 @@ lemma segment_nonempty:
 lemma (*for 11*) number_of_segments:
   assumes path_P: "P\<in>\<P>"
       and Q_def: "Q\<subseteq>P"
-      and f_def: "[f[a..b..c]Q]"
+      and f_def: "[f\<leadsto>Q|a..b..c]"
     shows "card {segment (f i) (f (i+1)) | i. i<(card Q-1)} = card Q - 1"
 proof -
   let ?S = "{segment (f i) (f (i+1)) | i. i<(card Q-1)}"
@@ -7712,11 +7712,11 @@ proof -
     assume "?N\<noteq>2"
     hence "?N\<ge>3"
       using \<open>2 \<le> card Q\<close> by linarith
-    then obtain c where "[f[a..c..b]Q]"
+    then obtain c where "[f\<leadsto>Q|a..c..b]"
       using assms ch_by_ord_def fin_chain_def short_ch_card_2 \<open>2 \<le> card Q\<close> \<open>card Q \<noteq> 2\<close>
       by force
     show ?thesis
-      using number_of_segments [OF assms(1,2) `[f[a..c..b]Q]`]
+      using number_of_segments [OF assms(1,2) `[f\<leadsto>Q|a..c..b]`]
       using S_def \<open>card Q \<noteq> 2\<close> by presburger
   qed
   thus "card S = card Q - 1 \<and> Ball S is_segment"

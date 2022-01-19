@@ -477,20 +477,22 @@ definition semifin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Righta
   "semifin_chain f Q x \<equiv>
     infinite Q \<and> long_ch_by_ord f Q
     \<and> f 0 = x"
-(*definition semifin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_[_..]]") where
-  "semifin_chain f Q x \<equiv>
-    infinite Q \<and> long_ch_by_ord f Q
-    \<and> f 0 = x"*)
 
-definition fin_long_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool"
-  ("[_[_ .. _ ..  _]_]") where
-  "fin_long_chain f x y z Q \<equiv>
+definition fin_long_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool"
+  ("[_\<leadsto>_|_ .. _ ..  _]") where
+  "fin_long_chain f Q x y z \<equiv>
     x\<noteq>y \<and> x\<noteq>z \<and> y\<noteq>z
     \<and> finite Q \<and> long_ch_by_ord f Q
     \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"
+(*definition fin_long_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool"
+  ("[_\<leadsto>_|_ .. _ ..  _]") where
+  "fin_long_chain f x y z Q \<equiv>
+    x\<noteq>y \<and> x\<noteq>z \<and> y\<noteq>z
+    \<and> finite Q \<and> long_ch_by_ord f Q
+    \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"*)
 
 lemma index_middle_element:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
   shows "\<exists>n. 0<n \<and> n<(card X - 1) \<and> f n = b"
 proof -
   obtain n where n_def: "n < card X" "f n = b"
@@ -502,7 +504,7 @@ proof -
 qed
 
 lemma fin_ch_betw:
-  assumes "[f[a..b..c]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
   shows "[a;b;c]"
 proof -
   obtain nb where n_def: "nb\<noteq>0" "nb<card X - 1" "f nb = b"
@@ -514,27 +516,27 @@ proof -
 qed
 
 lemma chain_sym_obtain:
-  assumes "[f[a..b..c]X]"
-  obtains g where "[g[c..b..a]X]" and "g=(\<lambda>n. f (card X - 1 - n))"
+  assumes "[f\<leadsto>X|a..b..c]"
+  obtains g where "[g\<leadsto>X|c..b..a]" and "g=(\<lambda>n. f (card X - 1 - n))"
 using ordering_sym assms(1) unfolding fin_long_chain_def long_ch_by_ord_def
 by (metis (mono_tags, lifting) abc_sym diff_self_eq_0 diff_zero)
 
 lemma chain_sym:
-  assumes "[f[a..b..c]X]"
-    shows "[\<lambda>n. f (card X - 1 - n)[c..b..a]X]"
+  assumes "[f\<leadsto>X|a..b..c]"
+    shows "[\<lambda>n. f (card X - 1 - n)\<leadsto>X|c..b..a]"
   using chain_sym_obtain [where f=f and a=a and b=b and c=c and X=X]
   using assms(1) by blast
 
 definition fin_long_chain_2:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "fin_long_chain_2 x y z Q \<equiv> \<exists>f. [f[x..y..z]Q]"
+  "fin_long_chain_2 x y z Q \<equiv> \<exists>f. [f\<leadsto>Q|x..y..z]"
 
 definition fin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[_[_ .. _]_]") where
   "fin_chain f x y Q \<equiv>
     (short_ch Q \<and> x\<in>Q \<and> y\<in>Q \<and> x\<noteq>y)
-    \<or> (\<exists>z\<in>Q. [f[x..z..y]Q])"
+    \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"
 
 lemma points_in_chain:
-  assumes "[f[x..y..z]Q]"
+  assumes "[f\<leadsto>Q|x..y..z]"
   shows "x\<in>Q \<and> y\<in>Q \<and> z\<in>Q"
 proof -
   have "x\<in>Q"
@@ -842,7 +844,7 @@ locale MinkowskiUnreachable = MinkowskiChain +
                               \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))
                          \<and> (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
       and I7: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> Q - \<emptyset> Q b; Qy \<in> \<emptyset> Q b\<rbrakk>
-               \<Longrightarrow> \<exists>g X Qn. [g[Qx..Qy..Qn]X] \<and> Qn \<in> Q - \<emptyset> Q b"
+               \<Longrightarrow> \<exists>g X Qn. [g\<leadsto>X|Qx..Qy..Qn] \<and> Qn \<in> Q - \<emptyset> Q b"
 begin
 
 lemma card_unreach_geq_2:
