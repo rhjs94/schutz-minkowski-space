@@ -2216,11 +2216,11 @@ subsection "Proofs for totally ordered index-chains"
 subsubsection "General results"
 
 lemma inf_chain_is_long:
-  assumes "semifin_chain f x X"
+  assumes "[f\<leadsto>X|x..]"
   shows "long_ch_by_ord f X \<and> f 0 = x \<and> infinite X"
 proof - 
   have "infinite X \<longrightarrow> card X \<noteq> 2" using card.infinite by simp
-  hence "semifin_chain f x X \<longrightarrow> long_ch_by_ord f X"
+  hence "[f\<leadsto>X|x..] \<longrightarrow> long_ch_by_ord f X"
     using long_ch_by_ord_def semifin_chain_def short_ch_def
     by simp
   thus ?thesis using assms semifin_chain_def by blast
@@ -2229,11 +2229,11 @@ qed
 text \<open>A reassurance that the starting point $x$ is implied.\<close>
 lemma long_inf_chain_is_semifin:
   assumes "long_ch_by_ord f X \<and> infinite X"
-  shows "\<exists> x. [f[x..]X]"
+  shows "\<exists> x. [f\<leadsto>X|x..]"
   by (simp add: assms semifin_chain_def)
 
 lemma endpoint_in_semifin:
-  assumes "semifin_chain f x X"
+  assumes  "[f\<leadsto>X|x..]"
     shows "x\<in>X"
   using assms semifin_chain_def zero_into_ordering inf_chain_is_long long_ch_by_ord_def
   by (metis finite.emptyI)
@@ -2246,7 +2246,7 @@ lemma three_in_long_chain:
 subsubsection "Index-chains lie on paths"
 
 lemma all_aligned_on_semifin_chain:
-  assumes "[f[x..]X]"
+  assumes "[f\<leadsto>X|x..]"
   and a: "y\<in>X" and b:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
   shows "[x;y;z] \<or> [x;z;y]"
 proof -
@@ -2263,7 +2263,7 @@ proof -
 
 
 lemma semifin_chain_on_path:
-  assumes "[f[x..]X]"
+  assumes "[f\<leadsto>X|x..]"
   shows "\<exists>P\<in>\<P>. X\<subseteq>P"
 proof -
   obtain y where "y\<in>X" and "y\<noteq>x"
@@ -3129,7 +3129,7 @@ end (* context MinkowskiChain *)
 context MinkowskiSpacetime begin
 
 lemma bound_on_path:
-  assumes "Q\<in>\<P>" "[f[(f 0)..]X]" "X\<subseteq>Q" "is_bound_f b X f"
+  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "is_bound_f b X f"
   shows "b\<in>Q"
 proof -
   obtain a c where "a\<in>X" "c\<in>X" "[a;c;b]"
@@ -5293,7 +5293,7 @@ context MinkowskiSpacetime begin
 
 
 lemma f_img_is_subset:
-  assumes "[f[(f 0) ..]X]" "i\<ge>0" "j>i" "Y=f`{i..j}"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
   shows "Y\<subseteq>X"
 proof
   fix x assume "x\<in>Y"
@@ -5307,7 +5307,7 @@ qed
 
 
 lemma f_inj_on_index_subset:
-  assumes "[f[(f 0) ..]X]" "i\<ge>0" "j>i" "Y=f`{i..j}"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
   shows "inj_on f {i..j}"
   unfolding inj_on_def
 proof (safe)
@@ -5340,14 +5340,14 @@ qed
 
 
 lemma f_bij_on_index_subset:
-  assumes "[f[(f 0) ..]X]" "i\<ge>0" "j>i" "Y=f`{i..j}"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
   shows "bij_betw f {i..j} Y"
   using f_inj_on_index_subset
   by (metis assms inj_on_imp_bij_betw)
 
 
 lemma only_one_index:
-  assumes "[f[(f 0) ..]X]" "i\<ge>0" "j>i" "Y=f`{i..j}" "f n \<in> Y"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}" "f n \<in> Y"
   shows "n\<in>{i..j}"
 proof -
   obtain m where "m\<in>{i..j}" "f m = f n"
@@ -5373,14 +5373,14 @@ qed
 
 
 lemma f_one_to_one_on_index_subset:
-  assumes "[f[(f 0) ..]X]" "i\<ge>0" "j>i" "Y=f`{i..j}" "y\<in>Y"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}" "y\<in>Y"
   shows "\<exists>!k\<in>{i..j}. f k = y" "f k = y \<longrightarrow> k\<in>{i..j}"
   using f_inj_on_index_subset only_one_index assms image_iff inj_on_eq_iff apply metis
   using assms(1,3,4,5) only_one_index by blast
 
 
 lemma card_of_subchain:
-  assumes "[f[(f 0) ..]X]" "i\<ge>0" "j>i" "Y=f`{i..j}"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
   shows "card Y = card {i..j}" "card Y = j-i+1"
 proof -
   show "card Y = card {i..j}"
@@ -5392,7 +5392,7 @@ qed
 
 
 lemma fin_long_subchain_of_semifin:
-  assumes "[f[(f 0) ..]X]" "i\<ge>0" "j>i+1" "Y=f`{i..j}"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i+1" "Y=f`{i..j}"
     "g = (\<lambda>n. f(n+i))"
   shows "[g[(f i)..(f j)]Y]" (* "j=i+1 \<longrightarrow> short_ch Y" "j>i+1 \<longrightarrow> fin_long_ch_by_ord g Y" *)
 proof -
@@ -5514,7 +5514,7 @@ section "Extensions of results to infinite chains"
 context MinkowskiSpacetime begin
 
 lemma i_neq_j_imp_events_neq_inf:
-  assumes "[f[(f 0)..]X]" "i\<noteq>j"
+  assumes "[f\<leadsto>X|(f 0)..]" "i\<noteq>j"
   shows "f i \<noteq> f j"
 proof -
   let ?P = "\<lambda> i j. i\<noteq>j \<longrightarrow> f i \<noteq> f j"
@@ -5549,7 +5549,7 @@ lemma i_neq_j_imp_events_neq:
 
 
 lemma inf_chain_origin_unique:
-  assumes "[f[f 0..]X]" "[g[g 0..]X]"
+  assumes "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|g 0..]"
   shows "f 0 = g 0"
 proof (rule ccontr)
   assume "f 0 \<noteq> g 0"
@@ -5618,11 +5618,11 @@ qed
 
 
 lemma inf_chain_unique:
-  assumes "[f[f 0..]X]" "[g[g 0..]X]"
+  assumes "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|g 0..]"
   shows "\<forall>i::nat. f i = g i"
 proof -
   {
-    assume asm: "[f[f 0..]X]" "[g[f 0..]X]"
+    assume asm: "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|f 0..]"
     have "\<forall>i::nat. f i = g i"
     proof
       fix i::nat
@@ -6793,7 +6793,7 @@ qed
 
 
 lemma ray_of_bounds1:
-  assumes "Q\<in>\<P>" "[f[(f 0)..]X]" "X\<subseteq>Q" "closest_bound c X" "is_bound_f b X f" "b\<noteq>c"
+  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "closest_bound c X" "is_bound_f b X f" "b\<noteq>c"
   assumes "is_bound_f x X f"
   shows "x=b \<or> x=c \<or> [c;x;b] \<or> [c;b;x]"
 proof -
@@ -6816,7 +6816,7 @@ qed
 
 
 lemma ray_of_bounds2:
-  assumes "Q\<in>\<P>" "[f[(f 0)..]X]" "X\<subseteq>Q" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
+  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
   assumes "x=b \<or> x=c \<or> [c;x;b] \<or> [c;b;x]"
   shows "is_bound_f x X f"
 proof -
@@ -6836,7 +6836,7 @@ proof -
     hence ?thesis unfolding is_bound_f_def
     proof (safe)
       fix i j::nat
-      show "[f[f 0..]X]"
+      show "[f\<leadsto>X|f 0..]"
         by (simp add: assms(2))
       assume "i<j"
       hence "[f i; f j; b]"
@@ -6851,7 +6851,7 @@ proof -
     hence ?thesis unfolding is_bound_f_def
     proof (safe)
       fix i j::nat
-      show "[f[f 0..]X]"
+      show "[f\<leadsto>X|f 0..]"
         by (simp add: assms(2))
       assume "i<j"
       hence "[f i; f j; b]"
@@ -6875,7 +6875,7 @@ qed
 
 
 lemma ray_of_bounds3:
-  assumes "Q\<in>\<P>" "[f[(f 0)..]X]" "X\<subseteq>Q" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
+  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
   shows "all_bounds X = insert c (ray c b)"
 proof
   let ?B = "all_bounds X"
@@ -6906,7 +6906,7 @@ qed
 
 
 lemma ray_of_bounds:
-  assumes "[f[(f 0)..]X]" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
+  assumes "[f\<leadsto>X|(f 0)..]" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
   shows "all_bounds X = insert c (ray c b)"
   using ray_of_bounds3 assms semifin_chain_on_path by blast
 
@@ -6933,27 +6933,27 @@ qed
 
 
 lemma bound_any_f:
-  assumes "Q\<in>\<P>" "[f[(f 0)..]X]" "X\<subseteq>Q" "is_bound c X"
+  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "is_bound c X"
   shows "is_bound_f c X f"
 proof -
-  obtain g where "is_bound_f c X g" "[g[g 0..]X]"
+  obtain g where "is_bound_f c X g" "[g\<leadsto>X|g 0..]"
     using assms(4) is_bound_def is_bound_f_def by blast
   show ?thesis
     unfolding is_bound_f_def
   proof (safe)
     fix i j::nat
-    show "[f[f 0 ..]X]" by (simp add: assms(2))
+    show "[f\<leadsto>X|f 0 ..]" by (simp add: assms(2))
     assume "i<j"
     have "[g i; g j; c]"
       using \<open>i < j\<close> \<open>is_bound_f c X g\<close> is_bound_f_def by blast
     thus "[f i; f j; c]"
-      using inf_chain_unique \<open>[g[g 0 ..]X]\<close> assms(2) by force
+      using inf_chain_unique \<open>[g\<leadsto>X|g 0 ..]\<close> assms(2) by force
   qed
 qed
 
 
 lemma closest_bound_any_f:
-  assumes "Q\<in>\<P>" "[f[(f 0)..]X]" "X\<subseteq>Q" "closest_bound c X"
+  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "closest_bound c X"
   shows "closest_bound_f c X f"
 proof (unfold closest_bound_f_def, safe)
   show "is_bound_f c X f"

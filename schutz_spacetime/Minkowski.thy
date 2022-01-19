@@ -473,10 +473,14 @@ text \<open>
   Notice we require both \<open>infinite X\<close> and \<open>long_ch_by_ord\<close>, thus circumventing infinite
   Isabelle sets having cardinality $0$.
 \<close>
-definition semifin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[_[_ ..]_]") where
-  "semifin_chain f x Q \<equiv>
+definition semifin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ ..]") where
+  "semifin_chain f Q x \<equiv>
     infinite Q \<and> long_ch_by_ord f Q
     \<and> f 0 = x"
+(*definition semifin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_[_..]]") where
+  "semifin_chain f Q x \<equiv>
+    infinite Q \<and> long_ch_by_ord f Q
+    \<and> f 0 = x"*)
 
 definition fin_long_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool"
   ("[_[_ .. _ ..  _]_]") where
@@ -781,7 +785,7 @@ section "Chains: (Closest) Bounds"
 
 definition is_bound_f :: "'a \<Rightarrow> 'a set \<Rightarrow> (nat\<Rightarrow>'a) \<Rightarrow> bool" where
   "is_bound_f Q\<^sub>b Q f \<equiv>
-    \<forall>i j ::nat. [f[(f 0)..]Q] \<and> (i<j \<longrightarrow> [f i; f j; Q\<^sub>b])"
+    \<forall>i j ::nat. [f\<leadsto>Q|(f 0)..] \<and> (i<j \<longrightarrow> [f i; f j; Q\<^sub>b])"
 
 
 definition is_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
