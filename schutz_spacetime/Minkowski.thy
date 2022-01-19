@@ -528,10 +528,6 @@ definition fin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow
   "fin_chain f Q x y \<equiv>
     (short_ch Q \<and> x\<in>Q \<and> y\<in>Q \<and> x\<noteq>y)
     \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"
-(*definition fin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[_\<leadsto>_|_ .. _]") where
-  "fin_chain f x y Q \<equiv>
-    (short_ch Q \<and> x\<in>Q \<and> y\<in>Q \<and> x\<noteq>y)
-    \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"*)
 
 lemma points_in_chain:
   assumes "[f\<leadsto>Q|x..y..z]"
@@ -570,8 +566,8 @@ qed
 subsection "Locally ordered chains with indexing"
 
 text \<open>Definition for Schutz-like chains, with local order only.\<close>
-definition long_ch_by_ord2 :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "long_ch_by_ord2 f X \<equiv>
+definition local_long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "local_long_ch_by_ord f X \<equiv>
     \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering2 f betw X"
 
 subsection "Chains using betweenness"

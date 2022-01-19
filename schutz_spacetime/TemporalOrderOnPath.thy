@@ -194,7 +194,7 @@ theorem order_finite_chain:
 
 (* Theorem 2 (with helper lemmas for induction) for local chains *)
 lemma thm2_ind1:
-  assumes chX: "long_ch_by_ord2 f X"
+  assumes chX: "local_long_ch_by_ord f X"
       and finiteX: "finite X"
     shows "\<forall>j i. ((i::nat) < j \<and> j < card X - 1) \<longrightarrow> [f i; f j; f (j + 1)]"
 proof (rule allI)+
@@ -210,7 +210,7 @@ proof (rule allI)+
     proof (clarify)
       assume asm: "i<Suc j" "Suc j<card X -1"
       have pj: "?P j (Suc j)" (* needs Suc Suc j < card X *)
-        using asm(2) chX less_diff_conv long_ch_by_ord2_def ordering2_def
+        using asm(2) chX less_diff_conv local_long_ch_by_ord_def ordering2_def
         by (metis Suc_eq_plus1)
       have "i<j \<or> i=j" using asm(1)
         by linarith
@@ -234,7 +234,7 @@ proof (rule allI)+
 qed
 
 lemma thm2_ind2:
-  assumes chX: "long_ch_by_ord2 f X"
+  assumes chX: "local_long_ch_by_ord f X"
       and finiteX: "finite X"
     shows "\<forall>m l. (0<(l-m) \<and> (l-m) < l \<and> l < card X) \<longrightarrow> [f (l-m-1); f (l-m); (f l)]"
 proof (rule allI)+
@@ -263,7 +263,7 @@ proof (rule allI)+
             using \<open>Suc m = 1\<close> asm finiteX thm2_ind1 chX
             using Suc_eq_plus1 add_diff_inverse_nat diff_Suc_less
                   gr_implies_not_zero less_one plus_1_eq_Suc
-            by (smt long_ch_by_ord2_def ordering2_ord_ijk)
+            by (smt local_long_ch_by_ord_def ordering2_ord_ijk)
         qed
       next
         assume "Suc m > 1"
@@ -279,7 +279,7 @@ proof (rule allI)+
           have "Suc(l - Suc m - 1) = l - Suc m" "Suc(l - Suc m) = l-m"
             using Suc_pred asm(1) by presburger+
           hence "[f(l - Suc m - 1); f(l - Suc m); f(l - m)]"
-            using chX unfolding long_ch_by_ord2_def ordering2_def
+            using chX unfolding local_long_ch_by_ord_def ordering2_def
             by (meson asm(3) less_imp_diff_less)
           thus "[f(l - m); f(l - Suc m); f(l - Suc m - 1)]"
             using abc_sym by blast
@@ -290,7 +290,7 @@ proof (rule allI)+
 qed
 
 lemma thm2_ind2b:
-  assumes chX: "long_ch_by_ord2 f X"
+  assumes chX: "local_long_ch_by_ord f X"
       and finiteX: "finite X"
       and ordered_nats: "0<k \<and> k<l \<and> l < card X"
     shows "[f (k-1); f k; f l]"
@@ -304,7 +304,7 @@ text \<open>
   The statement Schutz proves under (i) is given in \<open>MinkowskiBetweenness.abc_bcd_acd\<close> instead.
 \<close>
 theorem (*2*) order_finite_chain2:
-  assumes chX: "long_ch_by_ord2 f X"
+  assumes chX: "local_long_ch_by_ord f X"
       and finiteX: "finite X"
       and ordered_nats: "0 \<le> (i::nat) \<and> i < j \<and> j < l \<and> l < card X"
     shows "[f i; f j; f l]"
@@ -338,9 +338,9 @@ qed
 
 
 lemma three_in_long_chain2:
-  assumes "long_ch_by_ord2 f X"
+  assumes "local_long_ch_by_ord f X"
   obtains x y z where "x\<in>X" and "y\<in>X" and "z\<in>X" and "x\<noteq>y" and "x\<noteq>z" and "y\<noteq>z"
-  using assms(1) long_ch_by_ord2_def by auto
+  using assms(1) local_long_ch_by_ord_def by auto
 
 
 lemma short_ch_card_2:
@@ -350,7 +350,7 @@ lemma short_ch_card_2:
 
 
 lemma long_chain2_card_geq:
-  assumes "long_ch_by_ord2 f X" and fin: "finite X"
+  assumes "local_long_ch_by_ord f X" and fin: "finite X"
   shows "card X \<ge> 3"
 proof -
   obtain x y z where xyz: "x\<in>X" "y\<in>X" "z\<in>X" and neq: "x\<noteq>y" "x\<noteq>z" "y\<noteq>z"
@@ -377,7 +377,7 @@ lemma fin_chain_card_geq_2:
 (*TODO: make index_neq_ results use this, much simpler!?*)
 theorem (*2ii*) index_injective:
   fixes i::nat and j::nat
-  assumes chX: "long_ch_by_ord2 f X"
+  assumes chX: "local_long_ch_by_ord f X"
       and finiteX: "finite X"
       and indices: "i<j" "j<card X"
     shows "f i \<noteq> f j"
@@ -427,23 +427,23 @@ context MinkowskiBetweenness begin
 
 lemma ch_equiv1:
   assumes "long_ch_by_ord f X" "finite X"
-  shows "long_ch_by_ord2 f X"
+  shows "local_long_ch_by_ord f X"
   using assms
-  unfolding long_ch_by_ord_def long_ch_by_ord2_def ordering_def ordering2_def
+  unfolding long_ch_by_ord_def local_long_ch_by_ord_def ordering_def ordering2_def
   by (metis lessI)
 
 
 lemma ch_equiv2:
-  assumes "long_ch_by_ord2 f X" "finite X"
+  assumes "local_long_ch_by_ord f X" "finite X"
   shows "long_ch_by_ord f X"
   using order_finite_chain2 assms
-  unfolding long_ch_by_ord_def long_ch_by_ord2_def ordering_def ordering2_def
+  unfolding long_ch_by_ord_def local_long_ch_by_ord_def ordering_def ordering2_def
   apply safe by blast
 
 
 lemma ch_equiv:
   assumes "finite X"
-  shows "long_ch_by_ord f X \<longleftrightarrow> long_ch_by_ord2 f X"
+  shows "long_ch_by_ord f X \<longleftrightarrow> local_long_ch_by_ord f X"
   using ch_equiv1 ch_equiv2 assms by blast
 
 
@@ -3319,8 +3319,8 @@ proof -
       unfolding ordering2_def
       by smt (* sledgehammer proposes both meson and auto, neither of which work... *)
   qed
-  hence "long_ch_by_ord2 g ?X"
-    unfolding long_ch_by_ord2_def
+  hence "local_long_ch_by_ord g ?X"
+    unfolding local_long_ch_by_ord_def
     using points_in_chain fin_long_chain_def \<open>b\<notin>Y\<close>
     by (metis abc_abc_neq bY insert_iff long_ch_Y points_in_chain)
   hence "long_ch_by_ord g ?X"
@@ -4083,8 +4083,8 @@ proof -
       unfolding ordering2_def
       by presburger
   qed
-  hence "long_ch_by_ord2 g ?X"
-    using Y_def f_def long_ch_by_ord2_def long_ch_by_ord_def
+  hence "local_long_ch_by_ord g ?X"
+    using Y_def f_def local_long_ch_by_ord_def long_ch_by_ord_def
     by auto
   thus "[g\<leadsto>?X|a\<^sub>1..b..a\<^sub>n]"
       unfolding fin_long_chain_def
