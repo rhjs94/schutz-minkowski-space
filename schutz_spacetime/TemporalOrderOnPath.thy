@@ -3011,7 +3011,7 @@ proof -
     assume "f j \<noteq> a"
     have "0 < card X"
       using assms(2) by linarith
-    hence "[[a (f j) (f (card X - 1))]] \<or> [[(f j) a (f (card X - 1))]]"
+    hence "[a; f j; f (card X - 1)] \<or> [f j; a; f (card X - 1)]"
       using  assms fin_ch_betw fin_long_chain_def order_finite_chain
       by (metis \<open>f j \<noteq> a\<close> diff_less le_numeral_extra(1-3) neq0_conv that)
   thus "f j \<noteq> c"
@@ -3414,19 +3414,19 @@ proof -
   show "k' \<in> S"
   proof (rule ccontr)
     assume "\<not>k'\<in>S"
-    hence "[[a\<^sub>1 b (f k')]]"
+    hence "[a\<^sub>1; b; f k']"
       using order_finite_chain S_def abc_acd_bcd abc_bcd_acd abc_sym long_ch_Y
       by (smt fin_long_chain_def \<open>0 < k'\<close> \<open>k \<in> S\<close> \<open>k' < k\<close> le_numeral_extra(3)
           less_trans mem_Collect_eq)
     have "[a\<^sub>1; f k; b]"
       using S_def \<open>k \<in> S\<close> by blast
-    have "[[(f k) b (f k')]]"
-      using abc_acd_bcd \<open>[[a\<^sub>1 b (f k')]]\<close> \<open>[a\<^sub>1; f k; b]\<close> by blast
+    have "[f k; b; f k']"
+      using abc_acd_bcd \<open>[a\<^sub>1; b; f k']\<close> \<open>[a\<^sub>1; f k; b]\<close> by blast
     have "k' < card Y"
       using S_def \<open>k \<in> S\<close> \<open>k' < k\<close> less_trans by blast
     thus False
       using abc_bcd_abd order_finite_chain S_def abc_only_cba(2) long_ch_Y
-        \<open>0 < k'\<close> \<open>[[(f k) b (f k')]]\<close> \<open>k \<in> S\<close> \<open>k' < k\<close>
+        \<open>0 < k'\<close> \<open>[f k; b; f k']\<close> \<open>k \<in> S\<close> \<open>k' < k\<close>
       unfolding fin_long_chain_def
       by (metis (mono_tags, lifting) le_numeral_extra(3) mem_Collect_eq)
   qed
@@ -3437,7 +3437,7 @@ lemma (*for 10*) smallest_k_ex:
   assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
       and Y_def: "b\<notin>Y"
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
-    shows "\<exists>k>0. [a\<^sub>1; b; f k] \<and> k < card Y \<and> \<not>(\<exists>k'<k. [[a\<^sub>1 b (f k')]])"
+    shows "\<exists>k>0. [a\<^sub>1; b; f k] \<and> k < card Y \<and> \<not>(\<exists>k'<k. [a\<^sub>1; b; f k'])"
 proof -
 (* the usual suspects first, they'll come in useful I'm sure *)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
@@ -3463,13 +3463,13 @@ proof -
     assume "S={}"
     show ?thesis
     proof
-      show "(0::nat)<1 \<and> [a\<^sub>1; b; f 1] \<and> 1 < card Y \<and> \<not> (\<exists>k'::nat. k' < 1 \<and> [[a\<^sub>1 b (f k')]])"
+      show "(0::nat)<1 \<and> [a\<^sub>1; b; f 1] \<and> 1 < card Y \<and> \<not> (\<exists>k'::nat. k' < 1 \<and> [a\<^sub>1; b; f k'])"
       proof (rule conjI4)
         show "(0::nat)<1" by simp
         show "1 < card Y"
           using Yb abc_ac_neq bound_indices not_le by fastforce
           (* using card_Y by linarith *)
-        show "\<not> (\<exists>k'::nat. k' < 1 \<and> [[a\<^sub>1 b (f k')]])"
+        show "\<not> (\<exists>k'::nat. k' < 1 \<and> [a\<^sub>1; b; f k'])"
           using abc_abc_neq bound_indices
           by blast
         show "[a\<^sub>1; b; f 1]"
@@ -3522,56 +3522,56 @@ proof -
     show ?thesis
     proof
       let ?k = "k+1"
-      show "0<?k \<and> [[a\<^sub>1 b (f ?k)]] \<and> ?k < card Y \<and> \<not> (\<exists>k'::nat. k' < ?k \<and> [[a\<^sub>1 b (f k')]])"
+      show "0<?k \<and> [a\<^sub>1; b; f ?k] \<and> ?k < card Y \<and> \<not> (\<exists>k'::nat. k' < ?k \<and> [a\<^sub>1; b; f k'])"
       proof (rule conjI4)
         show "(0::nat)<?k" by simp
         show "?k < card Y"
           by (metis (no_types, lifting) S_def Yb \<open>k \<in> S\<close> abc_only_cba(2) add.commute
               add_diff_cancel_right' bound_indices less_SucE mem_Collect_eq nat_add_left_cancel_less
               plus_1_eq_Suc)
-        show "[[a\<^sub>1 b (f ?k)]]"
+        show "[a\<^sub>1; b; f ?k]"
         proof -
           have "f ?k \<in> Y"
             using \<open>k + 1 < card Y\<close>
             by (metis ordering_def fin_long_chain_def long_ch_Y long_ch_by_ord_def)
-          have "[[a\<^sub>1 (f ?k) a\<^sub>n]] \<or> f ?k = a\<^sub>n"
+          have "[a\<^sub>1; f ?k; a\<^sub>n] \<or> f ?k = a\<^sub>n"
             using bound_indices long_ch_Y \<open>k + 1 < card Y\<close>
             unfolding fin_long_chain_def long_ch_by_ord_def ordering_def
             by (metis (no_types, lifting) Suc_lessI add.commute add_gr_0 card_Diff1_less
                 card_Diff_singleton less_diff_conv plus_1_eq_Suc zero_less_one)
-          thus  "[[a\<^sub>1 b (f ?k)]]"
+          thus  "[a\<^sub>1; b; f ?k]"
           proof (rule disjE)
-            assume "[[a\<^sub>1 (f ?k) a\<^sub>n]]"
+            assume "[a\<^sub>1; f ?k; a\<^sub>n]"
             hence "f ?k \<noteq> a\<^sub>n"
               by (simp add: abc_abc_neq)
-            hence "[[a\<^sub>1 b (f ?k)]] \<or> [[a\<^sub>1 (f ?k) b]] \<or> [[b a\<^sub>1 (f ?k)]]"
-              using abc_ex_path_unique some_betw abc_sym \<open>[[a\<^sub>1 (f ?k) a\<^sub>n]]\<close>
+            hence "[a\<^sub>1; b; f ?k] \<or> [a\<^sub>1; f ?k; b] \<or> [b; a\<^sub>1; f ?k]"
+              using abc_ex_path_unique some_betw abc_sym \<open>[a\<^sub>1; f ?k; a\<^sub>n]\<close>
                 \<open>f ?k \<in> Y\<close> Yb abc_abc_neq assms(3) cross_once_notin
               by (smt Y_def)
-            moreover have "\<not> [[a\<^sub>1 (f ?k) b]]"
+            moreover have "\<not> [a\<^sub>1; f ?k; b]"
             proof
-              assume "[[a\<^sub>1 (f ?k) b]]"
+              assume "[a\<^sub>1; f ?k; b]"
               hence "?k \<in> S"
-                using S_def \<open>[[a\<^sub>1 (f ?k) b]]\<close> \<open>k + 1 < card Y\<close> by blast
+                using S_def \<open>[a\<^sub>1; f ?k; b]\<close> \<open>k + 1 < card Y\<close> by blast
               hence "?k \<le> k"
                 by (simp add: \<open>finite S\<close> \<open>k = Max S\<close>)
               thus False
                 by linarith
             qed
-            moreover have "\<not> [[b a\<^sub>1 (f ?k)]]"
-              using Yb \<open>[[a\<^sub>1 (f ?k) a\<^sub>n]]\<close> abc_only_cba
+            moreover have "\<not> [b; a\<^sub>1; f ?k]"
+              using Yb \<open>[a\<^sub>1; f ?k; a\<^sub>n]\<close> abc_only_cba
               by blast
-            ultimately show "[[a\<^sub>1 b (f ?k)]]"
+            ultimately show "[a\<^sub>1; b; f ?k]"
               by blast
           next assume "f ?k = a\<^sub>n"
             show ?thesis
               using Yb \<open>f (k + 1) = a\<^sub>n\<close> by blast
           qed
         qed
-        show "\<not>(\<exists>k'::nat. k' < k + 1 \<and> [[a\<^sub>1 b (f k')]])"
+        show "\<not>(\<exists>k'::nat. k' < k + 1 \<and> [a\<^sub>1; b; f k'])"
         proof
-          assume "\<exists>k'::nat. k' < k + 1 \<and> [[a\<^sub>1 b (f k')]]"
-          then obtain k' where k'_def: "k'>0" "k' < k + 1" "[[a\<^sub>1 b (f k')]]"
+          assume "\<exists>k'::nat. k' < k + 1 \<and> [a\<^sub>1; b; f k']"
+          then obtain k' where k'_def: "k'>0" "k' < k + 1" "[a\<^sub>1; b; f k']"
             using abc_ac_neq bound_indices neq0_conv
             by blast
           hence "k'<k"
@@ -3593,7 +3593,7 @@ lemma greatest_k_ex:
   assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
       and Y_def: "b\<notin>Y"
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
-    shows "\<exists>k. [f k; b; a\<^sub>n] \<and> k < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>k \<and> [[(f k') b a\<^sub>n]])"
+    shows "\<exists>k. [f k; b; a\<^sub>n] \<and> k < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>k \<and> [f k'; b; a\<^sub>n])"
 proof -
 (* the usual suspects first, they'll come in useful I'm sure *)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
@@ -3620,37 +3620,37 @@ proof -
     show ?thesis
     proof
       let ?n = "card Y - 2"
-      show "[[(f ?n) b a\<^sub>n]] \<and> ?n < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>?n \<and> [[(f k') b a\<^sub>n]])"
+      show "[f ?n; b; a\<^sub>n] \<and> ?n < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>?n \<and> [f k'; b; a\<^sub>n])"
       proof (rule conjI3)
         show "?n < card Y - 1"
           using Yb abc_ac_neq bound_indices not_le by fastforce
-      next show "\<not>(\<exists>k'<card Y. k'>?n \<and> [[(f k') b a\<^sub>n]])"
+      next show "\<not>(\<exists>k'<card Y. k'>?n \<and> [f k'; b; a\<^sub>n])"
           using abc_abc_neq bound_indices
           by (metis One_nat_def Suc_diff_le Suc_leD Suc_lessI card_Y diff_Suc_1 diff_Suc_Suc
               not_less_eq numeral_2_eq_2 numeral_3_eq_3)
-      next show "[[(f ?n) b a\<^sub>n]]"
+      next show "[f ?n; b; a\<^sub>n]"
         proof -
           have "f ?n \<in> Y"
             by (metis ordering_def diff_less fin_long_chain_def gr_implies_not0 long_ch_Y
                 long_ch_by_ord_def neq0_conv not_less_eq numeral_2_eq_2)
-          hence "[[a\<^sub>1 (f ?n) a\<^sub>n]]"
+          hence "[a\<^sub>1; f ?n; a\<^sub>n]"
             using bound_indices long_ch_Y
             unfolding fin_long_chain_def long_ch_by_ord_def ordering_def
             using card_Y by force
-          hence "[[a\<^sub>n b (f ?n)]] \<or> [[a\<^sub>n (f ?n) b]] \<or> [[b a\<^sub>n (f ?n)]]"
+          hence "[a\<^sub>n; b; f ?n] \<or> [a\<^sub>n; f ?n; b] \<or> [b; a\<^sub>n; f ?n]"
             using abc_ex_path_unique some_betw abc_sym
             by (smt Y_def Yb \<open>f ?n \<in> Y\<close> abc_abc_neq cross_once_notin)
-          thus "[[(f ?n) b a\<^sub>n]]"
+          thus "[f ?n; b; a\<^sub>n]"
           proof -
             have "\<forall>n. \<not> ([a\<^sub>n; f n; b] \<and> n < card Y)"
               using S_def \<open>S = {}\<close>
               by blast
-            then have "[[a\<^sub>n b (f ?n)]] \<or> \<not> [[a\<^sub>1 (f ?n) b]] \<and> \<not> [[a\<^sub>n (f ?n) b]]"
+            then have "[a\<^sub>n; b; f ?n] \<or> \<not> [a\<^sub>1; f ?n; b] \<and> \<not> [a\<^sub>n; f ?n; b]"
               using bound_indices abc_sym abd_bcd_abc Yb
               by (metis (no_types, lifting) \<open>f (card Y - 2) \<in> Y\<close> card_gt_0_iff diff_less empty_iff fin_Y zero_less_numeral)
             then show ?thesis
               using abc_bcd_abd abc_sym
-              by (meson \<open>[[a\<^sub>n b (f ?n)]] \<or> [[a\<^sub>n (f ?n) b]] \<or> [[b a\<^sub>n (f ?n)]]\<close> \<open>[[a\<^sub>1 (f ?n) a\<^sub>n]]\<close>)
+              by (meson \<open>[a\<^sub>n; b; f ?n] \<or> [a\<^sub>n; f ?n; b] \<or> [b; a\<^sub>n; f ?n]\<close> \<open>[a\<^sub>1; f ?n; a\<^sub>n]\<close>)
           qed
         qed
       qed
@@ -3664,37 +3664,37 @@ proof -
     show ?thesis
     proof
       let ?k = "k-1"
-      show "[[(f ?k) b a\<^sub>n]] \<and> ?k < card Y - 1 \<and> \<not> (\<exists>k'<card Y. ?k < k' \<and> [[(f k') b a\<^sub>n]])"
+      show "[f ?k; b; a\<^sub>n] \<and> ?k < card Y - 1 \<and> \<not> (\<exists>k'<card Y. ?k < k' \<and> [f k'; b; a\<^sub>n])"
       proof (rule conjI3)
         show "?k < card Y - 1"
           using S_def \<open>k \<in> S\<close> less_imp_diff_less card_Y
           by (metis (no_types, lifting) One_nat_def diff_is_0_eq' diff_less_mono lessI less_le_trans
               mem_Collect_eq nat_le_linear numeral_3_eq_3 zero_less_diff)
-        show "[[(f ?k) b a\<^sub>n]]"
+        show "[f ?k; b; a\<^sub>n]"
         proof -
           have "f ?k \<in> Y"
             using \<open>k - 1 < card Y - 1\<close> long_ch_Y long_ch_by_ord_def ordering_def
             by (metis diff_less fin_long_chain_def less_trans neq0_conv zero_less_one)
-          have "[[a\<^sub>1 (f ?k) a\<^sub>n]] \<or> f ?k = a\<^sub>1"
+          have "[a\<^sub>1; f ?k; a\<^sub>n] \<or> f ?k = a\<^sub>1"
             using bound_indices long_ch_Y \<open>k - 1 < card Y - 1\<close>
             unfolding fin_long_chain_def long_ch_by_ord_def ordering_def
             by (smt S_def \<open>k \<in> S\<close> add_diff_inverse_nat card_Diff1_less card_Diff_singleton
                 less_numeral_extra(4) less_trans mem_Collect_eq nat_add_left_cancel_less
                 neq0_conv zero_less_diff)
-          thus  "[[(f ?k) b a\<^sub>n]]"
+          thus  "[f ?k; b; a\<^sub>n]"
           proof (rule disjE)
-            assume "[[a\<^sub>1 (f ?k) a\<^sub>n]]"
+            assume "[a\<^sub>1; f ?k; a\<^sub>n]"
             hence "f ?k \<noteq> a\<^sub>1"
               using abc_abc_neq by blast
-            hence "[[a\<^sub>n b (f ?k)]] \<or> [[a\<^sub>n (f ?k) b]] \<or> [[b a\<^sub>n (f ?k)]]"
-              using abc_ex_path_unique some_betw abc_sym \<open>[[a\<^sub>1 (f ?k) a\<^sub>n]]\<close>
+            hence "[a\<^sub>n; b; f ?k] \<or> [a\<^sub>n; f ?k; b] \<or> [b; a\<^sub>n; f ?k]"
+              using abc_ex_path_unique some_betw abc_sym \<open>[a\<^sub>1; f ?k; a\<^sub>n]\<close>
                 \<open>f ?k \<in> Y\<close> Yb abc_abc_neq assms(3) cross_once_notin
               by (smt Y_def)
-            moreover have "\<not> [[a\<^sub>n (f ?k) b]]"
+            moreover have "\<not> [a\<^sub>n; f ?k; b]"
             proof
-              assume "[[a\<^sub>n (f ?k) b]]"
+              assume "[a\<^sub>n; f ?k; b]"
               hence "?k \<in> S"
-                using S_def \<open>[[a\<^sub>n (f ?k) b]]\<close> \<open>k - 1 < card Y - 1\<close>
+                using S_def \<open>[a\<^sub>n; f ?k; b]\<close> \<open>k - 1 < card Y - 1\<close>
                 by simp
               hence "?k \<ge> k"
                 by (simp add: \<open>finite S\<close> \<open>k = Min S\<close>)
@@ -3702,20 +3702,20 @@ proof -
                 using \<open>f (k - 1) \<noteq> a\<^sub>1\<close> fin_long_chain_def long_ch_Y
                 by auto
             qed
-            moreover have "\<not> [[b a\<^sub>n (f ?k)]]"
-              using Yb \<open>[[a\<^sub>1 (f ?k) a\<^sub>n]]\<close> abc_only_cba(2) abc_bcd_acd
+            moreover have "\<not> [b; a\<^sub>n; f ?k]"
+              using Yb \<open>[a\<^sub>1; f ?k; a\<^sub>n]\<close> abc_only_cba(2) abc_bcd_acd
               by blast
-            ultimately show "[[(f ?k) b a\<^sub>n]]"
+            ultimately show "[f ?k; b; a\<^sub>n]"
               using abc_sym by auto
           next assume "f ?k = a\<^sub>1"
             show ?thesis
               using Yb \<open>f (k - 1) = a\<^sub>1\<close> by blast
           qed
         qed
-        show "\<not>(\<exists>k'<card Y. k-1 < k' \<and> [[(f k') b a\<^sub>n]])"
+        show "\<not>(\<exists>k'<card Y. k-1 < k' \<and> [f k'; b; a\<^sub>n])"
         proof
-          assume "\<exists>k'<card Y. k-1 < k' \<and> [[(f k') b a\<^sub>n]]"
-          then obtain k' where k'_def: "k'<card Y -1" "k' > k - 1" "[[a\<^sub>n b (f k')]]"
+          assume "\<exists>k'<card Y. k-1 < k' \<and> [f k'; b; a\<^sub>n]"
+          then obtain k' where k'_def: "k'<card Y -1" "k' > k - 1" "[a\<^sub>n; b; f k']"
             using abc_ac_neq bound_indices neq0_conv
             by (metis Suc_diff_1 abc_sym gr_implies_not0 less_SucE)
           hence "k'>k"
@@ -3757,7 +3757,7 @@ proof -
     hence "x\<in>P"
       using betw_b_in_path x_def(2) long_ch_Y points_in_chain
       by (metis abc_abc_neq in_mono)
-    obtain n\<^sub>c where nc_def: "\<not>(\<exists>k. [a\<^sub>0; x; f k] \<and> k<n\<^sub>c)" "[[a\<^sub>0 x (f n\<^sub>c)]]" "n\<^sub>c<card Y" "n\<^sub>c>0"
+    obtain n\<^sub>c where nc_def: "\<not>(\<exists>k. [a\<^sub>0; x; f k] \<and> k<n\<^sub>c)" "[a\<^sub>0; x; f n\<^sub>c]" "n\<^sub>c<card Y" "n\<^sub>c>0"
       using smallest_k_ex [where a\<^sub>1=a\<^sub>0 and a=a and a\<^sub>n=a\<^sub>n and b=x and f=f and Y=Y]
         long_ch_Y x_def
       by blast
@@ -3766,7 +3766,7 @@ proof -
       by (metis ordering_def)
     have c_goal: "c=f n\<^sub>c \<and> c\<in>Y \<and> n\<^sub>c<card Y \<and> n\<^sub>c>0 \<and> \<not>(\<exists>k < card Y. [a\<^sub>0; x; f k] \<and> k<n\<^sub>c)"
       using c_def nc_def(1,3,4) by blast
-    obtain n\<^sub>b where nb_def: "\<not>(\<exists>k < card Y. [f k; x; a\<^sub>n] \<and> k>n\<^sub>b)" "[[(f n\<^sub>b) x a\<^sub>n]]" "n\<^sub>b<card Y-1"
+    obtain n\<^sub>b where nb_def: "\<not>(\<exists>k < card Y. [f k; x; a\<^sub>n] \<and> k>n\<^sub>b)" "[f n\<^sub>b; x; a\<^sub>n]" "n\<^sub>b<card Y-1"
       using greatest_k_ex [where a\<^sub>1=a\<^sub>0 and a=a and a\<^sub>n=a\<^sub>n and b=x and f=f and Y=Y]
         long_ch_Y x_def
       by blast
@@ -3795,7 +3795,7 @@ proof -
     have "n\<^sub>b<n\<^sub>c"
       using \<open>[b;x;c]\<close> \<open>n\<^sub>c<card Y\<close> \<open>n\<^sub>b<card Y\<close> \<open>c = f n\<^sub>c\<close> \<open>b = f n\<^sub>b\<close>
       by (smt (* TODO *)
-          \<open>\<And>thesis. (\<And>n\<^sub>b. \<lbrakk>\<not> (\<exists>k<card Y. [f k; x; a\<^sub>n] \<and> n\<^sub>b < k); [[(f n\<^sub>b) x a\<^sub>n]]; n\<^sub>b < card Y - 1\<rbrakk>
+          \<open>\<And>thesis. (\<And>n\<^sub>b. \<lbrakk>\<not> (\<exists>k<card Y. [f k; x; a\<^sub>n] \<and> n\<^sub>b < k); [f n\<^sub>b; x; a\<^sub>n]; n\<^sub>b < card Y - 1\<rbrakk>
           \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> abc_abd_acdadc abc_ac_neq abc_only_cba diff_less
           fin_long_chain_def le_antisym le_trans less_imp_le_nat less_numeral_extra(1)
           linorder_neqE_nat long_ch_Y nb_def(2) nc_def(4) order_finite_chain)
@@ -3804,7 +3804,7 @@ proof -
       assume "n\<^sub>b \<noteq> n\<^sub>c - 1"
       have "n\<^sub>b<n\<^sub>c-1"
         using \<open>n\<^sub>b \<noteq> n\<^sub>c - 1\<close> \<open>n\<^sub>b<n\<^sub>c\<close> by linarith
-      hence "[[(f n\<^sub>b) (f(n\<^sub>c-1)) (f n\<^sub>c)]]"
+      hence "[f n\<^sub>b; (f(n\<^sub>c-1)); f n\<^sub>c]"
         using \<open>n\<^sub>b \<noteq> n\<^sub>c - 1\<close> fin_long_chain_def long_ch_Y nc_def(3) order_finite_chain
         by auto
       have "\<not>[a\<^sub>0; x; (f(n\<^sub>c-1))]"
@@ -3846,7 +3846,7 @@ lemma (*for 10*) chain_append_inside:
   assumes long_ch_Y: "[f[a\<^sub>1..a..a\<^sub>n]Y]"
       and Y_def: "b\<notin>Y"
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
-      and k_def: "[a\<^sub>1; b; f k]" "k < card Y" "\<not>(\<exists>k'. (0::nat)<k' \<and> k'<k \<and> [[a\<^sub>1 b (f k')]])"
+      and k_def: "[a\<^sub>1; b; f k]" "k < card Y" "\<not>(\<exists>k'. (0::nat)<k' \<and> k'<k \<and> [a\<^sub>1; b; f k'])"
     fixes g
   defines g_def: "g \<equiv> (\<lambda>j::nat. if (j\<le>k-1) then f j else (if (j=k) then b else f (j-1)))"
     shows "[g[a\<^sub>1 .. b .. a\<^sub>n]insert b Y]"
@@ -4192,7 +4192,7 @@ proof -
         then have "[a\<^sub>1; b; a\<^sub>n]"
           by (simp add: abc_sym)
         obtain k where
-            k_def: "[a\<^sub>1; b; f k]" "k < card Y" "\<not> (\<exists>k'. 0 < k' \<and> k' < k \<and> [[a\<^sub>1 b (f k')]])"
+            k_def: "[a\<^sub>1; b; f k]" "k < card Y" "\<not> (\<exists>k'. 0 < k' \<and> k' < k \<and> [a\<^sub>1; b; f k'])"
           using \<open>[a\<^sub>1; b; a\<^sub>n]\<close> \<open>b \<notin> Y\<close> long_ch_Y smallest_k_ex by blast
         obtain g where "g = (\<lambda>j::nat. if j \<le> k - 1
                                         then f j
