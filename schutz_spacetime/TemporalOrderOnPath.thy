@@ -16,7 +16,7 @@ text \<open>
   Some more things are proved in interlude sections.
 \<close>
 
-text \<open>Disable list syntax.\<close>
+(*text \<open>Disable list syntax.\<close>
 no_translations
   "[x, xs]" == "x#[xs]"
   "[x]" == "x#[]"
@@ -24,7 +24,7 @@ no_syntax
   \<comment> \<open>list Enumeration\<close>
   "_list" :: "args => 'a list" ("[(_)]")
 no_notation Cons (infixr "#" 65)
-no_notation Nil ("[]")
+no_notation Nil ("[]")*)
 
 
 section "Preliminary Results for Primitives"
