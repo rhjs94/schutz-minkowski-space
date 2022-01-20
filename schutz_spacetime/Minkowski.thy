@@ -585,10 +585,10 @@ by (simp add: chain_with_def)
 lemma finite_chain3_betw: "[\<leadsto>X|a..b..c] \<Longrightarrow> [a;b;c]"
 by (simp add: chain_with_def finite_chain_with3_def)
 
-definition finite_chain_with2 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[_ .. _]_]") where
-  "finite_chain_with2 x z X \<equiv> \<exists>y\<in>X. [\<leadsto>X|x..y..z]"
+definition finite_chain_with2 :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|_ .. _]") where
+  "finite_chain_with2 X x z \<equiv> \<exists>y\<in>X. [\<leadsto>X|x..y..z]"
 
-lemma finite_chain2_betw: "[[a..c]X] \<Longrightarrow> \<exists>b. [a;b;c]"
+lemma finite_chain2_betw: "[\<leadsto>X|a..c] \<Longrightarrow> \<exists>b. [a;b;c]"
   using finite_chain_with2_def finite_chain3_betw by meson
 
 
