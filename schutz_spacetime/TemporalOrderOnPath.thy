@@ -2352,48 +2352,6 @@ lemma all_aligned_on_long_chain:
 shows "[x;y;z] \<or> [x;z;y] \<or> [z;x;y]"
   using all_aligned_on_semifin_chain abc_sym assms long_ch_by_ord_def ordering_def
   by (smt (verit, ccfv_threshold) neqE)
-(*
-proof -
-  obtain n\<^sub>x n\<^sub>y n\<^sub>z where fx: "f n\<^sub>x = x" and fy: "f n\<^sub>y = y" and fz: "f n\<^sub>z = z"
-                    and xx: "n\<^sub>x < card X" and yy: "n\<^sub>y < card X" and zz: "n\<^sub>z < card X"
-  proof -
-    assume a1: "\<And>n\<^sub>x n\<^sub>y n\<^sub>z. \<lbrakk>f n\<^sub>x = x; f n\<^sub>y = y; f n\<^sub>z = z; n\<^sub>x < card X; n\<^sub>y < card X; n\<^sub>z < card X\<rbrakk> \<Longrightarrow> thesis"
-    obtain nn :: "'a set \<Rightarrow> (nat \<Rightarrow> 'a) \<Rightarrow> 'a \<Rightarrow> nat" where
-      "\<And>a A f p pa. (a \<notin> A \<or> \<not> ordering f p A \<or> f (nn A f a) = a)
-                  \<and> (infinite A \<or> a \<notin> A \<or> \<not> ordering f pa A \<or> nn A f a < card A)"
-      by (metis (no_types) ordering_def)
-    then show ?thesis
-      using a1 by (metis a assms(1) assms(2) b c long_ch_by_ord_def)
-  qed
-  have less_or: "(n\<^sub>x<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<or> (n\<^sub>x<n\<^sub>z \<and> n\<^sub>z<n\<^sub>y) \<or> (n\<^sub>z<n\<^sub>x \<and> n\<^sub>x<n\<^sub>y) \<or>
-        (n\<^sub>z<n\<^sub>y \<and> n\<^sub>y<n\<^sub>x) \<or> (n\<^sub>y<n\<^sub>z \<and> n\<^sub>z<n\<^sub>x) \<or> (n\<^sub>y<n\<^sub>x \<and> n\<^sub>x<n\<^sub>z)"
-    using fx fy fz assms less_linear
-    by metis
-  have int_imp_1: "(n\<^sub>x<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<and> long_ch_by_ord f X \<and> n\<^sub>z < card X \<longrightarrow> [f n\<^sub>x; f n\<^sub>y; f n\<^sub>z]"
-    using assms long_ch_by_ord_def ordering_def
-    by metis
-  hence "[f n\<^sub>x; f n\<^sub>y; f n\<^sub>z] \<or> [f n\<^sub>x; f n\<^sub>z; f n\<^sub>y] \<or> [f n\<^sub>z; f n\<^sub>x; f n\<^sub>y] \<or>
-         [f n\<^sub>z; f n\<^sub>y; f n\<^sub>x] \<or> [f n\<^sub>y; f n\<^sub>z; f n\<^sub>x] \<or> [f n\<^sub>y; f n\<^sub>x; f n\<^sub>z]"
-  proof -
-    have f1: "\<And>n na nb. \<not> n < na \<or> \<not> nb < n \<or> \<not> na < card X \<or> [f nb; f n; f na]"
-      by (metis (no_types) ordering_def \<open>long_ch_by_ord f X\<close> long_ch_by_ord_def)
-    then have f2: "\<not> n\<^sub>z < n\<^sub>y \<or> \<not> n\<^sub>x < n\<^sub>z \<or> [x;z;y]"
-      using fx fy fz yy
-      by blast
-    have "\<not> n\<^sub>x < n\<^sub>y \<or> \<not> n\<^sub>z < n\<^sub>x \<or> [z;x;y]"
-      using f1 fx fy fz yy by blast
-    then show ?thesis
-      using f2 f1 fx fy fz less_or xx zz by auto
-  qed
-  hence "[x;y;z] \<or> [x;z;y] \<or> [z;x;y] \<or>
-         [z;y;x] \<or> [y;z;x] \<or> [y;x;z]"
-    using fx fy fz assms semifin_chain_def long_ch_by_ord_def
-    by metis
-  thus ?thesis
-    using abc_sym
-    by blast
-qed
-*)
 
 
 lemma long_chain_on_path:
@@ -3030,70 +2988,12 @@ proof -
     by (metis ordering_def abc_sym assms(1,2) fin_long_chain_def long_ch_by_ord_def subsetD)
 qed
 
-(*
-lemma i_le_j_events_neq1:
-  assumes "[f\<leadsto>X|a..b..c]"
-      and "i<j" "j<card X" "f j \<noteq> b" (* this just means you need to pick b well *)
-    shows "f i \<noteq> f j"
-  by (meson assms ch_equiv1 fin_long_chain_def index_injective)
-proof -
-  have in_X: "f i \<in> X \<and> f j \<in> X"
-    by (metis ordering_def assms(1,2,3) fin_long_chain_def less_trans long_ch_by_ord_def)
-  have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
-    using assms(1) fin_long_chain_def by auto
-  obtain ab where ab_def: "path ab a b" "X\<subseteq>ab"
-    by (metis fin_long_chain_def long_chain_on_path assms(1) points_in_chain subsetD)
-  show ?thesis
-  proof (cases)
-    assume "f i = a"
-    hence "[a; f j; b] \<or> [a; b; f j]"
-      using some_betw2 assms by blast
-    thus ?thesis
-      using \<open>f i = a\<close> abc_abc_neq by blast
-  next assume "f i \<noteq> a"
-    hence "[a; f i; f j]"
-      using assms(1,2,3) ch_equiv fin_long_chain_def order_finite_chain2
-      by (metis gr_implies_not_zero le_numeral_extra(3) less_linear)
-    thus ?thesis
-      using abc_abc_neq by blast
-  qed
-qed
-*)
 
 lemma i_le_j_events_neq:
   assumes "[f\<leadsto>X|a..b..c]"
     and "i<j" "j<card X"
   shows "f i \<noteq> f j"
   by (meson assms ch_equiv1 fin_long_chain_def index_injective)
-(*proof -
-  have in_X: "f i \<in> X \<and> f j \<in> X"
-    by (metis ordering_def assms(1,2,3) fin_long_chain_def less_trans long_ch_by_ord_def)
-  have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
-    using assms(1) fin_long_chain_def by auto
-  obtain ab where ab_def: "path ab a b" "X\<subseteq>ab"
-    by (metis fin_long_chain_def long_chain_on_path assms(1) points_in_chain subsetD)
-  show ?thesis
-  proof (cases)
-    assume "f i = a"
-    show ?thesis
-    proof (cases)
-    assume "(f j) = b"
-      thus ?thesis
-        by (simp add: \<open>(f i) = a\<close> ab_def(1))
-    next assume "(f j) \<noteq> b"
-      have "[a; f j; b] \<or> [a; b; f j]"
-        using some_betw2 assms \<open>(f j) \<noteq> b\<close> by blast
-      thus ?thesis
-        using \<open>(f i) = a\<close> abc_abc_neq by blast
-    qed
-  next assume "(f i) \<noteq> a"
-    hence "[a; f i; f j]"
-      using assms(1,2,3) ch_equiv fin_long_chain_def order_finite_chain2
-      by (metis gr_implies_not_zero le_numeral_extra(3) less_linear)
-    thus ?thesis
-      using abc_abc_neq by blast
-  qed
-qed*)
 
 lemma indices_neq_imp_events_neq:
   assumes "[f\<leadsto>X|a..b..c]"
