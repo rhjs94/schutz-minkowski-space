@@ -5735,22 +5735,22 @@ context MinkowskiBetweenness begin
 
 text \<open>Define additional notation for non-strict ordering - cf Schutz' monograph \cite[ p.~27]{schutz1997}.\<close>
 
-abbreviation nonstrict_betw_right :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[[_ _ _\<rbrakk>") where
+abbreviation nonstrict_betw_right :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_;_;_\<rbrakk>") where
   "nonstrict_betw_right a b c \<equiv> [a;b;c] \<or> b = c"
 
-abbreviation nonstrict_betw_left :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("\<lbrakk>_ _ _]]") where
+abbreviation nonstrict_betw_left :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("\<lbrakk>_;_;_]") where
   "nonstrict_betw_left a b c \<equiv> [a;b;c] \<or> b = a"
 
 abbreviation nonstrict_betw_both :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" (* ("[(_ _ _)]") *) where
   "nonstrict_betw_both a b c \<equiv> nonstrict_betw_left a b c \<or> nonstrict_betw_right a b c"
 
-abbreviation betw4 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[[_ _ _ _]]") where
+abbreviation betw4 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_;_;_;_]") where
   "betw4 a b c d \<equiv> [a;b;c] \<and> [b;c;d]"
 
-abbreviation nonstrict_betw_right4 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[[_ _ _ _\<rbrakk>") where
+abbreviation nonstrict_betw_right4 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_;_;_;_\<rbrakk>") where
   "nonstrict_betw_right4 a b c d \<equiv> betw4 a b c d \<or> c = d"
 
-abbreviation nonstrict_betw_left4 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("\<lbrakk>_ _ _ _]]") where
+abbreviation nonstrict_betw_left4 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("\<lbrakk>_;_;_;_]") where
   "nonstrict_betw_left4 a b c d \<equiv> betw4 a b c d \<or> a = b"
 
 abbreviation nonstrict_betw_both4 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" (* ("[(_ _ _ _)]") *) where
@@ -5787,32 +5787,32 @@ lemma betw4_sym:
 
 lemma abcd_dcba_only:
   fixes a::'a and b::'a and c::'a and d::'a
-  assumes "betw4 a b c d"
-  shows "\<not>betw4 a b d c" "\<not>betw4 a c b d" "\<not>betw4 a c d b" "\<not>betw4 a d b c" "\<not>betw4 a d c b"
-        "\<not>betw4 b a c d" "\<not>betw4 b a d c" "\<not>betw4 b c a d" "\<not>betw4 b c d a" "\<not>betw4 b d c a" "\<not>betw4 b d a c"
-        "\<not>betw4 c a b d" "\<not>betw4 c a d b" "\<not>betw4 c b a d" "\<not>betw4 c b d a" "\<not>betw4 c d a b" "\<not>betw4 c d b a"
-        "\<not>betw4 d a b c" "\<not>betw4 d a c b" "\<not>betw4 d b a c" "\<not>betw4 d b c a" "\<not>betw4 d c a b"
+  assumes "[a;b;c;d]"
+  shows "\<not>[a;b;d;c]" "\<not>[a;c;b;d]" "\<not>[a;c;d;b]" "\<not>[a;d;b;c]" "\<not>[a;d;c;b]"
+        "\<not>[b;a;c;d]" "\<not>[b;a;d;c]" "\<not>[b;c;a;d]" "\<not>[b;c;d;a]" "\<not>[b;d;c;a]" "\<not>[b;d;a;c]"
+        "\<not>[c;a;b;d]" "\<not>[c;a;d;b]" "\<not>[c;b;a;d]" "\<not>[c;b;d;a]" "\<not>[c;d;a;b]" "\<not>[c;d;b;a]"
+        "\<not>[d;a;b;c]" "\<not>[d;a;c;b]" "\<not>[d;b;a;c]" "\<not>[d;b;c;a]" "\<not>[d;c;a;b]"
   using abc_only_cba assms by blast+ 
 
 lemma some_betw4a:
   fixes a::'a and b::'a and c::'a and d::'a and P
   assumes "P\<in>\<P>" "a\<in>P" "b\<in>P" "c\<in>P" "d\<in>P" "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
-      and "\<not>(betw4 a b c d \<or> betw4 a b d c \<or> betw4 a c b d \<or> betw4 a c d b \<or> betw4 a d b c \<or> betw4 a d c b)"
-    shows "betw4 b a c d \<or> betw4 b a d c \<or> betw4 b c a d \<or> betw4 b d a c \<or> betw4 c a b d \<or> betw4 c b a d"
+      and "\<not>([a;b;c;d] \<or> [a;b;d;c] \<or> [a;c;b;d] \<or> [a;c;d;b] \<or> [a;d;b;c] \<or> [a;d;c;b])"
+    shows "[b;a;c;d] \<or> [b;a;d;c] \<or> [b;c;a;d] \<or> [b;d;a;c] \<or> [c;a;b;d] \<or> [c;b;a;d]"
   by (smt abc_bcd_acd abc_sym abd_bcd_abc assms some_betw_xor)
 
 lemma some_betw4b:
   fixes a::'a and b::'a and c::'a and d::'a and P
   assumes "P\<in>\<P>" "a\<in>P" "b\<in>P" "c\<in>P" "d\<in>P" "a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d"
-      and "\<not>(betw4 b a c d \<or> betw4 b a d c \<or> betw4 b c a d \<or> betw4 b d a c \<or> betw4 c a b d \<or> betw4 c b a d)"
-    shows "betw4 a b c d \<or> betw4 a b d c \<or> betw4 a c b d \<or> betw4 a c d b \<or> betw4 a d b c \<or> betw4 a d c b"
+      and "\<not>([b;a;c;d] \<or> [b;a;d;c] \<or> [b;c;a;d] \<or> [b;d;a;c] \<or> [c;a;b;d] \<or> [c;b;a;d])"
+    shows "[a;b;c;d] \<or> [a;b;d;c] \<or> [a;c;b;d] \<or> [a;c;d;b] \<or> [a;d;b;c] \<or> [a;d;c;b]"
   by (smt abc_bcd_acd abc_sym abd_bcd_abc assms some_betw_xor)
 
 
 lemma abd_acd_abcdacbd:
   fixes a::'a and b::'a and c::'a and d::'a
   assumes abd: "[a;b;d]" and acd: "[a;c;d]" and "b\<noteq>c"
-  shows "betw4 a b c d \<or> betw4 a c b d"
+  shows "[a;b;c;d] \<or> [a;c;b;d]"
 proof -
   obtain P where "P\<in>\<P>" "a\<in>P" "b\<in>P" "d\<in>P"
     using abc_ex_path abd by blast
@@ -5875,24 +5875,24 @@ text \<open>
 
 lemma wlog_endpoints_distinct1:
   assumes symmetric_Q: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
-      and "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; betw4 a b c d\<rbrakk> \<Longrightarrow> P I J"
+      and "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; [a;b;c;d]\<rbrakk> \<Longrightarrow> P I J"
     shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d;
-              betw4 b a c d \<or> betw4 a b d c \<or> betw4 b a d c \<or> betw4 d c b a\<rbrakk> \<Longrightarrow> P I J"
+              [b;a;c;d] \<or> [a;b;d;c] \<or> [b;a;d;c] \<or> [d;c;b;a]\<rbrakk> \<Longrightarrow> P I J"
   by (meson abc_sym assms(2) symmetric_Q)
 
 lemma wlog_endpoints_distinct2:
   assumes symmetric_Q: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
-      and "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; betw4 a c b d\<rbrakk> \<Longrightarrow> P I J"
+      and "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; [a;c;b;d]\<rbrakk> \<Longrightarrow> P I J"
     shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d;
-              betw4 b c a d \<or> betw4 a d b c \<or> betw4 b d a c \<or> betw4 d b c a\<rbrakk> \<Longrightarrow> P I J"
+              [b;c;a;d] \<or> [a;d;b;c] \<or> [b;d;a;c] \<or> [d;b;c;a]\<rbrakk> \<Longrightarrow> P I J"
   by (meson abc_sym assms(2) symmetric_Q)
 
 lemma wlog_endpoints_distinct3:
   assumes symmetric_Q: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
       and symmetric_P: "\<And>I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>a b. Q J a b; P I J\<rbrakk> \<Longrightarrow> P J I"
-      and "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; betw4 a c d b\<rbrakk> \<Longrightarrow> P I J"
+      and "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; [a;c;d;b]\<rbrakk> \<Longrightarrow> P I J"
     shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d;
-              betw4 a d c b \<or> betw4 b c d a \<or> betw4 b d c a \<or> betw4 c a b d\<rbrakk> \<Longrightarrow> P I J"
+              [a;d;c;b] \<or> [b;c;d;a] \<or> [b;d;c;a] \<or> [c;a;b;d]\<rbrakk> \<Longrightarrow> P I J"
   by (meson assms)
 
 lemma (in MinkowskiSpacetime) wlog_endpoints_distinct4:
@@ -5904,7 +5904,7 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct4:
       and Q_implies_path: "\<And>a b I. \<lbrakk>I\<subseteq>A; Q I a b\<rbrakk> \<Longrightarrow> b\<in>A \<and> a\<in>A"
       and symmetric_P: "\<And>I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>a b. Q J a b; P I J\<rbrakk> \<Longrightarrow> P J I"
       and "\<And>I J a b c d.
-          \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b\<rbrakk> \<Longrightarrow> P I J"
+          \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; [a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]\<rbrakk> \<Longrightarrow> P I J"
     shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
                 a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
 proof -
@@ -5914,11 +5914,11 @@ proof -
   have endpoints_on_path: "a\<in>A" "b\<in>A" "c\<in>A" "d\<in>A"
     using Q_implies_path asm by blast+
   show "P I J"
-  proof (cases) (* have to split like this, because the full some_betw4 is too large for Isabelle *)
-    assume "betw4 b a c d \<or> betw4 b a d c \<or> betw4 b c a d \<or>
-            betw4 b d a c \<or> betw4 c a b d \<or> betw4 c b a d"
-    then consider "betw4 b a c d"|"betw4 b a d c"|"betw4 b c a d"|
-                  "betw4 b d a c"|"betw4 c a b d"|"betw4 c b a d"
+  proof (cases) (* have to split like this, because the full some_[is;too;large;for] Isabelle *)
+    assume "[b;a;c;d] \<or> [b;a;d;c] \<or> [b;c;a;d] \<or>
+            [b;d;a;c] \<or> [c;a;b;d] \<or> [c;b;a;d]"
+    then consider "[b;a;c;d]"|"[b;a;d;c]"|"[b;c;a;d]"|
+                  "[b;d;a;c]"|"[c;a;b;d]"|"[c;b;a;d]"
       by linarith
     thus "P I J"
       apply (cases)
@@ -5926,14 +5926,14 @@ proof -
        apply (metis asm(1-4) assms(4,5))
       by (metis asm(1-4) assms(2,4,5) symmetric_Q)
   next
-    assume "\<not>(betw4 b a c d \<or> betw4 b a d c \<or> betw4 b c a d \<or>
-              betw4 b d a c \<or> betw4 c a b d \<or> betw4 c b a d)"
-    hence "betw4 a b c d \<or> betw4 a b d c \<or> betw4 a c b d \<or>
-           betw4 a c d b \<or> betw4 a d b c \<or> betw4 a d c b"
+    assume "\<not>([b;a;c;d] \<or> [b;a;d;c] \<or> [b;c;a;d] \<or>
+              [b;d;a;c] \<or> [c;a;b;d] \<or> [c;b;a;d])"
+    hence "[a;b;c;d] \<or> [a;b;d;c] \<or> [a;c;b;d] \<or>
+           [a;c;d;b] \<or> [a;d;b;c] \<or> [a;d;c;b]"
       using some_betw4b [where P=A and a=a and b=b and c=c and d=d]
       using endpoints_on_path asm path_A by simp
-    then consider "betw4 a b c d"|"betw4 a b d c"|"betw4 a c b d"|
-                  "betw4 a c d b"|"betw4 a d b c"|"betw4 a d c b"
+    then consider "[a;b;c;d]"|"[a;b;d;c]"|"[a;c;b;d]"|
+                  "[a;c;d;b]"|"[a;d;b;c]"|"[a;d;c;b]"
       by linarith
     thus "P I J"
       apply (cases)
@@ -5973,7 +5973,7 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct:
       and Q_implies_path: "\<And>a b I. \<lbrakk>I\<subseteq>A; Q I a b\<rbrakk> \<Longrightarrow> b\<in>A \<and> a\<in>A"
       and symmetric_P: "\<And>I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>a b. Q J a b; P I J\<rbrakk> \<Longrightarrow> P J I"
       and "\<And>I J a b c d.
-          \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b\<rbrakk> \<Longrightarrow> P I J"
+          \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; [a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]\<rbrakk> \<Longrightarrow> P I J"
   shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
               a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
   by (smt (verit, ccfv_SIG) assms some_betw4b)
@@ -6096,7 +6096,7 @@ lemma wlog_two_interval_element:
 lemma (in MinkowskiSpacetime) wlog_interval_endpoints_distinct:
   assumes "\<And>I J. \<lbrakk>is_interval I; is_interval J; P I J\<rbrakk> \<Longrightarrow> P J I" (*P does not distinguish between intervals*)
           "\<And>I J a b c d. \<lbrakk>I = interval a b; J = interval c d\<rbrakk>
-          \<Longrightarrow> (betw4 a b c d \<longrightarrow> P I J) \<and> (betw4 a c b d \<longrightarrow> P I J) \<and> (betw4 a c d b \<longrightarrow> P I J)"
+          \<Longrightarrow> ([a;b;c;d] \<longrightarrow> P I J) \<and> ([a;c;b;d] \<longrightarrow> P I J) \<and> ([a;c;d;b] \<longrightarrow> P I J)"
   shows "\<And>I J Q a b c d. \<lbrakk>I = interval a b; J = interval c d; I\<subseteq>Q; J\<subseteq>Q; Q\<in>\<P>;
               a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
 proof -
@@ -6112,7 +6112,7 @@ proof -
       by (simp add: ends_in_int subset_iff)
     show "\<And>I J. is_interval I \<Longrightarrow> is_interval J \<Longrightarrow> P I J \<Longrightarrow> P J I"
       using assms(1) by blast
-    show "\<And>I J a b c d. \<lbrakk>?Q I a b; ?Q J c d; betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b\<rbrakk>
+    show "\<And>I J a b c d. \<lbrakk>?Q I a b; ?Q J c d; [a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]\<rbrakk>
         \<Longrightarrow> P I J"
       by (meson assms(2))
     show "I = interval a b" "J = interval c d" "I\<subseteq>A" "J\<subseteq>A" "A\<in>\<P>"
@@ -6188,9 +6188,9 @@ proof -
   {
     fix I J a b c d
     assume "I = interval a b" "J = interval c d" (* "a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d" *)
-    have "(betw4 a b c d \<longrightarrow> ?prop I J)"
-         "(betw4 a c b d \<longrightarrow> ?prop I J)"
-         "(betw4 a c d b \<longrightarrow> ?prop I J)"
+    have "([a;b;c;d] \<longrightarrow> ?prop I J)"
+         "([a;c;b;d] \<longrightarrow> ?prop I J)"
+         "([a;c;d;b] \<longrightarrow> ?prop I J)"
     proof (rule_tac [!] impI)
       assume "betw4 a b c d"
       have "I\<inter>J = {}"
@@ -6216,7 +6216,7 @@ proof -
       qed 
       thus "?prop I J" by simp
     next
-      assume "betw4 a c b d"
+      assume "[a;c;b;d]"
       then have "a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d"
         using betw4_imp_neq by blast
       have "I\<inter>J = interval c b"
@@ -6226,19 +6226,19 @@ proof -
         {
           assume "x=b \<or> x=c"
           hence "x\<in>I"
-            using \<open>betw4 a c b d\<close> \<open>I = interval a b\<close> interval_def seg_betw by auto
+            using \<open>[a;c;b;d]\<close> \<open>I = interval a b\<close> interval_def seg_betw by auto
           have "x\<in>J"
             using \<open>x=b \<or> x=c\<close>
-            using \<open>betw4 a c b d\<close> \<open>J = interval c d\<close> interval_def seg_betw by auto 
+            using \<open>[a;c;b;d]\<close> \<open>J = interval c d\<close> interval_def seg_betw by auto 
           hence "x\<in>I \<and> x\<in>J" using \<open>x \<in> I\<close> by blast
         } moreover {
           assume  "\<not>(x=b \<or> x=c)"
           hence "[c;x;b]"
             using `x\<in>interval c b` unfolding interval_def segment_def by simp
           hence "[a;x;b]"
-            by (meson \<open>betw4 a c b d\<close> abc_acd_abd abc_sym)
+            by (meson \<open>[a;c;b;d]\<close> abc_acd_abd abc_sym)
           have "[c;x;d]"
-            using \<open>betw4 a c b d\<close> \<open>[c;x;b]\<close> abc_acd_abd by blast
+            using \<open>[a;c;b;d]\<close> \<open>[c;x;b]\<close> abc_acd_abd by blast
           have "x\<in>I" "x\<in>J"
             using \<open>I = interval a b\<close> `[a;x;b]` \<open>J = interval c d\<close> \<open>[c;x;d]\<close> 
                   interval_def seg_betw by auto
@@ -6254,7 +6254,7 @@ proof -
             using `x\<in>I` \<open>I = interval a b\<close>  `x\<in>J` \<open>J = interval c d\<close> 
                   not_eq unfolding interval_def segment_def by blast+
           hence "[c;x;b]"
-            by (meson \<open>betw4 a c b d\<close> abc_bcd_acd betw4_weak)
+            by (meson \<open>[a;c;b;d]\<close> abc_bcd_acd betw4_weak)
           thus ?thesis
             unfolding interval_def segment_def using seg_betw segment_def by auto
         next
@@ -6262,7 +6262,7 @@ proof -
           {
             assume "x=a"
             have "\<not>[d;a;c]"
-              using \<open>betw4 a c b d\<close> abcd_dcba_only(9) by blast
+              using \<open>[a;c;b;d]\<close> abcd_dcba_only(9) by blast
             hence "a \<notin> interval c d" unfolding interval_def segment_def
               using abc_sym \<open>a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d\<close> by blast
             hence "False" using `x\<in>J` \<open>J = interval c d\<close> `x=a` by blast
@@ -6279,7 +6279,7 @@ proof -
       qed
       thus "?prop I J" by auto
     next
-      assume "betw4 a c d b"
+      assume "[a;c;d;b]"
       have "I\<inter>J = interval c d"
       proof (safe)
         fix x
@@ -6298,7 +6298,7 @@ proof -
         } moreover {
           assume "\<not> (x\<noteq>c \<and> x\<noteq>d)"
           hence "x\<in>I \<and> x\<in>J"
-            by (metis \<open>I = interval a b\<close> \<open>J = interval c d\<close> \<open>betw4 a c d b\<close> \<open>x \<in> interval c d\<close>
+            by (metis \<open>I = interval a b\<close> \<open>J = interval c d\<close> \<open>[a;c;d;b]\<close> \<open>x \<in> interval c d\<close>
                 abc_bcd_abd abc_bcd_acd insertI2 interval_def seg_betw)
         }
         ultimately show "x\<in>I" "x\<in>J" by blast+
@@ -6410,7 +6410,7 @@ proof -
           then show "x=a"
           proof (cases)
             assume "[a;x;b]"
-            hence "betw4 b x d c"
+            hence "[b;x;d;c]"
               using \<open>[b;a;c] \<and> a = d\<close> abc_acd_bcd abc_sym by meson
             hence False
               using cxd abc_abc_neq by blast
@@ -6571,10 +6571,10 @@ proof -
   obtain b where "b\<in>\<E>" and "b\<in>Q" and "b\<noteq>a"
     using event_a ge2_events in_path_event path_Q by blast
   let ?L = "{x. [x;a;b]}"
-  let ?R = "{y. [a;y;b] \<or> [[a b y\<rbrakk>}"
+  let ?R = "{y. [a;y;b] \<or> [a;b;y\<rbrakk>}"
   have "Q = ?L \<union> {a} \<union> ?R"
   proof -
-    have inQ: "\<forall>x\<in>Q. [x;a;b] \<or> x=a \<or> [a;x;b] \<or> [[a b x\<rbrakk>"
+    have inQ: "\<forall>x\<in>Q. [x;a;b] \<or> x=a \<or> [a;x;b] \<or> [a;b;x\<rbrakk>"
       by (meson \<open>b \<in> Q\<close> \<open>b \<noteq> a\<close> abc_sym event_a path_Q some_betw)
     show ?thesis
     proof (safe)
@@ -6607,7 +6607,7 @@ proof -
   have disjointLR: "?L \<inter> ?R = {}"
     using abc_abc_neq abc_only_cba by blast
 
-  have wxyz_ord: "nonstrict_betw_right4 x a y b \<or> nonstrict_betw_right4 x a b y
+  have wxyz_ord: "[x;a;y;b\<rbrakk> \<or> [x;a;b;y\<rbrakk>
       \<and> (([w;x;a] \<and> [x;a;y]) \<or> ([x;w;a] \<and> [w;a;y]))
       \<and> (([x;a;y] \<and> [a;y;z]) \<or> ([x;a;z] \<and> [a;z;y]))"
     if "x\<in>?L" "w\<in>?L" "y\<in>?R" "z\<in>?R" "w\<noteq>x" "y\<noteq>z" for x w y z
@@ -6697,7 +6697,7 @@ proof -
   next
     show "b \<in> Q" using \<open>b \<in> Q\<close> .
   next
-    show "is_ray {y. [a;y;b] \<or> [[a b y\<rbrakk>}"
+    show "is_ray {y. [a;y;b] \<or> [a;b;y\<rbrakk>}"
     proof -
       have "[a;y;b] \<or> [a;b;y] \<or> y=b"
         using \<open>y\<in>?R\<close> by blast
@@ -6711,11 +6711,11 @@ proof -
           show "e\<in>?R"
           proof -
             { assume "e \<noteq> b"
-              have "(e \<noteq> y \<and> e \<noteq> b) \<and> [w;a;y] \<or> [a;e;b] \<or> [[a b e\<rbrakk>"
+              have "(e \<noteq> y \<and> e \<noteq> b) \<and> [w;a;y] \<or> [a;e;b] \<or> [a;b;e\<rbrakk>"
                 using \<open>[a;y;b] \<or> [a;b;y] \<or> y = b\<close> \<open>w \<in> {x. [x;a;b]}\<close> abd_bcd_abc by blast
-              hence "[a;e;b] \<or> [[a b e\<rbrakk>"
+              hence "[a;e;b] \<or> [a;b;e\<rbrakk>"
                 using abc_abd_bcdbdc abc_bcd_abd abd_bcd_abc
-                by (metis \<open>[a;e;y] \<or> [[a y e\<rbrakk>\<close> \<open>w \<in> ?L\<close> mem_Collect_eq)
+                by (metis \<open>[a;e;y] \<or> [a;y;e\<rbrakk>\<close> \<open>w \<in> ?L\<close> mem_Collect_eq)
             }
             thus ?thesis
               by blast
@@ -6763,7 +6763,7 @@ proof -
     show "\<forall>x\<in>?L. \<forall>y\<in>?L. \<not> [x;a;y]"
       using abc_abc_neq abc_abd_bcdbdc abc_only_cba by blast
     show "Q-{a} \<subseteq> ?R \<union> ?L"
-      using \<open>Q = {x. [x;a;b]} \<union> {a} \<union> {y. [a;y;b] \<or> [[a b y\<rbrakk>}\<close> by blast
+      using \<open>Q = {x. [x;a;b]} \<union> {a} \<union> {y. [a;y;b] \<or> [a;b;y\<rbrakk>}\<close> by blast
   qed
   thus ?thesis
     by (metis (mono_tags, lifting))
@@ -7151,14 +7151,14 @@ proof -
       text \<open>Finally, the important bit: proofs for the necessary cases of betweenness.\<close>
       show "?P I J"
         if "?I I a b" "?I J c d"  "I\<subseteq>Q" "J\<subseteq>Q"
-          and "betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b"
+          and "[a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]"
         for I J a b c d
       proof -
-        consider "betw4 a b c d"|"betw4 a c b d"|"betw4 a c d b"
-          using \<open>betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b\<close> by fastforce
+        consider "[a;b;c;d]"|"[a;c;b;d]"|"[a;c;d;b]"
+          using \<open>[a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]\<close> by fastforce
         thus ?thesis
         proof (cases)
-          assume asm: "betw4 a b c d" show "?P I J"
+          assume asm: "[a;b;c;d]" show "?P I J"
           proof -
             have "\<forall>x\<in> I\<union>J. [a;x;d]"
               by (metis Un_iff asm betw4_strong betw4_weak that(1) that(2))
@@ -7167,7 +7167,7 @@ proof -
             ultimately show ?thesis by blast
           qed
         next
-          assume "betw4 a c b d" show "?P I J"
+          assume "[a;c;b;d]" show "?P I J"
           proof -
             have "\<forall>x\<in> I\<union>J. [a;x;d]"
               by (metis Un_iff \<open>betw4 a c b d\<close> abc_bcd_abd abc_bcd_acd betw4_weak that(1,2))
@@ -7176,7 +7176,7 @@ proof -
             ultimately show ?thesis by blast
           qed
         next
-          assume "betw4 a c d b" show "?P I J"
+          assume "[a;c;d;b]" show "?P I J"
           proof -
             have "\<forall>x\<in> I\<union>J. [a;x;b]"
               using \<open>betw4 a c d b\<close> abc_bcd_abd abc_bcd_acd abe_ade_bcd_ace
@@ -7405,12 +7405,12 @@ proof -
     using in_path_event path_Q that unreachable_bounded_path_only
     by blast
 
-  have "[c;d;y] \<or> \<lbrakk>y c d]] \<or> [[c y d\<rbrakk>"
+  have "[c;d;y] \<or> \<lbrakk>y;c;d] \<or> [c;y;d\<rbrakk>"
     by (meson \<open>y \<in> Q\<close> abc_sym events(3-5) path_Q some_betw)
-  moreover have "[c;d;z] \<or> \<lbrakk>z c d]] \<or> [[c z d\<rbrakk>"
+  moreover have "[c;d;z] \<or> \<lbrakk>z;c;d] \<or> [c;z;d\<rbrakk>"
     by (meson \<open>z \<in> Q\<close> abc_sym events(3-5) path_Q some_betw)
   ultimately consider "[c;d;y]" | "[c;d;z]" |
-                      "((\<lbrakk>y c d]] \<or> [[c y d\<rbrakk>) \<and> (\<lbrakk>z c d]] \<or> [[c z d\<rbrakk>))"
+                      "((\<lbrakk>y;c;d] \<or> [c;y;d\<rbrakk>) \<and> (\<lbrakk>z;c;d] \<or> [c;z;d\<rbrakk>))"
     by auto
   thus ?thesis
   proof (cases)
@@ -7432,7 +7432,7 @@ proof -
       using \<open>[c;d;z]\<close> \<open>path az a z\<close> \<open>path bz b z\<close> \<open>z \<in> Q\<close> by blast
     thus ?thesis by blast
   next
-    assume "(\<lbrakk>y c d]] \<or> [[c y d\<rbrakk>) \<and> (\<lbrakk>z c d]] \<or> [[c z d\<rbrakk>)"
+    assume "(\<lbrakk>y;c;d] \<or> [c;y;d\<rbrakk>) \<and> (\<lbrakk>z;c;d] \<or> [c;z;d\<rbrakk>)"
     have "\<exists>e. [c;d;e]"
       using prolong_betw (* works as Schutz says! *)
       using events(3-5) path_Q by blast
@@ -7443,9 +7443,9 @@ proof -
         I think this is because it cannot be easily/automatically reconciled with non-strict
         notation.\<close>
       assume "[y;e;z]"
-      moreover consider "(\<lbrakk>y c d]] \<and> \<lbrakk>z c d]])" | "(\<lbrakk>y c d]] \<and> [[c z d\<rbrakk>)" |
-               "([[c y d\<rbrakk> \<and> \<lbrakk>z c d]])" | "([[c y d\<rbrakk> \<and> [[c z d\<rbrakk>)"
-        using \<open>(\<lbrakk>y c d]] \<or> [[c y d\<rbrakk>) \<and> (\<lbrakk>z c d]] \<or> [[c z d\<rbrakk>)\<close> by linarith
+      moreover consider "(\<lbrakk>y;c;d] \<and> \<lbrakk>z;c;d])" | "(\<lbrakk>y;c;d] \<and> [c;z;d\<rbrakk>)" |
+               "([c;y;d\<rbrakk> \<and> \<lbrakk>z;c;d])" | "([c;y;d\<rbrakk> \<and> [c;z;d\<rbrakk>)"
+        using \<open>(\<lbrakk>y;c;d] \<or> [c;y;d\<rbrakk>) \<and> (\<lbrakk>z;c;d] \<or> [c;z;d\<rbrakk>)\<close> by linarith
       ultimately show False
         by (smt \<open>[c;d;e]\<close> abc_ac_neq betw4_strong betw4_weak)
     qed
