@@ -574,12 +574,12 @@ subsection "Chains using betweenness"
 
 text \<open>Old definitions of chains. Shown equivalent to \<open>fin_long_chain_2\<close> in TemporalOrderOnPath.thy.\<close>
 
-definition chain_with :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[.. _ .. _ .. _ ..]_]") where
-  "chain_with x y z X \<equiv> [x;y;z] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
+definition chain_with :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|.. _ .. _ .. _ ..]") where
+  "chain_with X x y z \<equiv> [x;y;z] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
 definition finite_chain_with3 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[_ .. _ .. _]_]") where
-  "finite_chain_with3 x y z X \<equiv> [[..x..y..z..]X] \<and> \<not>(\<exists>w\<in>X. [w;x;y] \<or> [y;z;w])"
+  "finite_chain_with3 x y z X \<equiv> [\<leadsto>X|..x..y..z..] \<and> \<not>(\<exists>w\<in>X. [w;x;y] \<or> [y;z;w])"
 
-lemma long_chain_betw: "[[..a..b..c..]X] \<Longrightarrow> [a;b;c]"
+lemma long_chain_betw: "[\<leadsto>X|..a..b..c..] \<Longrightarrow> [a;b;c]"
 by (simp add: chain_with_def)
 
 lemma finite_chain3_betw: "[[a..b..c]X] \<Longrightarrow> [a;b;c]"

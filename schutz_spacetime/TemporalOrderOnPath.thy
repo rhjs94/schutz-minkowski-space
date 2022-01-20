@@ -2603,7 +2603,7 @@ subsection "Chain Equivalences"
 subsubsection "Betweenness-chains and strong index-chains"
 
 lemma equiv_chain_1a:
-  assumes "[[..a..b..c..]X]"
+  assumes "[\<leadsto>X|..a..b..c..]"
   shows "\<exists>f. ch_by_ord f X \<and> a\<in>X \<and> b\<in>X \<and> c\<in>X \<and> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
 proof -
   have in_X: "a\<in>X \<and> b\<in>X \<and> c\<in>X"
@@ -2623,19 +2623,19 @@ qed
 
 lemma equiv_chain_1b:
   assumes "ch_by_ord f X \<and> a\<in>X \<and> b\<in>X \<and> c\<in>X \<and> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> [a;b;c]"
-  shows "[[..a..b..c..]X]"
+  shows "[\<leadsto>X|..a..b..c..]"
   using assms chain_with_def ch_by_ord_def
   by (metis long_ch_by_ord_def short_ch_def)
 
 
 lemma equiv_chain_1:
-  "[[..a..b..c..]X] \<longleftrightarrow> (\<exists>f. ch_by_ord f X \<and> a\<in>X \<and> b\<in>X \<and> c\<in>X \<and> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> [a;b;c])"
+  "[\<leadsto>X|..a..b..c..] \<longleftrightarrow> (\<exists>f. ch_by_ord f X \<and> a\<in>X \<and> b\<in>X \<and> c\<in>X \<and> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> [a;b;c])"
   using equiv_chain_1a equiv_chain_1b long_chain_betw
   by meson
 
 
 lemma index_order:
-  assumes "chain_with x y z X"
+  assumes "[\<leadsto>X|..x..y..z..]"
       and "ch_by_ord f X" and "f a = x" and "f b = y" and "f c = z"
       and "finite X \<longrightarrow> a<card X" and "finite X \<longrightarrow> b<card X" and "finite X \<longrightarrow> c<card X"
     shows "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
@@ -2914,7 +2914,7 @@ proof -
   have aligned: "[a;b;c]"
     using assms fin_ch_betw
     by auto
-  hence some_chain: "[[..a..b..c..]X]"
+  hence some_chain: "[\<leadsto>X|..a..b..c..]"
     using assms ch_by_ord_def equiv_chain_1b fin_long_chain_def points_in_chain
     by metis
   have "\<not>(\<exists>w\<in>X. [w;a;b] \<or> [b;c;w])"
