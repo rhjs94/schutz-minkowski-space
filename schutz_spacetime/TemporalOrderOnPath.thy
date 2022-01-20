@@ -587,7 +587,7 @@ theorem (*3*) (in MinkowskiChain) collinearity_alt2:
       and cea: "[c;e;a]"
   shows "\<exists>f\<in>de\<inter>ab. [a;f;b]"
 proof -
-  have "\<exists>f\<in>ab \<inter> de. \<exists>X. [[a..f..b]X]"
+  have "\<exists>f\<in>ab \<inter> de. \<exists>X. [\<leadsto>X|a..f..b]"
   proof -
     have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
@@ -618,7 +618,7 @@ proof -
     using tri_abc triangle_paths_unique by blast
   then obtain ab where path_ab: "path ab a b"
     by blast
-  have "\<exists>f\<in>ab \<inter> de. \<exists>X. [[a..f..b]X]"
+  have "\<exists>f\<in>ab \<inter> de. \<exists>X. [\<leadsto>X|a..f..b]"
   proof -
     have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
@@ -648,7 +648,7 @@ proof -
   let ?ab = "path_of a b"
   have path_ab: "path ?ab a b"
     using tri_abc theI' [OF triangle_paths_unique] by blast
-  have "\<exists>f\<in>?ab \<inter> de. \<exists>X. [[a..f..b]X]"
+  have "\<exists>f\<in>?ab \<inter> de. \<exists>X. [\<leadsto>X|a..f..b]"
   proof -
     have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
@@ -944,7 +944,7 @@ text \<open>
   The same assumptions as I7, different conclusion.
   This doesn't just give us boundedness, it gives us another event outside of the unreachable
   set, as long as we have one already.
-  I7 conclusion:  \<open>\<exists>X Q0 Qm Qn. [[Q0 .. Qm .. Qn]X] \<and> Q0 = ?Qx \<and> Qm = ?Qy \<and> Qn \<in> ?Q - \<emptyset> ?Q ?b\<close>
+  I7 conclusion:  \<open>\<exists>X Q0 Qm Qn. [\<leadsto>X|Q0 .. Qm .. Qn] \<and> Q0 = ?Qx \<and> Qm = ?Qy \<and> Qn \<in> ?Q - \<emptyset> ?Q ?b\<close>
 \<close>
 
 theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
@@ -2680,7 +2680,7 @@ qed
 
 
 lemma old_fin_chain_finite:
-  assumes "finite_chain_with3 x y z X"
+  assumes "[\<leadsto>X|x..y..z]"
   shows "finite X"
 proof (rule ccontr)
   assume "infinite X"
@@ -2732,7 +2732,7 @@ qed
 
 
 lemma index_from_with3:
-  assumes "finite_chain_with3 a b c X"
+  assumes "[\<leadsto>X|a..b..c]"
   shows "\<exists>f. (f 0 = a \<or> f 0 = c) \<and> ch_by_ord f X"
 proof -
   obtain f where "ch_by_ord f X"
@@ -2815,7 +2815,7 @@ qed
 
 
 lemma (in MinkowskiSpacetime) with3_and_index_is_fin_chain:
-  assumes "f 0 = a" and "ch_by_ord f X" and "finite_chain_with3 a b c X"
+  assumes "f 0 = a" and "ch_by_ord f X" and "[\<leadsto>X|a..b..c]"
   shows "[f\<leadsto>X|a..b..c]"
 proof -
   have "finite X"
@@ -2866,10 +2866,10 @@ qed
 
 
 lemma (in MinkowskiSpacetime) g_from_with3:
-  assumes "finite_chain_with3 a b c X"
+  assumes "finite_chain_with3 X a b c"
   obtains g where "[g\<leadsto>X|a..b..c] \<or> [g\<leadsto>X|c..b..a]"
 proof -
-  have old_chain_sym: "finite_chain_with3 c b a X"
+  have old_chain_sym: "finite_chain_with3 X c b a"
     by (metis abc_sym assms chain_with_def finite_chain_with3_def)
   obtain f where f_def: "(f 0 = a \<or> f 0 = c) \<and> ch_by_ord f X"
     using index_from_with3 assms
@@ -2887,7 +2887,7 @@ qed
 
 
 lemma (in MinkowskiSpacetime) equiv_chain_2a:
-  assumes "finite_chain_with3 a b c X"
+  assumes "finite_chain_with3 X a b c"
   obtains f where "[f\<leadsto>X|a..b..c]"
 proof -
   obtain g where "[g\<leadsto>X|a..b..c] \<or> [g\<leadsto>X|c..b..a]"
@@ -2909,7 +2909,7 @@ qed
 
 lemma equiv_chain_2b:
   assumes "[f\<leadsto>X|a..b..c]"
-  shows "finite_chain_with3 a b c X"
+  shows "finite_chain_with3 X a b c"
 proof -
   have aligned: "[a;b;c]"
     using assms fin_ch_betw
@@ -2968,7 +2968,7 @@ qed
 
 
 lemma (in MinkowskiSpacetime) equiv_chain_2:
-  "\<exists>f. [f\<leadsto>X|a..b..c] \<longleftrightarrow> [[a..b..c]X]"
+  "\<exists>f. [f\<leadsto>X|a..b..c] \<longleftrightarrow> [\<leadsto>X|a..b..c]"
   using equiv_chain_2a equiv_chain_2b
   by meson
 

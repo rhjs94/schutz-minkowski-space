@@ -576,17 +576,17 @@ text \<open>Old definitions of chains. Shown equivalent to \<open>fin_long_chain
 
 definition chain_with :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|.. _ .. _ .. _ ..]") where
   "chain_with X x y z \<equiv> [x;y;z] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
-definition finite_chain_with3 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[_ .. _ .. _]_]") where
-  "finite_chain_with3 x y z X \<equiv> [\<leadsto>X|..x..y..z..] \<and> \<not>(\<exists>w\<in>X. [w;x;y] \<or> [y;z;w])"
+definition finite_chain_with3 :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|_ .. _ .. _]") where
+  "finite_chain_with3 X x y z \<equiv> [\<leadsto>X|..x..y..z..] \<and> \<not>(\<exists>w\<in>X. [w;x;y] \<or> [y;z;w])"
 
 lemma long_chain_betw: "[\<leadsto>X|..a..b..c..] \<Longrightarrow> [a;b;c]"
 by (simp add: chain_with_def)
 
-lemma finite_chain3_betw: "[[a..b..c]X] \<Longrightarrow> [a;b;c]"
+lemma finite_chain3_betw: "[\<leadsto>X|a..b..c] \<Longrightarrow> [a;b;c]"
 by (simp add: chain_with_def finite_chain_with3_def)
 
 definition finite_chain_with2 :: "'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" ("[[_ .. _]_]") where
-  "finite_chain_with2 x z X \<equiv> \<exists>y\<in>X. [[x..y..z]X]"
+  "finite_chain_with2 x z X \<equiv> \<exists>y\<in>X. [\<leadsto>X|x..y..z]"
 
 lemma finite_chain2_betw: "[[a..c]X] \<Longrightarrow> \<exists>b. [a;b;c]"
   using finite_chain_with2_def finite_chain3_betw by meson
@@ -773,7 +773,7 @@ text \<open>O6 supposedly serves the same purpose as Pasch's axiom.\<close>
 locale MinkowskiChain = MinkowskiBetweenness +
   assumes O6: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
                 \<exists>d\<in>S. [b;c;d] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [c;e;a])\<rbrakk>
-               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>X. [[a..f..b]X]"
+               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>X. [\<leadsto>X|a..f..b]"
 begin
 
 
