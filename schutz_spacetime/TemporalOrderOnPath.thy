@@ -2254,7 +2254,7 @@ proof -
 
 lemma semifin_chain_on_path:
   assumes "[f\<leadsto>X|x..]"
-  shows "\<exists>P\<in>\<P>. X\<subseteq>P"
+  shows "\<exists>!P\<in>\<P>. X\<subseteq>P"
 proof -
   obtain y where "y\<in>X" and "y\<noteq>x"
     using assms inf_chain_is_long
@@ -2301,9 +2301,12 @@ proof -
       ultimately show ?thesis by blast
     qed
   qed
-  thus ?thesis
+  hence "\<exists>P\<in>\<P>. X\<subseteq>P"
     using \<open>path P x y\<close>
     by blast
+  thus ?thesis
+    using path_unique
+    by (meson \<open>path P x y\<close> \<open>y \<in> X\<close> assms endpoint_in_semifin in_mono)
 qed
 
 
@@ -2344,9 +2347,12 @@ qed
 
 
 lemma all_aligned_on_long_chain:
-  assumes "long_ch_by_ord f X" and "finite X"
+  assumes "long_ch_by_ord f X"
   and a: "x\<in>X" and b: "y\<in>X" and c:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
 shows "[x;y;z] \<or> [x;z;y] \<or> [z;x;y]"
+  using all_aligned_on_semifin_chain abc_sym assms long_ch_by_ord_def ordering_def
+  by (smt (verit, ccfv_threshold) neqE)
+(*
 proof -
   obtain n\<^sub>x n\<^sub>y n\<^sub>z where fx: "f n\<^sub>x = x" and fy: "f n\<^sub>y = y" and fz: "f n\<^sub>z = z"
                     and xx: "n\<^sub>x < card X" and yy: "n\<^sub>y < card X" and zz: "n\<^sub>z < card X"
@@ -2387,11 +2393,12 @@ proof -
     using abc_sym
     by blast
 qed
+*)
 
 
 lemma long_chain_on_path:
   assumes "long_ch_by_ord f X" and "finite X"
-  shows "\<exists>P\<in>\<P>. X\<subseteq>P"
+  shows "\<exists>!P\<in>\<P>. X\<subseteq>P"
 proof -
   obtain x y where "x\<in>X" and "y\<in>X" and "y\<noteq>x"
     using long_ch_by_ord_def assms
@@ -2439,9 +2446,12 @@ proof -
       ultimately show ?thesis by blast
     qed
   qed
-  thus ?thesis
+  hence "\<exists>P\<in>\<P>. X\<subseteq>P"
     using \<open>path P x y\<close>
     by blast
+  thus ?thesis
+    using path_unique
+    by (meson \<open>y \<in> X\<close> \<open>y \<noteq> z\<close> \<open>z \<in> X\<close> subsetD)
 qed
 
 text \<open>
@@ -2649,19 +2659,10 @@ proof (rule ccontr)
     using \<open>(b < a \<or> c < b) \<and> (b < c \<or> a < b)\<close> by blast
   hence o1: "(b<c \<and> c<a) \<or> (c<a \<and> a<b) \<or> (b<a \<and> a<c) \<or> (a<c \<and> c<b)"
     by blast
-  have "(b<c \<and> c<a) \<longrightarrow> [y;z;x]"
-    using assms ordering_ord_ijk long_ch_by_ord_def is_long
-    by metis 
-  moreover have "(c<a \<and> a<b) \<longrightarrow> [z;x;y]"
-    using  assms ordering_ord_ijk long_ch_by_ord_def is_long
-    by metis
-  moreover have "(b<a \<and> a<c) \<longrightarrow> [y;x;z]"
-    using assms ordering_ord_ijk long_ch_by_ord_def is_long
-    by metis
-  moreover have "(a<c \<and> c<b) \<longrightarrow> [x;z;y]"
-    using assms ordering_ord_ijk long_ch_by_ord_def is_long
-    by metis
-  ultimately have "[y;z;x] \<or> [z;x;y] \<or> [y;x;z] \<or> [x;z;y]"
+  have "(b<c \<and> c<a) \<longrightarrow> [y;z;x]" "(c<a \<and> a<b) \<longrightarrow> [z;x;y]"
+       "(b<a \<and> a<c) \<longrightarrow> [y;x;z]" "(a<c \<and> c<b) \<longrightarrow> [x;z;y]"
+    by (metis assms(3-) ordering_ord_ijk long_ch_by_ord_def is_long)+
+  then have "[y;z;x] \<or> [z;x;y] \<or> [y;x;z] \<or> [x;z;y]"
     using assms long_ch_by_ord_def is_long o1
     by metis
   thus False
@@ -2674,12 +2675,8 @@ lemma old_fin_chain_finite:
   shows "finite X"
 proof (rule ccontr)
   assume "infinite X"
-  have "x\<in>X"
-    using assms finite_chain_with3_def chain_with_def by simp
-  have "y\<in>X"
-    using assms finite_chain_with3_def chain_with_def by simp
-  have "z\<in>X"
-    using assms finite_chain_with3_def chain_with_def by simp
+  have "x\<in>X" "y\<in>X" "z\<in>X"
+    using assms finite_chain_with3_def chain_with_def by simp+
   obtain f where "ch_by_ord f X"
     using assms equiv_chain_1 finite_chain_with3_def
     by auto
@@ -2710,7 +2707,8 @@ proof (rule ccontr)
   hence acn_can: "(b<c \<and> c<n) \<or> (b<a \<and> a<n)"
     by blast
   have "f n \<in> X"
-    by (metis ordering_def \<open>ch_by_ord f X\<close> \<open>infinite X\<close> assms ch_by_ord_def equiv_chain_1 finite_chain_with3_def long_ch_by_ord_def short_ch_def)
+    by (metis ordering_def \<open>ch_by_ord f X\<close> \<open>infinite X\<close> assms ch_by_ord_def equiv_chain_1
+      finite_chain_with3_def long_ch_by_ord_def short_ch_def)
   hence outside: "[y; z; f n] \<or> [f n; x; y]"
     using acn_can \<open>ch_by_ord f X\<close> \<open>f a = x\<close> \<open>f c = z\<close> \<open>infinite X\<close> assms equiv_chain_1 abc_sym
     using ch_by_ord_def finite_chain_with3_def long_ch_by_ord_def ordering_ord_ijk short_ch_def
@@ -2754,10 +2752,11 @@ proof -
         by linarith
       then obtain p where "f 0 = p"
         by simp
+      have "0<card X"
+        using \<open>n\<^sub>b < card X\<close> gr_implies_not_zero by blast
       hence "p\<in>X"
-        using \<open>ch_by_ord f X\<close> \<open>n\<^sub>a < card X\<close> assms card_0_eq ch_by_ord_def zero_into_ordering
-        using equiv_chain_1 finite_chain_with3_def inf.strict_coboundedI2 inf.strict_order_iff less_one long_ch_by_ord_def old_fin_chain_finite short_ch_def
-        by metis
+        using \<open>ch_by_ord f X\<close> \<open>f 0 = p\<close> equiv_chain_1 assms
+        by (metis ordering_def ch_by_ord_def finite_chain_with3_def long_ch_by_ord_def short_ch_def)
       have "n\<^sub>a<n\<^sub>c \<or> n\<^sub>c<n\<^sub>a"
         using \<open>n\<^sub>a \<noteq> n\<^sub>b \<and> n\<^sub>a \<noteq> n\<^sub>c \<and> n\<^sub>b \<noteq> n\<^sub>c\<close> less_linear by blast
       {
@@ -3031,10 +3030,12 @@ proof -
     by (metis ordering_def abc_sym assms(1,2) fin_long_chain_def long_ch_by_ord_def subsetD)
 qed
 
+(*
 lemma i_le_j_events_neq1:
   assumes "[f\<leadsto>X|a..b..c]"
       and "i<j" "j<card X" "f j \<noteq> b" (* this just means you need to pick b well *)
     shows "f i \<noteq> f j"
+  by (meson assms ch_equiv1 fin_long_chain_def index_injective)
 proof -
   have in_X: "f i \<in> X \<and> f j \<in> X"
     by (metis ordering_def assms(1,2,3) fin_long_chain_def less_trans long_ch_by_ord_def)
@@ -3057,12 +3058,14 @@ proof -
       using abc_abc_neq by blast
   qed
 qed
+*)
 
 lemma i_le_j_events_neq:
   assumes "[f\<leadsto>X|a..b..c]"
-      and "i<j" "j<card X"
-    shows "f i \<noteq> f j"
-proof -
+    and "i<j" "j<card X"
+  shows "f i \<noteq> f j"
+  by (meson assms ch_equiv1 fin_long_chain_def index_injective)
+(*proof -
   have in_X: "f i \<in> X \<and> f j \<in> X"
     by (metis ordering_def assms(1,2,3) fin_long_chain_def less_trans long_ch_by_ord_def)
   have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
@@ -3090,7 +3093,7 @@ proof -
     thus ?thesis
       using abc_abc_neq by blast
   qed
-qed
+qed*)
 
 lemma indices_neq_imp_events_neq:
   assumes "[f\<leadsto>X|a..b..c]"
