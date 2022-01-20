@@ -751,7 +751,7 @@ text \<open>
 lemma no_empty_paths [simp]:
   assumes "Q\<in>\<P>"
   shows "Q\<noteq>{}"
-  (*using assms nonempty_events two_in_unreach unfolding unreachable_subset_def by blast*)
+  (*using assms nonempty_events two_in_unreach unreachable_subset_def by blast*)
 proof -
   obtain a where "a\<in>\<E>" using nonempty_events by blast
   have "a\<in>Q \<or> a\<notin>Q" by auto
