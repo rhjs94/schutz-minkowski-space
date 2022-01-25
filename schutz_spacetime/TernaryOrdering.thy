@@ -36,6 +36,22 @@ definition ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> '
                      \<and> (\<forall>n n' n''. (finite X \<longrightarrow> n'' < card X) \<and> n < n' \<and> n' < n''
                                    \<longrightarrow> ord (f n) (f n') (f n''))"
 
+lemma finite_ordering_intro:
+  assumes "finite X"
+    and "\<forall>n < card X. f n \<in> X"
+    and "\<forall>x \<in> X. \<exists>n < card X. f n = x"
+    and "\<forall>n n' n''. n < n' \<and> n' < n'' \<and> n'' < card X \<longrightarrow> ord (f n) (f n') (f n'')"
+  shows "ordering f ord X"
+  unfolding ordering_def by (simp add: assms)
+
+lemma infinite_ordering_intro:
+  assumes "infinite X"
+    and "\<forall>n::nat. f n \<in> X"
+    and "\<forall>x \<in> X. \<exists>n::nat. f n = x"
+    and "\<forall>n n' n''. n < n' \<and> n' < n'' \<longrightarrow> ord (f n) (f n') (f n'')"
+  shows "ordering f ord X"
+  unfolding ordering_def by (simp add: assms)
+
 lemma ordering_ord_ijk:
   assumes "ordering f ord X"
       and "i < j \<and> j < k \<and> (finite X \<longrightarrow> k < card X)"
@@ -328,6 +344,22 @@ definition ordering2 :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 
                      \<and> (\<forall>x\<in>X. (\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x))
                      \<and> (\<forall>n n' n''. (finite X \<longrightarrow> n'' < card X) \<and> Suc n = n' \<and> Suc n' = n''
                                    \<longrightarrow> ord (f n) (f n') (f n''))"
+
+lemma finite_ordering2_intro:
+  assumes "finite X"
+    and "\<forall>n < card X. f n \<in> X"
+    and "\<forall>x \<in> X. \<exists>n < card X. f n = x"
+    and "\<forall>n n' n''. Suc n = n' \<and> Suc n' = n'' \<and> n'' < card X \<longrightarrow> ord (f n) (f n') (f n'')"
+  shows "ordering2 f ord X"
+  unfolding ordering2_def by (simp add: assms)
+
+lemma infinite_ordering2_intro:
+  assumes "infinite X"
+    and "\<forall>n::nat. f n \<in> X"
+    and "\<forall>x \<in> X. \<exists>n::nat. f n = x"
+    and "\<forall>n n' n''. Suc n = n' \<and> Suc n' = n'' \<longrightarrow> ord (f n) (f n') (f n'')"
+  shows "ordering2 f ord X"
+  unfolding ordering2_def by (simp add: assms)
 
 
 text \<open>Analogue to \<open>ordering_ord_ijk\<close>, which is quicker to use in sledgehammer than the definition.\<close>
