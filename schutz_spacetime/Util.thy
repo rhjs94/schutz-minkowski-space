@@ -60,6 +60,30 @@ lemma card_Collect_nat:
   using card_atLeastAtMost
   using Suc_diff_le assms le_eq_less_or_eq by presburger
 
+lemma card_4_eq:
+  "card X = 4 \<longleftrightarrow> (\<exists>S\<^sub>1. \<exists>S\<^sub>2. \<exists>S\<^sub>3. \<exists>S\<^sub>4. X = {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4} \<and>
+    S\<^sub>1 \<noteq> S\<^sub>2 \<and> S\<^sub>1 \<noteq> S\<^sub>3 \<and> S\<^sub>1 \<noteq> S\<^sub>4 \<and> S\<^sub>2 \<noteq> S\<^sub>3 \<and> S\<^sub>2 \<noteq> S\<^sub>4 \<and> S\<^sub>3 \<noteq> S\<^sub>4)"
+  (is "card X = 4 \<longleftrightarrow> ?card4 X")
+proof
+  assume "card X = 4"
+  hence "card X \<ge> 4" by auto
+  then obtain S\<^sub>1 S\<^sub>2 S\<^sub>3 S\<^sub>4 where
+    0: "S\<^sub>1\<in>X \<and> S\<^sub>2\<in>X \<and> S\<^sub>3\<in>X \<and> S\<^sub>4\<in>X" and
+    1: "S\<^sub>1 \<noteq> S\<^sub>2 \<and> S\<^sub>1 \<noteq> S\<^sub>3 \<and> S\<^sub>1 \<noteq> S\<^sub>4 \<and> S\<^sub>2 \<noteq> S\<^sub>3 \<and> S\<^sub>2 \<noteq> S\<^sub>4 \<and> S\<^sub>3 \<noteq> S\<^sub>4"
+    apply (simp add: eval_nat_numeral)
+    by (auto simp add: card_le_Suc_iff)
+  then have 2: "{S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4} \<subseteq> X" "card {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4} = 4" by auto
+  have "X = {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}"
+    using Finite_Set.card_subset_eq \<open>card X = 4\<close>
+    apply (simp add: eval_nat_numeral)
+    by (smt (z3) \<open>card X = 4\<close> 2 card.infinite card_subset_eq nat.distinct(1))
+  thus "?card4 X" using 1 by blast
+next
+  show "?card4 X \<Longrightarrow> card X = 4"
+    by (smt (z3) card.empty card.insert eval_nat_numeral(2) finite.intros(1) finite_insert insertE
+      insert_absorb insert_not_empty numeral_3_eq_3 semiring_norm(26,27))
+qed
+
 
 text \<open>These lemmas make life easier with some of the ordering proofs.\<close>
 

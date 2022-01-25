@@ -335,11 +335,65 @@ text \<open>
 \<close>
 
 definition three_SPRAY :: "'a \<Rightarrow> bool" where
+  "three_SPRAY x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = 4 \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
+
+definition n_SPRAY :: "nat \<Rightarrow> 'a \<Rightarrow> bool" ("_-SPR _" [100,100]) where
+  "p-SPR x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
+
+lemma n_SPRAY_intro:
+  assumes "S\<subseteq>SPRAY x" "card S = (Suc p)" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S x"
+  shows "p-SPR x"
+  using assms n_SPRAY_def by blast
+
+lemma three_SPRAY_3: "three_SPRAY x \<longleftrightarrow> (3-SPR x)"
+  unfolding n_SPRAY_def three_SPRAY_def
+  by (simp add: eval_nat_numeral)
+
+(*definition three_SPRAY :: "'a \<Rightarrow> bool" where
   "three_SPRAY x \<equiv> \<exists>S1\<in>\<P>. \<exists>S2\<in>\<P>. \<exists>S3\<in>\<P>. \<exists>S4\<in>\<P>.
     S1 \<noteq> S2 \<and> S1 \<noteq> S3 \<and> S1 \<noteq> S4 \<and> S2 \<noteq> S3 \<and> S2 \<noteq> S4 \<and> S3 \<noteq> S4
     \<and> S1 \<in> SPRAY x \<and> S2 \<in> SPRAY x \<and> S3 \<in> SPRAY x \<and> S4 \<in> SPRAY x
     \<and> (indep_set {S1, S2, S3, S4})
-    \<and> (\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x)"
+    \<and> (\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x)"*)
+
+lemma three_SPRAY_alt:
+  "three_SPRAY x = (\<exists>S1\<in>\<P>. \<exists>S2\<in>\<P>. \<exists>S3\<in>\<P>. \<exists>S4\<in>\<P>.
+    S1 \<noteq> S2 \<and> S1 \<noteq> S3 \<and> S1 \<noteq> S4 \<and> S2 \<noteq> S3 \<and> S2 \<noteq> S4 \<and> S3 \<noteq> S4
+    \<and> S1 \<in> SPRAY x \<and> S2 \<in> SPRAY x \<and> S3 \<in> SPRAY x \<and> S4 \<in> SPRAY x
+    \<and> (indep_set {S1, S2, S3, S4})
+    \<and> (\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x))"
+  (is "three_SPRAY x \<longleftrightarrow> ?three_SPRAY' x")
+proof
+  assume "three_SPRAY x"
+  then obtain S where ns: "S\<subseteq>SPRAY x" "card S = 4" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S x"
+    using three_SPRAY_def by auto
+  then obtain S\<^sub>1 S\<^sub>2 S\<^sub>3 S\<^sub>4 where
+    "S = {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}" and
+    "S\<^sub>1 \<noteq> S\<^sub>2 \<and> S\<^sub>1 \<noteq> S\<^sub>3 \<and> S\<^sub>1 \<noteq> S\<^sub>4 \<and> S\<^sub>2 \<noteq> S\<^sub>3 \<and> S\<^sub>2 \<noteq> S\<^sub>4 \<and> S\<^sub>3 \<noteq> S\<^sub>4" and
+    "S\<^sub>1 \<in> SPRAY x \<and> S\<^sub>2 \<in> SPRAY x \<and> S\<^sub>3 \<in> SPRAY x \<and> S\<^sub>4 \<in> SPRAY x"
+    using card_4_eq by (smt (verit) insert_subset ns)
+  thus "?three_SPRAY' x"
+    by (metis SPRAY_path ns(3,4))
+next
+  assume "?three_SPRAY' x"
+  then obtain S\<^sub>1 S\<^sub>2 S\<^sub>3 S\<^sub>4 where ns:
+    "S\<^sub>1 \<noteq> S\<^sub>2 \<and> S\<^sub>1 \<noteq> S\<^sub>3 \<and> S\<^sub>1 \<noteq> S\<^sub>4 \<and> S\<^sub>2 \<noteq> S\<^sub>3 \<and> S\<^sub>2 \<noteq> S\<^sub>4 \<and> S\<^sub>3 \<noteq> S\<^sub>4"
+    "S\<^sub>1 \<in> SPRAY x \<and> S\<^sub>2 \<in> SPRAY x \<and> S\<^sub>3 \<in> SPRAY x \<and> S\<^sub>4 \<in> SPRAY x"
+    "indep_set {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}"
+    "\<forall>S\<in>SPRAY x. dep_path S {S\<^sub>1,S\<^sub>2,S\<^sub>3,S\<^sub>4} x"
+    by metis
+  show "three_SPRAY x"
+    apply (simp add: three_SPRAY_3, intro n_SPRAY_intro[of "{S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}"])
+    by (simp add: ns)+
+qed
+
+lemma three_SPRAY_intro:
+  assumes "S1 \<noteq> S2 \<and> S1 \<noteq> S3 \<and> S1 \<noteq> S4 \<and> S2 \<noteq> S3 \<and> S2 \<noteq> S4 \<and> S3 \<noteq> S4"
+    and "S1 \<in> SPRAY x \<and> S2 \<in> SPRAY x \<and> S3 \<in> SPRAY x \<and> S4 \<in> SPRAY x"
+    and "indep_set {S1, S2, S3, S4}"
+    and "\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x"
+  shows "three_SPRAY x"
+  unfolding three_SPRAY_alt by (metis SPRAY_path assms)
 
 text \<open>
   Lemma \<open>is_three_SPRAY\<close> says "this set of sets of elements is a set of paths which is a 3-$\spray$".
@@ -347,12 +401,12 @@ text \<open>
 \<close>
 
 definition is_three_SPRAY :: "('a set) set \<Rightarrow> bool" where
-  "is_three_SPRAY SPR \<equiv> \<exists> x. SPR = SPRAY x \<and> three_SPRAY x"
+  "is_three_SPRAY S \<equiv> \<exists> x. S = SPRAY x \<and> 3-SPR x"
 
 lemma three_SPRAY_ge4:
   assumes "three_SPRAY x"
   shows "\<exists>Q1\<in>\<P>. \<exists>Q2\<in>\<P>. \<exists>Q3\<in>\<P>. \<exists>Q4\<in>\<P>. Q1 \<noteq> Q2 \<and> Q1 \<noteq> Q3 \<and> Q1 \<noteq> Q4 \<and> Q2 \<noteq> Q3 \<and> Q2 \<noteq> Q4 \<and> Q3 \<noteq> Q4"
-using assms three_SPRAY_def by meson
+using assms three_SPRAY_alt by meson
 
 end (* MinkowskiPrimitive *)
 

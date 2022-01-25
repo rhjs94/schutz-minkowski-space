@@ -772,6 +772,8 @@ qed
 lemma events_ex_path:
   assumes ge1_path: "\<P> \<noteq> {}"
   shows "\<forall>x\<in>\<E>. \<exists>Q\<in>\<P>. x \<in> Q"
+  (*using ex_in_conv no_empty_paths in_path_event assms events_paths
+  by metis*)
 proof
   fix x
   assume x_event: "x \<in> \<E>"
