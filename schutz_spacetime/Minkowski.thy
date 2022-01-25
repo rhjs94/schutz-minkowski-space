@@ -503,19 +503,39 @@ section "Betweenness: Chains"
 
 subsection "Totally ordered chains with indexing"
 
+text\<open>A chain can be:
+  (i) a set of two distinct events connected by a path, or ...\<close>
 definition short_ch :: "'a set \<Rightarrow> bool" where
+  "short_ch X \<equiv> card X = 2 \<and> (\<exists>P\<in>\<P>. X \<subseteq> P)"
+(*definition short_ch :: "'a set \<Rightarrow> bool" where
   "short_ch X \<equiv>
     \<comment>\<open>EITHER two distinct events connected by a path\<close>
-    \<exists>x\<in>X. \<exists>y\<in>X. path_ex x y \<and> \<not>(\<exists>z\<in>X. z\<noteq>x \<and> z\<noteq>y)"
+    \<exists>x\<in>X. \<exists>y\<in>X. path_ex x y \<and> \<not>(\<exists>z\<in>X. z\<noteq>x \<and> z\<noteq>y)"*)
+(*definition short_ch :: "'a set \<Rightarrow> bool" where
+  "short_ch X \<equiv>
+    \<comment>\<open>EITHER two distinct events connected by a path\<close>
+    \<exists>x y. X = {x,y} \<and> path_ex x y"*)
 
-text \<open>Infinite sets have card 0, because card gives a natural number always.\<close>
+lemma short_ch_alt:
+  "short_ch X = (\<exists>x\<in>X. \<exists>y\<in>X. path_ex x y \<and> \<not>(\<exists>z\<in>X. z\<noteq>x \<and> z\<noteq>y))"
+  "short_ch X = (\<exists>x y. X = {x,y} \<and> path_ex x y)"
+  unfolding short_ch_def
+  apply (simp add: card_2_iff', smt (verit, ccfv_SIG) in_mono subsetI)
+  by (metis card_2_iff empty_subsetI insert_subset)
 
+lemma short_ch_intros:
+  "\<lbrakk>x\<in>X; y\<in>X; path_ex x y; \<not>(\<exists>z\<in>X. z\<noteq>x \<and> z\<noteq>y)\<rbrakk> \<Longrightarrow> short_ch X"
+  "\<lbrakk>X = {x,y}; path_ex x y\<rbrakk> \<Longrightarrow> short_ch X"
+  by (auto simp: short_ch_alt)
+
+text \<open>... a set of at least three events such that any three adjacent events are ordered.
+  Notice infinite sets have card 0, because card gives a natural number always.\<close>
 definition long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "long_ch_by_ord f X \<equiv>
-    \<comment>\<open>OR at least three events such that any three events are ordered\<close>
-    \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering f betw X"
+  "long_ch_by_ord f X \<equiv> (infinite X \<or> card X \<ge> 3) \<and> ordering f betw X"
+(*definition long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "long_ch_by_ord f X \<equiv> \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering f betw X"*)
 
-text \<open>Does this restrict chains to lie on paths? Proven in Ch3's Interlude!\<close>
+text \<open>Does this restrict chains to lie on paths? Proven in \<open>TemporalOrderingOnPath\<close>'s Interlude!\<close>
 definition ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
   "ch_by_ord f X \<equiv> short_ch X \<or> long_ch_by_ord f X"
 
