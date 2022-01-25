@@ -406,6 +406,12 @@ next
   qed
 qed
 
+corollary index_inj_on:
+  assumes chX: "local_long_ch_by_ord f X"
+    and finiteX: "finite X"
+  shows "inj_on f {0..<card X}"
+  unfolding inj_on_def by (metis index_injective assms atLeastLessThan_iff nat_neq_iff)
+
 end (* context MinkowskiBetweenness *)
 
 

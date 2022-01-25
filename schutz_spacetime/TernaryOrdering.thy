@@ -357,9 +357,10 @@ lemma infinite_ordering2_intro:
   assumes "infinite X"
     and "\<forall>n::nat. f n \<in> X"
     and "\<forall>x \<in> X. \<exists>n::nat. f n = x"
+    (*and "surj f"*)
     and "\<forall>n n' n''. Suc n = n' \<and> Suc n' = n'' \<longrightarrow> ord (f n) (f n') (f n'')"
   shows "ordering2 f ord X"
-  unfolding ordering2_def by (simp add: assms)
+  using assms unfolding ordering2_def (*surj_def*) by metis
 
 
 text \<open>Analogue to \<open>ordering_ord_ijk\<close>, which is quicker to use in sledgehammer than the definition.\<close>
