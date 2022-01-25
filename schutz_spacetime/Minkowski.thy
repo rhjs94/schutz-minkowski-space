@@ -334,20 +334,21 @@ text \<open>
    ii) all paths of the SPRAY are dependent on these four paths." [Schutz97]
 \<close>
 
-definition three_SPRAY :: "'a \<Rightarrow> bool" where
-  "three_SPRAY x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = 4 \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
-
 definition n_SPRAY :: "nat \<Rightarrow> 'a \<Rightarrow> bool" ("_-SPR _" [100,100]) where
   "p-SPR x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
+
+(*definition three_SPRAY :: "'a \<Rightarrow> bool" where
+  "three_SPRAY x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = 4 \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"*)
+abbreviation three_SPRAY :: "'a \<Rightarrow> bool" where
+  "three_SPRAY x \<equiv> 3-SPR x"
 
 lemma n_SPRAY_intro:
   assumes "S\<subseteq>SPRAY x" "card S = (Suc p)" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S x"
   shows "p-SPR x"
   using assms n_SPRAY_def by blast
 
-lemma three_SPRAY_3: "three_SPRAY x \<longleftrightarrow> (3-SPR x)"
-  unfolding n_SPRAY_def three_SPRAY_def
-  by (simp add: eval_nat_numeral)
+(*lemma three_SPRAY_3: "three_SPRAY x \<longleftrightarrow> (3-SPR x)"
+  unfolding n_SPRAY_def by (simp add: eval_nat_numeral)*)
 
 (*definition three_SPRAY :: "'a \<Rightarrow> bool" where
   "three_SPRAY x \<equiv> \<exists>S1\<in>\<P>. \<exists>S2\<in>\<P>. \<exists>S3\<in>\<P>. \<exists>S4\<in>\<P>.
@@ -366,7 +367,7 @@ lemma three_SPRAY_alt:
 proof
   assume "three_SPRAY x"
   then obtain S where ns: "S\<subseteq>SPRAY x" "card S = 4" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S x"
-    using three_SPRAY_def by auto
+    using n_SPRAY_def by auto
   then obtain S\<^sub>1 S\<^sub>2 S\<^sub>3 S\<^sub>4 where
     "S = {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}" and
     "S\<^sub>1 \<noteq> S\<^sub>2 \<and> S\<^sub>1 \<noteq> S\<^sub>3 \<and> S\<^sub>1 \<noteq> S\<^sub>4 \<and> S\<^sub>2 \<noteq> S\<^sub>3 \<and> S\<^sub>2 \<noteq> S\<^sub>4 \<and> S\<^sub>3 \<noteq> S\<^sub>4" and
@@ -383,7 +384,7 @@ next
     "\<forall>S\<in>SPRAY x. dep_path S {S\<^sub>1,S\<^sub>2,S\<^sub>3,S\<^sub>4} x"
     by metis
   show "three_SPRAY x"
-    apply (simp add: three_SPRAY_3, intro n_SPRAY_intro[of "{S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}"])
+    apply (intro n_SPRAY_intro[of "{S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}"])
     by (simp add: ns)+
 qed
 
