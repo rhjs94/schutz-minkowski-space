@@ -358,7 +358,7 @@ lemma n_SPRAY_intro:
     \<and> (\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x)"*)
 
 lemma three_SPRAY_alt:
-  "three_SPRAY x = (\<exists>S1\<in>\<P>. \<exists>S2\<in>\<P>. \<exists>S3\<in>\<P>. \<exists>S4\<in>\<P>.
+  "three_SPRAY x = (\<exists>S1 S2 S3 S4.
     S1 \<noteq> S2 \<and> S1 \<noteq> S3 \<and> S1 \<noteq> S4 \<and> S2 \<noteq> S3 \<and> S2 \<noteq> S4 \<and> S3 \<noteq> S4
     \<and> S1 \<in> SPRAY x \<and> S2 \<in> SPRAY x \<and> S3 \<in> SPRAY x \<and> S4 \<in> SPRAY x
     \<and> (indep_set {S1, S2, S3, S4})
@@ -374,7 +374,7 @@ proof
     "S\<^sub>1 \<in> SPRAY x \<and> S\<^sub>2 \<in> SPRAY x \<and> S\<^sub>3 \<in> SPRAY x \<and> S\<^sub>4 \<in> SPRAY x"
     using card_4_eq by (smt (verit) insert_subset ns)
   thus "?three_SPRAY' x"
-    by (metis SPRAY_path ns(3,4))
+    by (metis ns(3,4))
 next
   assume "?three_SPRAY' x"
   then obtain S\<^sub>1 S\<^sub>2 S\<^sub>3 S\<^sub>4 where ns:
@@ -394,7 +394,7 @@ lemma three_SPRAY_intro:
     and "indep_set {S1, S2, S3, S4}"
     and "\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x"
   shows "three_SPRAY x"
-  unfolding three_SPRAY_alt by (metis SPRAY_path assms)
+  unfolding three_SPRAY_alt by (metis assms)
 
 text \<open>
   Lemma \<open>is_three_SPRAY\<close> says "this set of sets of elements is a set of paths which is a 3-$\spray$".
@@ -407,7 +407,7 @@ definition is_three_SPRAY :: "('a set) set \<Rightarrow> bool" where
 lemma three_SPRAY_ge4:
   assumes "three_SPRAY x"
   shows "\<exists>Q1\<in>\<P>. \<exists>Q2\<in>\<P>. \<exists>Q3\<in>\<P>. \<exists>Q4\<in>\<P>. Q1 \<noteq> Q2 \<and> Q1 \<noteq> Q3 \<and> Q1 \<noteq> Q4 \<and> Q2 \<noteq> Q3 \<and> Q2 \<noteq> Q4 \<and> Q3 \<noteq> Q4"
-using assms three_SPRAY_alt by meson
+using assms three_SPRAY_alt SPRAY_path by meson
 
 end (* MinkowskiPrimitive *)
 
