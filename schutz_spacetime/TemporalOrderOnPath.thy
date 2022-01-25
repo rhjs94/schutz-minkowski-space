@@ -386,8 +386,6 @@ next
     assume "Suc j = card X"
     then have "0<i"
     proof -
-      have "Suc(Suc i) = card X"
-        by (simp add: \<open>Suc i = j\<close> \<open>Suc j = card X\<close>)
       have "card X \<ge> 3"
         using assms(1) finiteX long_chain2_card_geq by blast
       thus ?thesis
