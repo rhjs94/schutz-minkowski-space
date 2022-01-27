@@ -334,6 +334,9 @@ text \<open>
    ii) all paths of the SPRAY are dependent on these four paths." [Schutz97]
 \<close>
 
+definition n_SPRAY_basis :: "nat \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> bool"  where
+  "n_SPRAY_basis p S x \<equiv> S\<subseteq>SPRAY x \<and> card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
+
 definition n_SPRAY :: "nat \<Rightarrow> 'a \<Rightarrow> bool" ("_-SPR _" [100,100]) where
   "p-SPR x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
 
@@ -501,7 +504,9 @@ definition unreachable_subset_via :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a s
 
 section "Betweenness: Chains"
 
-subsection "Totally ordered chains with indexing"
+subsection "Locally ordered chains with indexing"
+
+text \<open>Definitions for Schutz's chains, with local order only.\<close>
 
 text\<open>A chain can be:
   (i) a set of two distinct events connected by a path, or ...\<close>
@@ -528,19 +533,91 @@ lemma short_ch_intros:
   "\<lbrakk>X = {x,y}; path_ex x y\<rbrakk> \<Longrightarrow> short_ch X"
   by (auto simp: short_ch_alt)
 
+lemma short_ch_path: "short_ch {x,y} \<longleftrightarrow> path_ex x y"
+  unfolding short_ch_def by force
+
 text \<open>... a set of at least three events such that any three adjacent events are ordered.
   Notice infinite sets have card 0, because card gives a natural number always.\<close>
+
+definition local_long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "local_long_ch_by_ord f X \<equiv> (infinite X \<or> card X \<ge> 3) \<and> local_ordering f betw X"
+(*definition local_long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "local_long_ch_by_ord f X \<equiv>
+    \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> local_ordering f betw X"*)
+
+lemma local_long_ch_by_ord_alt:
+  "local_long_ch_by_ord f X =
+    (\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> local_ordering f betw X)"
+  (is "_ = ?ch f X")
+proof (standard)
+  assume asm: "local_long_ch_by_ord f X"
+  {
+    assume "card X \<ge> 3"
+    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
+      apply (simp add: eval_nat_numeral)
+      by (auto simp add: card_le_Suc_iff)
+  } moreover {
+    assume "infinite X"
+    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
+      using inf_3_elms bot.extremum by fastforce
+  }
+  ultimately show "?ch f X" using asm unfolding local_long_ch_by_ord_def by auto
+next
+  assume asm: "?ch f X"
+  then obtain x y z where xyz: "{x,y,z}\<subseteq>X \<and> x \<noteq> y \<and> y \<noteq> z \<and> x \<noteq> z"
+    apply (simp add: eval_nat_numeral) by auto
+  hence "card X \<ge> 3 \<or> infinite X"
+    apply (simp add: eval_nat_numeral)
+    by (smt (z3) xyz card.empty card_insert_if card_subset finite.emptyI finite_insert insertE
+      insert_absorb insert_not_empty)
+  thus "local_long_ch_by_ord f X" unfolding local_long_ch_by_ord_def using asm by auto
+qed
+
+lemma short_xor_long:
+  shows "short_ch Q \<Longrightarrow> \<nexists>f. local_long_ch_by_ord f Q"
+    and "local_long_ch_by_ord f Q \<Longrightarrow> \<not> short_ch Q"
+  unfolding local_long_ch_by_ord_alt short_ch_alt(1) by (metis)+
+
+
+subsection "Totally ordered chains with indexing"
 definition long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
   "long_ch_by_ord f X \<equiv> (infinite X \<or> card X \<ge> 3) \<and> ordering f betw X"
 (*definition long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
   "long_ch_by_ord f X \<equiv> \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering f betw X"*)
 
+lemma long_ch_by_ord_alt:
+  "long_ch_by_ord f X =
+    (\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering f betw X)"
+  (is "_ = ?ch f X")
+proof (standard)
+  assume asm: "long_ch_by_ord f X"
+  {
+    assume "card X \<ge> 3"
+    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
+      apply (simp add: eval_nat_numeral)
+      by (auto simp add: card_le_Suc_iff)
+  } moreover {
+    assume "infinite X"
+    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
+      using inf_3_elms bot.extremum by fastforce
+  }
+  ultimately show "?ch f X" using asm unfolding long_ch_by_ord_def by auto
+next
+  assume asm: "?ch f X"
+  then obtain x y z where xyz: "{x,y,z}\<subseteq>X \<and> x \<noteq> y \<and> y \<noteq> z \<and> x \<noteq> z"
+    apply (simp add: eval_nat_numeral) by auto
+  hence "card X \<ge> 3 \<or> infinite X"
+    apply (simp add: eval_nat_numeral)
+    by (smt (z3) xyz card.empty card_insert_if card_subset finite.emptyI finite_insert insertE
+      insert_absorb insert_not_empty)
+  thus "long_ch_by_ord f X" unfolding long_ch_by_ord_def using asm by auto
+qed
+
 text \<open>Does this restrict chains to lie on paths? Proven in \<open>TemporalOrderingOnPath\<close>'s Interlude!\<close>
-definition ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+definition ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" ("[_\<leadsto>_]")  where
   "ch_by_ord f X \<equiv> short_ch X \<or> long_ch_by_ord f X"
 
-definition ch :: "'a set \<Rightarrow> bool" where
-  "ch X \<equiv> \<exists>f. ch_by_ord f X"
+definition ch :: "'a set \<Rightarrow> bool" where "ch X \<equiv> \<exists>f. [f\<leadsto>X]"
 
 text \<open>
   Since $f(0)$ is always in the chain, and plays a special role particularly for infinite chains
@@ -548,26 +625,106 @@ text \<open>
   Notice we require both \<open>infinite X\<close> and \<open>long_ch_by_ord\<close>, thus circumventing infinite
   Isabelle sets having cardinality $0$.
 \<close>
-definition semifin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ ..]") where
-  "semifin_chain f Q x \<equiv>
-    infinite Q \<and> long_ch_by_ord f Q
-    \<and> f 0 = x"
+definition infinite_chain :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "infinite_chain f Q \<equiv> infinite Q \<and> long_ch_by_ord f Q"
 
-definition fin_long_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool"
+definition infinite_chain_with :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ ..]") where
+  "infinite_chain_with f Q x \<equiv> infinite_chain f Q \<and> f 0 = x"
+
+lemma "infinite_chain f Q \<longleftrightarrow> [f\<leadsto>Q|f 0..]"
+  by (simp add: infinite_chain_with_def)
+
+(*definition finite_long_chain_with_2:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "finite_long_chain_with_2 x y z Q \<equiv> \<exists>f. [f\<leadsto>Q|x..y..z]"*) (*TODO ?*)
+
+definition finite_chain :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "finite_chain f Q \<equiv> finite Q \<and> ch_by_ord f Q"
+
+lemma finite_chain_alt: "finite_chain f Q \<longleftrightarrow> short_ch Q \<or> (finite Q \<and> long_ch_by_ord f Q)"
+  using ch_by_ord_def finite_chain_def short_ch_alt(2) by auto
+
+definition finite_chain_with :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ .. _]") where
+  "finite_chain_with f Q x y \<equiv> finite_chain f Q \<and> f 0 = x \<and> f (card Q - 1) = y"
+(*definition finite_chain_with :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ .. _]") where
+  "finite_chain f Q x y \<equiv> short_ch {x,y} \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"*)
+
+lemma "finite_chain f Q \<longleftrightarrow> [f\<leadsto>Q|f 0 .. f (card Q - 1)]"
+  by (simp add: finite_chain_with_def)
+
+lemma finite_chain_with_alt:
+  "[f\<leadsto>Q|x..z] \<longleftrightarrow> (Q = {x,z} \<and> short_ch {x,z}) \<or> (card Q \<ge> 3 \<and> [f\<leadsto>Q] \<and> x = f 0 \<and> z = f (card Q - 1))"
+  (is "_ \<longleftrightarrow> ?fin_ch f Q x z")
+  (*unfolding finite_chain_with_def finite_chain_def*)
+  (*apply (cases "short_ch Q")*)
+proof -
+  {
+    assume asm: "short_ch Q"
+    have ?thesis (*apply standard unfolding finite_chain_with_def finite_chain_alt using asm sorry*)
+    proof
+      assume asm2: "[f\<leadsto>Q|x .. z]"
+      have "Q = {x,z}" using asm2 unfolding finite_chain_with_def finite_chain_alt sorry
+      thus "?fin_ch f Q x z" using asm by blast
+    next
+      assume "?fin_ch f Q x z"
+      thus "[f\<leadsto>Q|x..z]" using asm sorry
+    qed
+  } moreover {
+    assume "card Q \<ge> 3"
+    hence ?thesis sorry
+  }
+  moreover have "finite Q \<and> [f\<leadsto>Q] \<longrightarrow> short_ch Q \<or> card Q \<ge> 3" sorry
+  ultimately show ?thesis
+    (*by (metis finite_chain_with_def finite_chain_def)*)oops
+
+(*definition finite_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ .. _]") where
+  "finite_chain f Q x y \<equiv> (short_ch Q \<and> x\<in>Q \<and> y\<in>Q \<and> x\<noteq>y) \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"*)
+
+definition finite_long_chain_with:: "(nat\<Rightarrow>'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_.._.._]")
+  where "finite_long_chain_with f Q x y z \<equiv> [f\<leadsto>Q|x..z] \<and> [x;y;z]"
+(*definition finite_long_chain_with:: "(nat\<Rightarrow>'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_.._.._]")
+  where "finite_long_chain_with f Q x y z \<equiv> [f\<leadsto>Q|x..z] \<and> x\<noteq>y \<and> y\<noteq>z \<and> y\<in>Q"*)
+
+(*definition finite_long_chain_with:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool"
   ("[_\<leadsto>_|_ .. _ ..  _]") where
-  "fin_long_chain f Q x y z \<equiv>
+  "finite_long_chain_with f Q x y z \<equiv>
+    finite Q \<and> long_ch_by_ord f Q \<and>
+    card {x,y,z} = 3 \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"*)
+(*definition finite_long_chain_with:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool"
+  ("[_\<leadsto>_|_ .. _ ..  _]") where
+  "finite_long_chain_with f Q x y z \<equiv>
+    finite Q \<and> long_ch_by_ord f Q \<and>
+    x\<noteq>y \<and> y\<noteq>z \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"*)
+(*definition finite_long_chain_with:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool"
+  ("[_\<leadsto>_|_ .. _ ..  _]") where
+  "finite_long_chain_with f Q x y z \<equiv>
     x\<noteq>y \<and> x\<noteq>z \<and> y\<noteq>z
     \<and> finite Q \<and> long_ch_by_ord f Q
-    \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"
+    \<and> f 0 = x \<and> y\<in>Q \<and> f (card Q - 1) = z"*)
+
+lemma "[f\<leadsto>Q|x..y..z] \<longleftrightarrow> [f\<leadsto>Q|x..z] \<and> x\<noteq>y \<and> y\<noteq>z \<and> y\<in>Q"
+proof -
+  { 
+    assume "[f\<leadsto>Q|x .. z]"
+    hence "[x;y;z] \<longleftrightarrow> x \<noteq> y \<and> y \<noteq> z \<and> y \<in> Q"
+      unfolding finite_chain_with_def sorry
+  }
+  thus ?thesis
+    unfolding finite_long_chain_with_def by auto
+oops
+
+(*lemma first_neq_last:
+  assumes "[f\<leadsto>Q|x..y..z]"
+  shows "x\<noteq>z"
+  using assms unfolding finite_long_chain_with_def oops*)
 
 lemma index_middle_element:
   assumes "[f\<leadsto>X|a..b..c]"
   shows "\<exists>n. 0<n \<and> n<(card X - 1) \<and> f n = b"
 proof -
   obtain n where n_def: "n < card X" "f n = b"
-    by (metis TernaryOrdering.ordering_def assms fin_long_chain_def long_ch_by_ord_def)
+    by (metis TernaryOrdering.ordering_def assms finite_long_chain_with_def long_ch_by_ord_def)
   have "0<n \<and> n<(card X - 1) \<and> f n = b"
-    using assms fin_long_chain_def n_def
+    using assms finite_long_chain_with_def n_def
     by (metis Suc_pred' gr_implies_not0 less_SucE not_gr_zero)
   thus ?thesis by blast
 qed
@@ -579,16 +736,16 @@ proof -
   obtain nb where n_def: "nb\<noteq>0" "nb<card X - 1" "f nb = b"
     using assms index_middle_element by blast
   have "[f 0; f nb; f (card X - 1)]"
-    using fin_long_chain_def long_ch_by_ord_def assms n_def ordering_ord_ijk zero_less_iff_neq_zero
+    using finite_long_chain_with_def long_ch_by_ord_def assms n_def ordering_ord_ijk zero_less_iff_neq_zero
     by fastforce
-  thus ?thesis using assms fin_long_chain_def n_def(3) by auto
+  thus ?thesis using assms finite_long_chain_with_def n_def(3) by auto
 qed
 
 lemma chain_sym_obtain:
   assumes "[f\<leadsto>X|a..b..c]"
   obtains g where "[g\<leadsto>X|c..b..a]" and "g=(\<lambda>n. f (card X - 1 - n))"
-using ordering_sym assms(1) unfolding fin_long_chain_def long_ch_by_ord_def
-by (metis (mono_tags, lifting) abc_sym diff_self_eq_0 diff_zero)
+  using ordering_sym assms(1) unfolding finite_long_chain_with_def long_ch_by_ord_def
+  by (metis (mono_tags, lifting) abc_sym diff_self_eq_0 diff_zero)
 
 lemma chain_sym:
   assumes "[f\<leadsto>X|a..b..c]"
@@ -596,26 +753,18 @@ lemma chain_sym:
   using chain_sym_obtain [where f=f and a=a and b=b and c=c and X=X]
   using assms(1) by blast
 
-definition fin_long_chain_2:: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "fin_long_chain_2 x y z Q \<equiv> \<exists>f. [f\<leadsto>Q|x..y..z]"
-
-definition fin_chain:: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_\<leadsto>_|_ .. _]") where
-  "fin_chain f Q x y \<equiv>
-    (short_ch Q \<and> x\<in>Q \<and> y\<in>Q \<and> x\<noteq>y)
-    \<or> (\<exists>z\<in>Q. [f\<leadsto>Q|x..z..y])"
-
 lemma points_in_chain:
   assumes "[f\<leadsto>Q|x..y..z]"
   shows "x\<in>Q \<and> y\<in>Q \<and> z\<in>Q"
 proof -
   have "x\<in>Q"
-    using ordering_def assms card_gt_0_iff emptyE fin_long_chain_def long_ch_by_ord_def
+    using ordering_def assms card_gt_0_iff emptyE finite_long_chain_with_def long_ch_by_ord_def
     by metis
   moreover have "y\<in>Q"
-    using assms fin_long_chain_def
+    using assms finite_long_chain_with_def
     by auto
   moreover have "z\<in>Q"
-    using ordering_def assms card_gt_0_iff emptyE fin_long_chain_def long_ch_by_ord_def
+    using ordering_def assms card_gt_0_iff emptyE finite_long_chain_with_def long_ch_by_ord_def
     by (metis (no_types) Suc_diff_1 lessI)
   ultimately show ?thesis
     by blast
@@ -634,20 +783,12 @@ proof (rule ccontr)
     using assms(2)
     by (auto simp add: card_le_Suc_iff numeral_3_eq_3)
   thus False
-    using \<open>short_ch X\<close> short_ch_def
-    by metis
+    using \<open>short_ch X\<close> by (metis short_ch_alt(1))
 qed
-
-subsection "Locally ordered chains with indexing"
-
-text \<open>Definition for Schutz-like chains, with local order only.\<close>
-definition local_long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "local_long_ch_by_ord f X \<equiv>
-    \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering2 f betw X"
 
 subsection "Chains using betweenness"
 
-text \<open>Old definitions of chains. Shown equivalent to \<open>fin_long_chain_2\<close> in TemporalOrderOnPath.thy.\<close>
+text \<open>Old definitions of chains. Shown equivalent to \<open>finite_long_chain_with_2\<close> in TemporalOrderOnPath.thy.\<close>
 
 definition chain_with :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|.. _ .. _ .. _ ..]") where
   "chain_with X x y z \<equiv> [x;y;z] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
@@ -881,7 +1022,7 @@ text \<open>Just to make sure Continuity is not too strong.\<close>
 lemma bounded_imp_inf:
   assumes "bounded Q"
   shows "infinite Q"
-  using assms bounded_def is_bound_def is_bound_f_def semifin_chain_def by blast
+  using assms bounded_def is_bound_def is_bound_f_def infinite_chain_def by blast
 
 
 definition closest_bound_f :: "'a \<Rightarrow> 'a set \<Rightarrow> (nat\<Rightarrow>'a) \<Rightarrow> bool" where

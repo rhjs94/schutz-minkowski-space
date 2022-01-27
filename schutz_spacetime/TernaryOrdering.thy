@@ -27,7 +27,7 @@ text \<open>
   \end{verbatim}
   I've made it strict for simplicity, and because that's how Schutz's ordering is. It could be
   made more generic by taking in the function corresponding to $<$ as a paramater.
-  Main difference to Schutz: he has local order, not total (cf Theorem 2 and \<open>ordering2\<close>).
+  Main difference to Schutz: he has local order, not total (cf Theorem 2 and \<open>local_ordering\<close>).
 \<close>
 
 definition ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool" where
@@ -73,11 +73,11 @@ next
   assume a_neq_b: "a \<noteq> b"
   let ?f = "\<lambda>n. if n = 0 then a else b"
   have ordering1: "(\<forall>n. (finite {a,b} \<longrightarrow> n < card {a,b}) \<longrightarrow> ?f n \<in> {a,b})" by simp
-  have ordering2: "(\<forall>x\<in>{a,b}. \<exists>n. (finite {a,b} \<longrightarrow> n < card {a,b}) \<and> ?f n = x)"
+  have local_ordering: "(\<forall>x\<in>{a,b}. \<exists>n. (finite {a,b} \<longrightarrow> n < card {a,b}) \<and> ?f n = x)"
     using a_neq_b all_not_in_conv card_Suc_eq card_0_eq card_gt_0_iff insert_iff lessI by auto
   have ordering3: "(\<forall>n n' n''. (finite {a,b} \<longrightarrow> n'' < card {a,b}) \<and> n < n' \<and> n' < n''
                                 \<longrightarrow> ord (?f n) (?f n') (?f n''))" using a_neq_b by auto
-  have "ordering ?f ord {a, b}" using ordering_def ordering1 ordering2 ordering3 by blast
+  have "ordering ?f ord {a, b}" using ordering_def ordering1 local_ordering ordering3 by blast
   thus ?thesis by auto
 qed
 
@@ -113,7 +113,7 @@ proof -
   let ?f = "\<lambda>n. if n = 0 then a else if n = 1 then b else if n = 2 then c else d"
   have card4: "card ?X = 4" using abc bcd abd abc_neq by simp
   have ordering1: "\<forall>n. (finite ?X \<longrightarrow> n < card ?X) \<longrightarrow> ?f n \<in> ?X" by simp
-  have ordering2: "\<forall>x\<in>?X. \<exists>n. (finite ?X \<longrightarrow> n < card ?X) \<and> ?f n = x"
+  have local_ordering: "\<forall>x\<in>?X. \<exists>n. (finite ?X \<longrightarrow> n < card ?X) \<and> ?f n = x"
     by (metis card4 One_nat_def Suc_1 Suc_lessI empty_iff insertE numeral_3_eq_3 numeral_eq_iff
               numeral_eq_one_iff rel_simps(51) semiring_norm(85) semiring_norm(86) semiring_norm(87)
               semiring_norm(89) zero_neq_numeral)
@@ -121,7 +121,7 @@ proof -
                                  \<longrightarrow> ord (?f n) (?f n') (?f n''))"
     using card4 abc bcd abd acd card_0_eq card_insert_if finite.emptyI finite_insert less_antisym
           less_one less_trans_Suc not_less_eq not_one_less_zero numeral_2_eq_2 by auto
-  have "ordering ?f ord ?X" using ordering1 ordering2 ordering3 ordering_def by blast
+  have "ordering ?f ord ?X" using ordering1 local_ordering ordering3 ordering_def by blast
   thus ?thesis by auto
 qed
 
@@ -339,37 +339,133 @@ lemma  zero_into_ordering:
 section "Locally ordered chains"
 text \<open>Definitions for Schutz-like chains, with local order only.\<close>
 
-definition ordering2 :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "ordering2 f ord X \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X)
+definition local_ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "local_ordering f ord X \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X)
                      \<and> (\<forall>x\<in>X. (\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x))
                      \<and> (\<forall>n n' n''. (finite X \<longrightarrow> n'' < card X) \<and> Suc n = n' \<and> Suc n' = n''
                                    \<longrightarrow> ord (f n) (f n') (f n''))"
 
-lemma finite_ordering2_intro:
+lemma finite_local_ordering_intro:
   assumes "finite X"
     and "\<forall>n < card X. f n \<in> X"
     and "\<forall>x \<in> X. \<exists>n < card X. f n = x"
     and "\<forall>n n' n''. Suc n = n' \<and> Suc n' = n'' \<and> n'' < card X \<longrightarrow> ord (f n) (f n') (f n'')"
-  shows "ordering2 f ord X"
-  unfolding ordering2_def by (simp add: assms)
+  shows "local_ordering f ord X"
+  unfolding local_ordering_def by (simp add: assms)
 
-lemma infinite_ordering2_intro:
+lemma infinite_local_ordering_intro:
   assumes "infinite X"
     and "\<forall>n::nat. f n \<in> X"
     and "\<forall>x \<in> X. \<exists>n::nat. f n = x"
     (*and "surj f"*)
     and "\<forall>n n' n''. Suc n = n' \<and> Suc n' = n'' \<longrightarrow> ord (f n) (f n') (f n'')"
-  shows "ordering2 f ord X"
-  using assms unfolding ordering2_def (*surj_def*) by metis
+  shows "local_ordering f ord X"
+  using assms unfolding local_ordering_def (*surj_def*) by metis
+
+lemma total_implies_local:
+  "ordering f ord X \<Longrightarrow> local_ordering f ord X"
+  unfolding ordering_def local_ordering_def
+  using lessI by presburger
+
+lemma ordering_ord_ijk_loc:
+  assumes "local_ordering f ord X"
+      and "finite X \<longrightarrow> Suc (Suc i) < card X"
+  shows "ord (f i) (f (Suc i)) (f (Suc (Suc i)))"
+  by (metis local_ordering_def assms)
+
+lemma empty_ordering_loc [simp]: 
+  "\<exists>f. local_ordering f ord {}"
+  by (simp add: local_ordering_def)
+
+lemma singleton_ordered_loc [simp]:
+  "local_ordering f ord {f 0}"
+  unfolding local_ordering_def by simp
+
+lemma singleton_ordering_loc [simp]: 
+  "\<exists>f. local_ordering f ord {a}"
+  using singleton_ordered_loc by fast
+
+lemma two_ordered_loc:
+  assumes "a = f 0" and "b = f 1"
+  shows "local_ordering f ord {a, b}"
+proof cases
+  assume "a = b"
+  thus ?thesis using assms singleton_ordered_loc by (metis insert_absorb2)
+next
+  assume a_neq_b: "a \<noteq> b"
+  hence "(\<forall>n. (finite {a,b} \<longrightarrow> n < card {a,b}) \<longrightarrow> f n \<in> {a,b})"
+    using assms by (metis One_nat_def card.infinite card_2_iff fact_0 fact_2 insert_iff less_2_cases_iff)
+  moreover have "(\<forall>x\<in>{a,b}. \<exists>n. (finite {a,b} \<longrightarrow> n < card {a,b}) \<and> f n = x)"
+    using assms a_neq_b all_not_in_conv card_Suc_eq card_0_eq card_gt_0_iff insert_iff lessI by auto
+  moreover have "(\<forall>n. (finite {a,b} \<longrightarrow> Suc (Suc n) < card {a,b}) 
+                      \<longrightarrow> ord (f n) (f (Suc n)) (f (Suc (Suc n))))" 
+    using a_neq_b by auto
+  ultimately have "local_ordering f ord {a, b}" 
+     using local_ordering_def by blast
+  thus ?thesis by auto
+qed
+
+lemma two_ordering_loc [simp]: 
+  "\<exists>f. local_ordering f ord {a, b}"
+  using total_implies_local two_ordering by fastforce
+
+lemma card_le2_ordering_loc:
+  assumes finiteX: "finite X"
+      and card_le2: "card X \<le> 2"
+  shows "\<exists>f. local_ordering f ord X"
+  using assms total_implies_local card_le2_ordering by metis
+
+(*
+lemma ordering_set_enum_loc:
+  fixes X :: "'a set" and f :: "nat \<Rightarrow> 'a"
+  assumes "local_ordering f ord X"
+  shows "X = {f n|n. (finite X \<longrightarrow> n < card X)}" (is "X = ?Y")
+proof
+  show "X \<subseteq> ?Y"
+  proof
+    fix x assume "x\<in>X"
+    hence "\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x" 
+      using assms local_ordering_def by metis
+    thus "x \<in> ?Y" by auto
+  qed
+next
+  show "?Y \<subseteq> X"
+  proof
+    fix x assume "x\<in>?Y"
+    then obtain n where "(finite X \<longrightarrow> n < card X)" and "x = f n" by blast
+    thus "x \<in> X" using assms local_ordering_def by metis
+  qed
+qed
 
 
-text \<open>Analogue to \<open>ordering_ord_ijk\<close>, which is quicker to use in sledgehammer than the definition.\<close>
+lemma ordering_2_set_enum_loc:
+  fixes X :: "'a set" and f :: "nat \<Rightarrow> 'a"
+  assumes "local_ordering f ord X" and "card X = 2"
+  shows "X = {f 0, f 1}"
+proof
+  have "finite X" 
+    using assms by (metis card.infinite fact_0 fact_2 zero_neq_one)
+  hence s2: "X = {f n|n. n < 2}" 
+    using assms ordering_set_enum_loc by (smt (verit, best) Collect_cong)
+  show "X \<subseteq> {f 0, f 1}"
+  proof
+    fix x assume "x \<in> X" 
+    then obtain n where "f n = x" and "n < 2" using s2 by auto
+    thus "x \<in> {f 0, f 1}" using less_2_cases_iff by auto
+  qed
+  show "{f 0, f 1} \<subseteq> X"
+  proof
+    fix x assume "x \<in> {f 0, f 1}"
+    then obtain n where "f n = x" and "n < 2" by auto
+    thus "x \<in> X" using s2 by auto
+  qed
+qed
+*)
 
-lemma ordering2_ord_ijk:
-  assumes "ordering2 f ord X"
-      and "Suc i = j \<and> Suc j = k \<and> (finite X \<longrightarrow> k < card X)"
-  shows "ord (f i) (f j) (f k)"
-  by (metis ordering2_def assms)
-
+lemma ord_ordered_loc:
+  assumes abc: "ord a b c"
+      and abc_neq: "a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c"
+  shows "\<exists>f. local_ordering f ord {a,b,c}"
+  using assms total_implies_local ord_ordered by metis
 
 end
