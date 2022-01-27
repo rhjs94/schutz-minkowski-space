@@ -326,6 +326,119 @@ proof -
   qed
 qed
 
+
+(*TODO: make index_neq_ results use this, much simpler!?*)
+theorem (*2ii*) index_injective:
+  fixes i::nat and j::nat
+  assumes chX: "local_long_ch_by_ord f X"
+      and finiteX: "finite X"
+      and indices: "i<j" "j<card X"
+    shows "f i \<noteq> f j"
+proof (cases)
+  assume "Suc i < j"
+  then have "[f i; f (Suc(i)); f j]"
+    using order_finite_chain2 chX finiteX indices(2) by blast
+  then show ?thesis
+    using abc_abc_neq by blast
+next
+  assume "\<not>Suc i < j"
+  hence "Suc i = j"
+    using Suc_lessI indices(1) by blast
+  show ?thesis
+  proof (cases)
+    assume "Suc j = card X"
+    then have "0<i"
+    proof -
+      have "card X \<ge> 3"
+        using assms(1) finiteX long_chain2_card_geq by blast
+      thus ?thesis
+        using \<open>Suc i = j\<close> \<open>Suc j = card X\<close> by linarith
+    qed
+    then have "[f 0; f i; f j]"
+      using assms order_finite_chain2 by blast
+    thus ?thesis
+      using abc_abc_neq by blast
+  next
+    assume "\<not>Suc j = card X"
+    then have "Suc j < card X"
+      using Suc_lessI indices(2) by blast
+    then have "[f i; f j; f(Suc j)]"
+      using chX finiteX indices(1) order_finite_chain2 by blast
+    thus ?thesis
+      using abc_abc_neq by blast
+  qed
+qed
+
+
+subsection "Totally ordered chains with indexing"
+
+definition long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "long_ch_by_ord f X \<equiv> (infinite X \<or> card X \<ge> 3) \<and> ordering f betw X"
+(*definition long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "long_ch_by_ord f X \<equiv> \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering f betw X"*)
+
+lemma long_ch_by_ord_alt:
+  "long_ch_by_ord f X =
+    (\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> ordering f betw X)"
+  (is "_ = ?ch f X")
+proof (standard)
+  assume asm: "long_ch_by_ord f X"
+  {
+    assume "card X \<ge> 3"
+    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
+      apply (simp add: eval_nat_numeral)
+      by (auto simp add: card_le_Suc_iff)
+  } moreover {
+    assume "infinite X"
+    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
+      using inf_3_elms bot.extremum by fastforce
+  }
+  ultimately show "?ch f X" using asm unfolding long_ch_by_ord_def by auto
+next
+  assume asm: "?ch f X"
+  then obtain x y z where xyz: "{x,y,z}\<subseteq>X \<and> x \<noteq> y \<and> y \<noteq> z \<and> x \<noteq> z"
+    apply (simp add: eval_nat_numeral) by auto
+  hence "card X \<ge> 3 \<or> infinite X"
+    apply (simp add: eval_nat_numeral)
+    by (smt (z3) xyz card.empty card_insert_if card_subset finite.emptyI finite_insert insertE
+      insert_absorb insert_not_empty)
+  thus "long_ch_by_ord f X" unfolding long_ch_by_ord_def using asm by auto
+qed
+
+
+
+
+end (* context MinkowskiBetweenness *)
+
+
+section \<open>Finite chain equivalence: local \<open>\<leftrightarrow>\<close> global\<close>
+context MinkowskiBetweenness begin
+
+(*
+lemma ch_equiv1:
+  assumes "long_ch_by_ord f X" "finite X"
+  shows "local_long_ch_by_ord f X"
+  using assms
+  unfolding long_ch_by_ord_def local_long_ch_by_ord_def ordering_def ordering2_def
+  by (metis lessI)
+
+
+lemma ch_equiv2:
+  assumes "local_long_ch_by_ord f X" "finite X"
+  shows "long_ch_by_ord f X"
+  using order_finite_chain2 assms
+  unfolding long_ch_by_ord_def local_long_ch_by_ord_def ordering_def ordering2_def
+  apply safe by blast
+
+
+lemma ch_equiv:
+  assumes "finite X"
+  shows "long_ch_by_ord f X \<longleftrightarrow> local_long_ch_by_ord f X"
+  using ch_equiv1 ch_equiv2 assms by blast
+*)
+
+
+
 lemma ch_equiv1:
   assumes "long_ch_by_ord f X" "finite X"
   shows "local_long_ch_by_ord f X"
@@ -384,49 +497,6 @@ lemma fin_chain_card_geq_2:
   apply (metis card_2_iff' dual_order.eq_iff short_ch_def)
   using assms finite_long_chain_with_def not_less by fastforce
 
-
-(*TODO: make index_neq_ results use this, much simpler!?*)
-theorem (*2ii*) index_injective:
-  fixes i::nat and j::nat
-  assumes chX: "local_long_ch_by_ord f X"
-      and finiteX: "finite X"
-      and indices: "i<j" "j<card X"
-    shows "f i \<noteq> f j"
-proof (cases)
-  assume "Suc i < j"
-  then have "[f i; f (Suc(i)); f j]"
-    using order_finite_chain2 chX finiteX indices(2) by blast
-  then show ?thesis
-    using abc_abc_neq by blast
-next
-  assume "\<not>Suc i < j"
-  hence "Suc i = j"
-    using Suc_lessI indices(1) by blast
-  show ?thesis
-  proof (cases)
-    assume "Suc j = card X"
-    then have "0<i"
-    proof -
-      have "card X \<ge> 3"
-        using assms(1) finiteX long_chain2_card_geq by blast
-      thus ?thesis
-        using \<open>Suc i = j\<close> \<open>Suc j = card X\<close> by linarith
-    qed
-    then have "[f 0; f i; f j]"
-      using assms order_finite_chain2 by blast
-    thus ?thesis
-      using abc_abc_neq by blast
-  next
-    assume "\<not>Suc j = card X"
-    then have "Suc j < card X"
-      using Suc_lessI indices(2) by blast
-    then have "[f i; f j; f(Suc j)]"
-      using chX finiteX indices(1) order_finite_chain2 by blast
-    thus ?thesis
-      using abc_abc_neq by blast
-  qed
-qed
-
 corollary index_bij_betw:
   assumes chX: "local_long_ch_by_ord f X"
     and finiteX: "finite X"
@@ -443,35 +513,6 @@ proof -
   using chX
 sorry
   } ultimately show "f ` {0..<card X} = X" by blast
-
-
-end (* context MinkowskiBetweenness *)
-
-
-section \<open>Finite chain equivalence: local \<open>\<leftrightarrow>\<close> global\<close>
-context MinkowskiBetweenness begin
-
-
-lemma ch_equiv1:
-  assumes "long_ch_by_ord f X" "finite X"
-  shows "local_long_ch_by_ord f X"
-  using assms
-  unfolding long_ch_by_ord_def local_long_ch_by_ord_def ordering_def ordering2_def
-  by (metis lessI)
-
-
-lemma ch_equiv2:
-  assumes "local_long_ch_by_ord f X" "finite X"
-  shows "long_ch_by_ord f X"
-  using order_finite_chain2 assms
-  unfolding long_ch_by_ord_def local_long_ch_by_ord_def ordering_def ordering2_def
-  apply safe by blast
-
-
-lemma ch_equiv:
-  assumes "finite X"
-  shows "long_ch_by_ord f X \<longleftrightarrow> local_long_ch_by_ord f X"
-  using ch_equiv1 ch_equiv2 assms by blast
 
 
 end (*context MinkowskiBetweenness*)
