@@ -90,16 +90,16 @@ lemma events_distinct_paths:
 end (* context MinkowskiPrimitive *)
 context MinkowskiBetweenness begin
 
-lemma assumes "[a;b;c]" shows "\<exists>f. long_ch_by_ord f {a,b,c}"
-  using abc_abc_neq ord_ordered assms long_ch_by_ord_def
-  by (smt insertI1 insert_commute)
+lemma assumes "[a;b;c]" shows "\<exists>f. local_long_ch_by_ord f {a,b,c}"
+  using abc_abc_neq[OF assms] unfolding chain_defs
+  by (simp add: assms ord_ordered_loc)
 
 lemma between_chain: "[a;b;c] \<Longrightarrow> ch {a,b,c}"
 proof -
   assume "[a;b;c]"
-  hence "\<exists>f. ordering f betw {a,b,c}"
-    by (simp add: abc_abc_neq ord_ordered)
-  hence "\<exists>f. long_ch_by_ord f {a,b,c}"
+  hence "\<exists>f. local_ordering f betw {a,b,c}"
+    by (simp add: abc_abc_neq ord_ordered_loc)
+  hence "\<exists>f. local_long_ch_by_ord f {a,b,c}"
     using \<open>[a;b;c]\<close> abc_abc_neq long_ch_by_ord_def by auto
   thus ?thesis
     by (simp add: ch_by_ord_def ch_def)
@@ -370,7 +370,7 @@ next
 qed
 
 
-subsection "Totally ordered chains with indexing"
+subsection "Totally ordered chains with indexing, additional lemmas about chains"
 
 definition long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
   "long_ch_by_ord f X \<equiv> (infinite X \<or> card X \<ge> 3) \<and> ordering f betw X"
@@ -404,6 +404,68 @@ next
       insert_absorb insert_not_empty)
   thus "long_ch_by_ord f X" unfolding long_ch_by_ord_def using asm by auto
 qed
+
+lemma first_neq_last:
+  assumes "[f\<leadsto>Q|x..z]"
+  shows "x\<noteq>z"
+  apply (rule finite_chain_with_cases[OF assms])
+  using chain_defs apply (metis Suc_1 card_2_iff diff_Suc_1)
+  unfolding chain_defs apply (simp add: eval_nat_numeral)
+oopslemma "[f\<leadsto>Q|x..y..z] \<longleftrightarrow> [f\<leadsto>Q|x..z] \<and> [x;y;z] \<and> y\<in>Q"
+proof -
+  { 
+    assume "[f\<leadsto>Q|x .. z]"
+    hence "[x;y;z] \<longleftrightarrow> x \<noteq> y \<and> y \<noteq> z \<and> y \<in> Q"
+      unfolding chain_defs sorry
+  }
+  thus ?thesis
+    unfolding finite_long_chain_with_def by auto
+oops
+
+(*lemma first_neq_last:
+  assumes "[f\<leadsto>Q|x..y..z]"
+  shows "x\<noteq>z"
+  using assms unfolding finite_long_chain_with_def oops*)
+
+lemma index_middle_element:
+  assumes "[f\<leadsto>X|a..b..c]"
+  shows "\<exists>n. 0<n \<and> n<(card X - 1) \<and> f n = b"
+proof -
+  obtain n where n_def: "n < card X" "f n = b" sorry
+    (*by (metis TernaryOrdering.ordering_def assms finite_long_chain_with_def long_ch_by_ord_def)*)
+  have "0<n \<and> n<(card X - 1) \<and> f n = b"
+    using assms finite_long_chain_with_def n_def sorry
+    (*by (metis Suc_pred' gr_implies_not0 less_SucE not_gr_zero)*)
+  thus ?thesis by blast
+oops
+
+(*lemma fin_ch_betw:
+  assumes "[f\<leadsto>X|a..b..c]"
+  shows "[a;b;c]"
+proof -
+  obtain nb where n_def: "nb\<noteq>0" "nb<card X - 1" "f nb = b"
+    using assms index_middle_element by blast
+  have "[f 0; f nb; f (card X - 1)]"
+    using chain_defs assms n_def by metis
+  thus ?thesis using assms finite_long_chain_with_def n_def(3) by auto
+qed*)
+
+lemma chain_sym_obtain:
+  assumes "[f\<leadsto>X|a..b..c]"
+  obtains g where "[g\<leadsto>X|c..b..a]" and "g=(\<lambda>n. f (card X - 1 - n))"
+  using ordering_sym[where ord=betw] abc_sym assms(1)
+  unfolding finite_long_chain_with_def finite_chain_with_def finite_chain_def
+  by (meson between_chain) (* TODO ?*)
+  (*by (meson between_chain fin_ch_betw)*)
+  (*unfolding finite_long_chain_with_def long_ch_by_ord_def
+  using between_chain infinite_chain_def by blast*)
+  (*by (metis (mono_tags, lifting) abc_sym diff_self_eq_0 diff_zero)*)
+
+lemma chain_sym:
+  assumes "[f\<leadsto>X|a..b..c]"
+    shows "[\<lambda>n. f (card X - 1 - n)\<leadsto>X|c..b..a]"
+  using chain_sym_obtain [where f=f and a=a and b=b and c=c and X=X]
+  using assms(1) by blast
 
 
 
