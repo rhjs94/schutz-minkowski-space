@@ -555,7 +555,7 @@ lemma local_long_ch_by_ord_alt [chain_alts]:
   "local_long_ch_by_ord f X =
     (\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> local_ordering f betw X)"
   (is "_ = ?ch f X")
-proof (standard)
+proof
   assume asm: "local_long_ch_by_ord f X"
   {
     assume "card X \<ge> 3"
@@ -857,10 +857,49 @@ lemma ch_short_if_card_less3:
   using short_ch_equiv finite_chain_with_card_less3
   by (metis assms ch_alt diff_is_0_eq' less_irrefl_nat local_long_ch_by_ord_def zero_less_diff)
 
+(*
 lemma local_long_ch_equiv_ex: "[f\<leadsto>X|f 0..y..f (card X - 1)] \<Longrightarrow> local_long_ch_by_ord f X"
   (*"\<lbrakk>local_long_ch_by_ord f X; finite X\<rbrakk> \<Longrightarrow> \<forall>i\<in>{0<..<card X - 1}. [f\<leadsto>X|f 0..f i..f (card X - 1)]"*)
   (*"\<forall>i\<in>{0<..<card X - 1}. [f\<leadsto>X|f 0..f i..f (card X - 1)] \<longleftrightarrow> local_long_ch_by_ord f X"*)
   unfolding chain_defs by fastforce
+*)
+
+
+lemma three_in_long_chain:
+  assumes "local_long_ch_by_ord f X"
+  obtains x y z where "x\<in>X" and "y\<in>X" and "z\<in>X" and "x\<noteq>y" and "x\<noteq>z" and "y\<noteq>z"
+  using assms(1) local_long_ch_by_ord_alt by auto
+
+
+lemma short_ch_card_2:
+  assumes "ch_by_ord f X"
+  shows "short_ch X \<longleftrightarrow> card X = 2"
+  using assms unfolding chain_defs using card_2_iff' card_gt_0_iff by fastforce
+
+
+lemma long_chain_card_geq:
+  assumes "local_long_ch_by_ord f X" and fin: "finite X"
+  shows "card X \<ge> 3"
+proof -
+  obtain x y z where xyz: "x\<in>X" "y\<in>X" "z\<in>X" and neq: "x\<noteq>y" "x\<noteq>z" "y\<noteq>z"
+    using three_in_long_chain assms by blast
+  let ?S = "{x,y,z}"
+  have "?S \<subseteq> X"
+    by (simp add: xyz)
+  moreover have "card ?S \<ge> 3"
+    using antisym \<open>x \<noteq> y\<close> \<open>x \<noteq> z\<close> \<open>y \<noteq> z\<close> by auto
+  ultimately show ?thesis
+    by (meson neq fin three_subset)
+qed
+
+
+lemma fin_chain_card_geq_2:
+  assumes "[f\<leadsto>X|a..b]"
+  shows "card X \<ge> 2"
+  using finite_chain_with_def apply (cases "short_ch X")
+  using short_ch_card_2
+  apply (metis dual_order.eq_iff short_ch_def)
+  using assms chain_defs not_less by fastforce
 
 subsection "Chains using betweenness"
 
