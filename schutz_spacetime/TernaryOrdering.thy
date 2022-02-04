@@ -468,4 +468,13 @@ lemma ord_ordered_loc:
   shows "\<exists>f. local_ordering f ord {a,b,c}"
   using assms total_implies_local ord_ordered by metis
 
+lemma overlap_ordering_loc:
+  assumes abc: "ord a b c"
+      and bcd: "ord b c d"
+      and abd: "ord a b d"
+      and acd: "ord a c d"
+      and abc_neq: "a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d"
+  shows "\<exists>f. local_ordering f ord {a,b,c,d}"
+  using overlap_ordering[OF assms] total_implies_local by blast
+
 end
