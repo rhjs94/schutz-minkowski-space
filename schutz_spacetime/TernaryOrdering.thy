@@ -339,11 +339,12 @@ lemma  zero_into_ordering:
 section "Locally ordered chains"
 text \<open>Definitions for Schutz-like chains, with local order only.\<close>
 
-definition local_ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "local_ordering f ord X \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X)
-                     \<and> (\<forall>x\<in>X. (\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x))
-                     \<and> (\<forall>n n' n''. (finite X \<longrightarrow> n'' < card X) \<and> Suc n = n' \<and> Suc n' = n''
-                                   \<longrightarrow> ord (f n) (f n') (f n''))"
+definition local_ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool"
+  where "local_ordering f ord X
+    \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X) \<and>
+      (\<forall>x\<in>X. (\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x)) \<and>
+      (\<forall>n n' n''. (finite X \<longrightarrow> n'' < card X) \<and> Suc n = n' \<and> Suc n' = n''
+                 \<longrightarrow> ord (f n) (f n') (f n''))"
 
 lemma finite_local_ordering_intro:
   assumes "finite X"
