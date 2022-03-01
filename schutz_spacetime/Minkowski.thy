@@ -1164,19 +1164,86 @@ definition closest_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
 end (*MinkowskiChain*)
 
 section "MinkowskiUnreachable: I5-I7"
-
+thm choice
 locale MinkowskiUnreachable = MinkowskiChain +
   (* I5 *)
   assumes two_in_unreach: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>; b \<notin> Q\<rbrakk> \<Longrightarrow> \<exists>x\<in>\<emptyset> Q b. \<exists>y\<in>\<emptyset> Q b. x \<noteq> y"
-
-      and I6: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> (\<emptyset> Q b); Qz \<in> (\<emptyset> Q b); Qx\<noteq>Qz\<rbrakk>
-               \<Longrightarrow> \<exists>X. \<exists>f. ch_by_ord f X \<and> f 0 = Qx \<and> f (card X - 1) = Qz
-                         \<and> (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b
-                              \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))
-                         \<and> (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+      and I6: "\<lbrakk>Q \<in> \<P>; b \<in> (\<E>-Q); {Qx,Qz} \<subseteq> \<emptyset> Q b; Qx\<noteq>Qz\<rbrakk>
+      \<Longrightarrow> \<exists>X f.  [f\<leadsto>X|Qx..Qz] \<and>
+                 (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and>
+                                         (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
       and I7: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> Q - \<emptyset> Q b; Qy \<in> \<emptyset> Q b\<rbrakk>
                \<Longrightarrow> \<exists>g X Qn. [g\<leadsto>X|Qx..Qy..Qn] \<and> Qn \<in> Q - \<emptyset> Q b"
 begin
+
+(*
+lemma I6_lem:
+  (*"\<lbrakk>Q \<in> \<P>; b \<in> (\<E>-Q); {Qx,Qy} \<subseteq> \<emptyset> Q b; Qx\<noteq>Qz\<rbrakk> \<Longrightarrow> \<exists>X f.
+    [f\<leadsto>X|Qx..Qz] \<and>
+    (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"*)
+  assumes "Q \<in> \<P>" "b \<in> (\<E>-Q)" "{Qx,Qz} \<subseteq> \<emptyset> Q b" "Qx\<noteq>Qz"
+  (*assumes "Q \<in> \<P>" "b \<notin> Q" "b \<in> \<E>" "Qx \<in> (\<emptyset> Q b)" "Qz \<in> (\<emptyset> Q b)" "Qx\<noteq>Qz"*)
+  shows "\<exists>X f.  [f\<leadsto>X|Qx..Qz] \<and>
+                (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and>
+                                        (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+  (*obtains X f where "[f\<leadsto>X|Qx..Qz]"
+                    "(\<forall>i\<in>{1..card X-1}. (f i) \<in> \<emptyset> Q b \<and>
+                                        (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"*)
+  proof -
+  from assms I6[of Q b Qx Qz] obtain X f where I6_old: "ch_by_ord f X \<and> f 0 = Qx \<and> f (card X - 1) = Qz
+                         \<and> (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b
+                              \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))
+                         \<and> (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+    by blast
+  show "\<exists>X f.  [f\<leadsto>X|Qx..Qz] \<and>
+                (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and>
+                                        (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+  proof ((rule exI)+, rule conjI)
+    show "[f\<leadsto>X|Qx..Qz]"
+      using I6_old unfolding chain_defs
+      by (metis assms(4) card.infinite diff_is_0_eq' less_imp_le_nat less_numeral_extra(1))
+    { fix i assume "i\<in>{1..card X - 1}"
+      have "f i \<in> \<emptyset> Q b" "(\<forall>Qy\<in>\<E>. [f (i - 1);Qy;f i] \<longrightarrow> Qy \<in> \<emptyset> Q b)"
+      using I6_old \<open>i \<in> {1..card X - 1}\<close> apply blast
+      by (meson I6_old \<open>i \<in> {1..card X - 1}\<close>)
+    }
+    thus "\<forall>i\<in>{1..card X - 1}. f i \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1);Qy;f i] \<longrightarrow> Qy \<in> \<emptyset> Q b)"
+      by blast
+  qed
+qed
+*)
+
+lemma I6_old:
+  assumes "Q \<in> \<P>" "b \<notin> Q" "b \<in> \<E>" "Qx \<in> (\<emptyset> Q b)" "Qz \<in> (\<emptyset> Q b)" "Qx\<noteq>Qz"
+  shows "\<exists>X. \<exists>f. ch_by_ord f X \<and> f 0 = Qx \<and> f (card X - 1) = Qz \<and>
+                 (\<forall>i\<in>{1..card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b)) \<and>
+                 (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+proof -
+  from assms I6[of Q b Qx Qz] obtain f X
+    where fX: "[f\<leadsto>X|Qx..Qz]"
+              "(\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+    using DiffI Un_Diff_cancel by blast
+  show ?thesis
+  proof ((rule exI)+, intro conjI, rule_tac[4] ballI, rule_tac[5] impI; (intro conjI)?)
+    show 1: "[f\<leadsto>X]" "f 0 = Qx" "f (card X - 1) = Qz"
+      using fX(1) chain_defs by meson+
+    { 
+      fix i assume i_asm: "i\<in>{1..card X - 1}"
+      show 2: "f i \<in> \<emptyset> Q b"
+        using fX(2) i_asm by fastforce
+      show 3: "\<forall>Qy\<in>\<E>. [f (i - 1);Qy;f i] \<longrightarrow> Qy \<in> \<emptyset> Q b"
+        using fX(2) i_asm by blast
+    } {
+      assume X_asm: "short_ch X"
+      show 4: "Qx \<in> X" "Qz \<in> X"
+        using fX(1) points_in_chain by auto
+      have "{1..card X-1} = {1}"
+        using X_asm short_ch_alt(2) by force
+      thus 5: "\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b"
+        using fX(2) 1(2,3) by auto
+    }
+  qed
+qed
 
 lemma card_unreach_geq_2:
   assumes "Q\<in>\<P>" "b\<in>\<E>-Q"
