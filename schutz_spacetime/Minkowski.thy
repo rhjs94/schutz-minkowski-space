@@ -901,6 +901,7 @@ lemma fin_chain_card_geq_2:
   apply (metis dual_order.eq_iff short_ch_def)
   using assms chain_defs not_less by fastforce
 
+
 subsection "Chains using betweenness"
 
 (* TODO remove all reference to these defs *)

@@ -338,6 +338,17 @@ proof -
 qed
 
 
+corollary (*2*) order_finite_chain2:
+  assumes chX: "[f\<leadsto>X]"
+      and finiteX: "finite X"
+      and ordered_nats: "0 \<le> (i::nat) \<and> i < j \<and> j < l \<and> l < card X"
+    shows "[f i; f j; f l]"
+proof -
+  have "card X > 2" using ordered_nats by (simp add: eval_nat_numeral)
+  thus ?thesis using order_finite_chain chain_defs short_ch_card(1) by (metis assms nat_neq_iff)
+qed
+
+
 (*TODO: make index_neq_ results use this, much simpler!?*)
 theorem (*2ii*) index_injective:
   fixes i::nat and j::nat
@@ -462,7 +473,25 @@ proof -
   thus ?thesis by blast
 qed
 
-lemma "[f\<leadsto>Q|x..y..z] \<longleftrightarrow> [f\<leadsto>Q|x..z] \<and> [x;y;z] \<and> y\<in>Q"
+text \<open>
+  Another corollary to Theorem 2, without mentioning indices.
+\<close>
+corollary fin_ch_betw: "[f\<leadsto>X|a..b..c] \<Longrightarrow> [a;b;c]"
+  using order_finite_chain2 index_middle_element
+  using finite_chain_def finite_chain_with_def finite_long_chain_with_def
+  by (metis (no_types, lifting) card_gt_0_iff diff_less empty_iff le_eq_less_or_eq less_one)
+
+
+lemma long_chain_2_imp_3: "\<lbrakk>[f\<leadsto>X|a..c]; card X > 2\<rbrakk> \<Longrightarrow> \<exists>b. [f\<leadsto>X|a..b..c]"
+  using points_in_chain first_neq_last finite_long_chain_with_def
+  by (metis card_2_iff' numeral_less_iff semiring_norm(75,78))
+
+
+lemma finite_chain2_betw: "\<lbrakk>[f\<leadsto>X|a..c]; card X > 2\<rbrakk> \<Longrightarrow> \<exists>b. [a;b;c]"
+  using fin_ch_betw long_chain_2_imp_3 by metis
+
+
+lemma finite_long_chain_with_alt [chain_alts]: "[f\<leadsto>Q|x..y..z] \<longleftrightarrow> [f\<leadsto>Q|x..z] \<and> [x;y;z] \<and> y\<in>Q"
 proof
   { 
     assume "[f\<leadsto>Q|x .. z] \<and> [x;y;z] \<and> y\<in>Q"
@@ -471,14 +500,9 @@ proof
   } {
     assume asm: "[f\<leadsto>Q|x..y..z]"
     show "[f\<leadsto>Q|x .. z] \<and> [x;y;z] \<and> y\<in>Q"
-      apply safe
-      using chain_defs apply (meson \<open>[f\<leadsto>Q|x..y..z]\<close>)
-      using index_middle_element[OF asm] chain_defs
-      apply (smt (verit, ccfv_threshold) Collect_cong abc_abc_neq asm bot_nat_0.extremum
-        diff_diff_cancel finite_chain_with_cases first_neq_last less_nat_zero_code less_one
-        less_or_eq_imp_le mem_Collect_eq neq0_conv order_finite_chain points_in_long_chain
-        short_ch_alt(1) short_ch_card(1) short_ch_card_2 zero_less_diff) (* TODO *)
-oops
+    using asm fin_ch_betw finite_long_chain_with_def by blast
+  }
+qed
 
 (*lemma fin_ch_betw:
   assumes "[f\<leadsto>X|a..b..c]"
@@ -494,21 +518,15 @@ qed*)
 lemma chain_sym_obtain:
   assumes "[f\<leadsto>X|a..b..c]"
   obtains g where "[g\<leadsto>X|c..b..a]" and "g=(\<lambda>n. f (card X - 1 - n))"
-  using local_ordering_sym[where ord=betw] abc_sym assms(1)
-  unfolding finite_long_chain_with_def finite_chain_with_def finite_chain_def
-  by (meson between_chain) (* TODO ?*)
-  (*by (meson between_chain fin_ch_betw)*)
-  (*unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def
-  using between_chain infinite_chain_def by blast*)
-  (*by (metis (mono_tags, lifting) abc_sym diff_self_eq_0 diff_zero)*)
+  using ordering_sym_loc[of betw X f] abc_sym assms unfolding chain_defs
+  using  first_neq_last points_in_long_chain(3)
+  by (metis assms diff_self_eq_0 empty_iff finite_long_chain_with_def insert_iff minus_nat.diff_0)
 
 lemma chain_sym:
   assumes "[f\<leadsto>X|a..b..c]"
     shows "[\<lambda>n. f (card X - 1 - n)\<leadsto>X|c..b..a]"
   using chain_sym_obtain [where f=f and a=a and b=b and c=c and X=X]
   using assms(1) by blast
-
-
 
 
 end (* context MinkowskiBetweenness *)
@@ -541,12 +559,12 @@ lemma ch_equiv:
 *)
 
 
-
+(*
 lemma ch_equiv1:
-  assumes "local_long_ch_by_ord f X" "finite X"
-  shows "local_local_long_ch_by_ord f X"
+  assumes "long_ch_by_ord f X" "finite X"
+  shows "local_long_ch_by_ord f X"
   using assms
-  unfolding local_local_long_ch_by_ord_def local_local_local_long_ch_by_ord_def local_ordering_def local_ordering2_def
+  unfolding local_long_ch_by_ord_def local_long_ch_by_ord_def local_ordering_def local_ordering_def ordering_def
   by (metis lessI)
 
 
@@ -562,6 +580,7 @@ corollary ch_equiv:
   shows "local_long_ch_by_ord f X = local_local_long_ch_by_ord f X"
   apply standard prefer 2 subgoal
   using order_finite_chain[of f X] assms
+*)
 
 
 end (*context MinkowskiBetweenness*)
@@ -704,7 +723,7 @@ theorem (*3*) (in MinkowskiChain) collinearity_alt2:
       and cea: "[c;e;a]"
   shows "\<exists>f\<in>de\<inter>ab. [a;f;b]"
 proof -
-  have "\<exists>f\<in>ab \<inter> de. \<exists>X. [\<leadsto>X|a..f..b]"
+  have "\<exists>f\<in>ab \<inter> de. \<exists>X ord. [ord\<leadsto>X|a..f..b]"
   proof -
     have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
@@ -720,7 +739,7 @@ proof -
             ab_neq_ac ab_neq_bc ac_neq_bc path_ab path_bc path_ac path_de bcd cea d_in_bc e_in_ac
       by auto
   qed
-  thus ?thesis using finite_chain3_betw by blast
+  thus ?thesis using fin_ch_betw by blast
 qed
 
 
@@ -751,7 +770,7 @@ proof -
             ab_neq_ac ab_neq_bc ac_neq_bc path_ab path_bc path_ac path_de bcd cea d_in_bc e_in_ac
       by auto
   qed
-  thus ?thesis using finite_chain3_betw path_ab by fastforce
+  thus ?thesis using fin_ch_betw path_ab by fastforce
 qed
 
 
@@ -782,7 +801,7 @@ proof -
             IntI Int_commute
       by (metis (no_types, lifting))
   qed
-  thus ?thesis using finite_chain3_betw by blast
+  thus ?thesis using fin_ch_betw by blast
 qed
 
 

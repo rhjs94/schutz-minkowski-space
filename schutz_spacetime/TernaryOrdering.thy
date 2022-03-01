@@ -478,4 +478,41 @@ lemma overlap_ordering_loc:
   shows "\<exists>f. local_ordering f ord {a,b,c,d}"
   using overlap_ordering[OF assms] total_implies_local by blast
 
+lemma ordering_sym_loc:
+  assumes ord_sym: "\<And>a b c. ord a b c \<Longrightarrow> ord c b a"
+      and "finite X"
+      and "local_ordering f ord X"
+  shows "local_ordering (\<lambda>n. f (card X - 1 - n)) ord X"
+  unfolding local_ordering_def using assms(2) apply auto
+  apply (metis local_ordering_def assms(3) card_0_eq card_gt_0_iff diff_Suc_less gr_implies_not0)
+proof -
+  fix x
+  assume "finite X"
+  assume "x \<in> X"
+  obtain n where "finite X \<longrightarrow> n < card X" and "f n = x"
+    by (metis local_ordering_def \<open>x \<in> X\<close> assms(3))
+  have "f (card X - ((card X - 1 - n) + 1)) = x"
+    by (simp add: Suc_leI \<open>f n = x\<close> \<open>finite X \<longrightarrow> n < card X\<close> assms(2))
+  thus "\<exists>n<card X. f (card X - Suc n) = x"
+    by (metis \<open>x \<in> X\<close> add.commute assms(2) card_Diff_singleton card_Suc_Diff1 diff_less_Suc plus_1_eq_Suc)
+next
+  fix n
+  let ?n1 = "Suc n"
+  let ?n2 = "Suc ?n1"
+  assume "finite X"
+  assume "Suc (Suc n) < card X"
+  have "ord (f (card X - Suc ?n2)) (f (card X - Suc ?n1)) (f (card X - Suc n))"
+    using assms(3) unfolding local_ordering_def
+    using \<open>Suc (Suc n) < card X\<close> by (metis
+      Suc_diff_Suc Suc_lessD card_eq_0_iff card_gt_0_iff diff_less gr_implies_not0 zero_less_Suc)
+  thus " ord (f (card X - Suc n)) (f (card X - Suc ?n1)) (f (card X - Suc ?n2))"
+    using ord_sym by blast
+qed
+
+lemma  zero_into_ordering_loc:
+  assumes "local_ordering f betw X"
+  and "X \<noteq> {}"
+  shows "(f 0) \<in> X"
+    using local_ordering_def by (metis assms card_eq_0_iff gr_implies_not0 linorder_neqE_nat)
+
 end
