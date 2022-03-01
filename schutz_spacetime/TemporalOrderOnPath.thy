@@ -754,7 +754,7 @@ proof -
     using tri_abc triangle_paths_unique by blast
   then obtain ab where path_ab: "path ab a b"
     by blast
-  have "\<exists>f\<in>ab \<inter> de. \<exists>X. [\<leadsto>X|a..f..b]"
+  have "\<exists>f\<in>ab \<inter> de. \<exists>X g. [g\<leadsto>X|a..f..b]"
   proof -
     have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
@@ -784,7 +784,7 @@ proof -
   let ?ab = "path_of a b"
   have path_ab: "path ?ab a b"
     using tri_abc theI' [OF triangle_paths_unique] by blast
-  have "\<exists>f\<in>?ab \<inter> de. \<exists>X. [\<leadsto>X|a..f..b]"
+  have "\<exists>f\<in>?ab \<inter> de. \<exists>X ord. [ord\<leadsto>X|a..f..b]"
   proof -
     have "path_ex a c" using tri_abc triangle_paths(2) by auto
     then obtain ac where path_ac: "path ac a c" by auto
