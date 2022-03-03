@@ -1108,11 +1108,31 @@ section "MinkowskiChain: O6"
 
 text \<open>O6 supposedly serves the same purpose as Pasch's axiom.\<close>
 
-locale MinkowskiChain = MinkowskiBetweenness +
-  assumes O6: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
+(*
+locale Minkowski_O6_old_equiv = MinkowskiBetweenness +
+  assumes O6_old: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
                 \<exists>d\<in>S. [b;c;d] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [c;e;a])\<rbrakk>
                \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"
 begin
+lemma O6_new: "\<lbrakk>{Q,R,S,T} \<subseteq> \<P>; card{Q,R,S} = 3; a \<in> Q\<inter>R; b \<in> Q\<inter>S; c \<in> R\<inter>S; d\<in>S\<inter>T; e\<in>R\<inter>T; [b;c;d]; [c;e;a]\<rbrakk>
+               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"
+  using O6_old[of Q R S T a b c] by (metis Int_iff card_3_dist insert_subset)
+end
+*)
+
+
+locale MinkowskiChain = MinkowskiBetweenness +
+  (*assumes O6_old: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
+                \<exists>d\<in>S. [b;c;d] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [c;e;a])\<rbrakk>
+               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"*)
+  assumes O6: "\<lbrakk>{Q,R,S,T} \<subseteq> \<P>; card{Q,R,S} = 3; a \<in> Q\<inter>R; b \<in> Q\<inter>S; c \<in> R\<inter>S; d\<in>S\<inter>T; e\<in>R\<inter>T; [b;c;d]; [c;e;a]\<rbrakk>
+               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"
+begin
+
+lemma O6_old: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
+                \<exists>d\<in>S. [b;c;d] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [c;e;a])\<rbrakk>
+               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"
+  using O6[of Q R S T a b c] by (metis IntI card_3_dist empty_subsetI insert_subset)
 
 
 section "Chains: (Closest) Bounds"
