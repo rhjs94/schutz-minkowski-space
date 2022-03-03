@@ -862,66 +862,17 @@ proof -
 qed
 
 end (* context MinkowskiPrimitive *)
-context MinkowskiUnreachable begin
-
-text \<open>
-  First some basic facts about the primitive notions, which seem to belong here.
-  I don't think any/all of these are explicitly proved in Schutz.
-\<close>
-
-lemma no_empty_paths [simp]:
-  assumes "Q\<in>\<P>"
-  shows "Q\<noteq>{}"
-  (*using assms nonempty_events two_in_unreach unreachable_subset_def by blast*)
-proof -
-  obtain a where "a\<in>\<E>" using nonempty_events by blast
-  have "a\<in>Q \<or> a\<notin>Q" by auto
-  thus ?thesis
-  proof
-    assume "a\<in>Q"
-    thus ?thesis by blast
-  next
-    assume "a\<notin>Q"
-    then obtain b where "b\<in>\<emptyset> Q a"
-      using two_in_unreach \<open>a \<in> \<E>\<close> assms
-      by blast
-    thus ?thesis
-      using unreachable_subset_def by auto
-  qed
-qed
-
-lemma events_ex_path:
-  assumes ge1_path: "\<P> \<noteq> {}"
-  shows "\<forall>x\<in>\<E>. \<exists>Q\<in>\<P>. x \<in> Q"
-  (*using ex_in_conv no_empty_paths in_path_event assms events_paths
-  by metis*)
-proof
-  fix x
-  assume x_event: "x \<in> \<E>"
-  have "\<exists>Q. Q \<in> \<P>" using ge1_path using ex_in_conv by blast
-  then obtain Q where path_Q: "Q \<in> \<P>" by auto
-  then have "\<exists>y. y \<in> Q" using no_empty_paths by blast
-  then obtain y where y_inQ: "y \<in> Q" by auto
-  then have y_event: "y \<in> \<E>" using in_path_event path_Q by simp
-  have "\<exists>P\<in>\<P>. x \<in> P"
-  proof cases
-    assume "x = y"
-    thus ?thesis using y_inQ path_Q by auto
-  next
-    assume "x \<noteq> y"
-    thus ?thesis using events_paths x_event y_event by auto
-  qed
-  thus "\<exists>Q\<in>\<P>. x \<in> Q" by simp
-qed
-
-lemma unreach_ge2_then_ge2:
-  assumes "\<exists>x\<in>\<emptyset> Q b. \<exists>y\<in>\<emptyset> Q b. x \<noteq> y"
-  shows "\<exists>x\<in>Q. \<exists>y\<in>Q. x \<noteq> y"
-using assms unreachable_subset_def by auto
+context MinkowskiBetweenness begin
 
 text \<open>
   Schutz defines chains as subsets of paths. The result below proves that even though we do not
   include this fact in our definition, it still holds, at least for finite chains.
+\<close>
+text \<open>
+  Notice that this whole proof would be unnecessary if including path-belongingness in the
+  definition, as Schutz does. This would also keep path-belongingness independent of axiom O1 and O4,
+  thus enabling an independent statement of axiom O6, which perhaps we now lose. In exchange,
+  our definition is slightly weaker (for \<open>card X \<ge> 3\<close> and \<open>infinite X\<close>).
 \<close>
 
 lemma obtain_index_fin_chain:
@@ -943,7 +894,12 @@ proof -
   qed
   thus ?thesis using that by blast
 qed
-  
+
+lemma obtain_index_inf_chain:
+  assumes "[f\<leadsto>X]" "x\<in>X" "infinite X"
+  obtains i where "f i = x"
+  using assms unfolding chain_defs local_ordering_def by blast
+
 
 lemma fin_chain_on_path2:
   assumes "[f\<leadsto>X]" "finite X"
@@ -1007,6 +963,65 @@ proof -
   hence "?ab = P" using eq_paths \<open>path P a b\<close> by auto
   thus ?thesis using P by simp
 qed
+
+
+end (* context MinkowskiBetweenness *)
+context MinkowskiUnreachable begin
+
+text \<open>
+  First some basic facts about the primitive notions, which seem to belong here.
+  I don't think any/all of these are explicitly proved in Schutz.
+\<close>
+
+lemma no_empty_paths [simp]:
+  assumes "Q\<in>\<P>"
+  shows "Q\<noteq>{}"
+  (*using assms nonempty_events two_in_unreach unreachable_subset_def by blast*)
+proof -
+  obtain a where "a\<in>\<E>" using nonempty_events by blast
+  have "a\<in>Q \<or> a\<notin>Q" by auto
+  thus ?thesis
+  proof
+    assume "a\<in>Q"
+    thus ?thesis by blast
+  next
+    assume "a\<notin>Q"
+    then obtain b where "b\<in>\<emptyset> Q a"
+      using two_in_unreach \<open>a \<in> \<E>\<close> assms
+      by blast
+    thus ?thesis
+      using unreachable_subset_def by auto
+  qed
+qed
+
+lemma events_ex_path:
+  assumes ge1_path: "\<P> \<noteq> {}"
+  shows "\<forall>x\<in>\<E>. \<exists>Q\<in>\<P>. x \<in> Q"
+  (*using ex_in_conv no_empty_paths in_path_event assms events_paths
+  by metis*)
+proof
+  fix x
+  assume x_event: "x \<in> \<E>"
+  have "\<exists>Q. Q \<in> \<P>" using ge1_path using ex_in_conv by blast
+  then obtain Q where path_Q: "Q \<in> \<P>" by auto
+  then have "\<exists>y. y \<in> Q" using no_empty_paths by blast
+  then obtain y where y_inQ: "y \<in> Q" by auto
+  then have y_event: "y \<in> \<E>" using in_path_event path_Q by simp
+  have "\<exists>P\<in>\<P>. x \<in> P"
+  proof cases
+    assume "x = y"
+    thus ?thesis using y_inQ path_Q by auto
+  next
+    assume "x \<noteq> y"
+    thus ?thesis using events_paths x_event y_event by auto
+  qed
+  thus "\<exists>Q\<in>\<P>. x \<in> Q" by simp
+qed
+
+lemma unreach_ge2_then_ge2:
+  assumes "\<exists>x\<in>\<emptyset> Q b. \<exists>y\<in>\<emptyset> Q b. x \<noteq> y"
+  shows "\<exists>x\<in>Q. \<exists>y\<in>Q. x \<noteq> y"
+using assms unreachable_subset_def by auto
 
 
 text \<open>
@@ -2415,49 +2430,65 @@ subsubsection "General results"
 lemma inf_chain_is_long:
   assumes "[f\<leadsto>X|x..]"
   shows "local_long_ch_by_ord f X \<and> f 0 = x \<and> infinite X"
-proof - 
-  have "infinite X \<longrightarrow> card X \<noteq> 2" using card.infinite by simp
-  hence "[f\<leadsto>X|x..] \<longrightarrow> local_long_ch_by_ord f X"
-    using local_long_ch_by_ord_def infinite_chain_def short_ch_def
-    by simp
-  thus ?thesis using assms infinite_chain_def by blast
-qed
+  using chain_defs by (metis assms infinite_chain_alt)
 
 text \<open>A reassurance that the starting point $x$ is implied.\<close>
 lemma long_inf_chain_is_semifin:
   assumes "local_long_ch_by_ord f X \<and> infinite X"
   shows "\<exists> x. [f\<leadsto>X|x..]"
-  by (simp add: assms infinite_chain_def)
+  using assms infinite_chain_with_def chain_alts by auto
 
 lemma endpoint_in_semifin:
   assumes  "[f\<leadsto>X|x..]"
-    shows "x\<in>X"
-  using assms infinite_chain_def zero_into_local_ordering inf_chain_is_long local_local_long_ch_by_ord_def
-  by (metis finite.emptyI)
+  shows "x\<in>X"
+  using zero_into_ordering_loc by (metis assms empty_iff inf_chain_is_long local_long_ch_by_ord_alt)
 
-lemma three_in_long_chain:
+(*lemma three_in_long_chain:
   assumes "local_long_ch_by_ord f X" and fin: "finite X"
   obtains x y z where "x\<in>X" and "y\<in>X" and "z\<in>X" and "x\<noteq>y" and "x\<noteq>z" and "y\<noteq>z"
-    using assms(1) local_local_long_ch_by_ord_def by auto
+  using three_in_long_chain
+  using assms(1) by blast*)
 
 subsubsection "Index-chains lie on paths"
 
-lemma all_aligned_on_infinite_chain:
+text \<open>
+  Yet another corollary to Theorem 2, without indices, for arbitrary events on the chain.
+\<close>
+
+corollary all_aligned_on_fin_chain:
+  assumes "[f\<leadsto>X]" "finite X"
+  and x: "x\<in>X" and y: "y\<in>X" and z:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
+  shows "[x;y;z] \<or> [x;z;y] \<or> [y;x;z]"
+proof -
+  have "card X \<ge> 3" using assms(2-5) three_subset[OF xy xz yz] by blast
+  hence 1: "local_long_ch_by_ord f X"
+    using assms(1,3-) chain_defs by (metis short_ch_alt(1) short_ch_card(1) short_ch_card_2)
+  obtain i j k where ijk: "x=f i" "i<card X" "y=f j" "j<card X" "z=f k" "k<card X"
+    using obtain_index_fin_chain assms(1-5) by metis
+  have 2: "[f i;f j;f k]" if "i<j \<and> j<k" "k<card X" for i j k
+    using assms order_finite_chain2 that(1,2) by auto
+  consider "i<j \<and> j<k"|"i<k \<and> k<j"|"j<i \<and> i<k"|"i>j \<and> j>k"|"i>k \<and> k>j"|"j>i \<and> i>k"
+    using xy xz yz ijk(1,3,5) by (metis linorder_neqE_nat)
+  thus ?thesis
+    apply cases using 2 abc_sym ijk by presburger+
+qed
+
+(*lemma all_aligned_on_infinite_chain:
   assumes "[f\<leadsto>X|x..]"
   and a: "y\<in>X" and b:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
   shows "[x;y;z] \<or> [x;z;y]"
 proof -
-    obtain n\<^sub>y n\<^sub>z where "f n\<^sub>y = y" and "f n\<^sub>z = z"
-      by (metis TernaryOrdering.local_ordering_def a assms(1) b inf_chain_is_long local_local_long_ch_by_ord_def)
-    have "(0<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<or> (0<n\<^sub>z \<and> n\<^sub>z<n\<^sub>y)"
-      using \<open>f n\<^sub>y = y\<close> \<open>f n\<^sub>z = z\<close> assms less_linear infinite_chain_def xy xz yz  by auto
-    hence "[f 0; f n\<^sub>y; f n\<^sub>z] \<or> [f 0; f n\<^sub>z; f n\<^sub>y]"
-      using local_ordering_def assms(1) local_local_long_ch_by_ord_def infinite_chain_def
-      by (metis local_local_long_ch_by_ord_def)
-    thus "[x;y;z] \<or> [x;z;y]"
-      using \<open>f n\<^sub>y = y\<close> \<open>f n\<^sub>z = z\<close> assms infinite_chain_def by auto
-  qed
-
+  obtain n\<^sub>y n\<^sub>z where "f n\<^sub>y = y" and "f n\<^sub>z = z"
+    by (metis local_ordering_def assms(1-3) inf_chain_is_long local_long_ch_by_ord_def)
+  have "(0<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<or> (0<n\<^sub>z \<and> n\<^sub>z<n\<^sub>y)"
+    using \<open>f n\<^sub>y = y\<close> \<open>f n\<^sub>z = z\<close> assms less_linear infinite_chain_def xy xz yz
+    by (metis infinite_chain_with_def neq0_conv)
+  hence "[f 0; f n\<^sub>y; f n\<^sub>z] \<or> [f 0; f n\<^sub>z; f n\<^sub>y]"
+    using local_ordering_def assms(1) local_long_ch_by_ord_def infinite_chain_def
+    by (metis local_long_ch_by_ord_def)
+  thus "[x;y;z] \<or> [x;z;y]"
+    using \<open>f n\<^sub>y = y\<close> \<open>f n\<^sub>z = z\<close> assms infinite_chain_def by auto
+qed
 
 lemma infinite_chain_on_path:
   assumes "[f\<leadsto>X|x..]"
@@ -2515,6 +2546,7 @@ proof -
     using path_unique
     by (meson \<open>path P x y\<close> \<open>y \<in> X\<close> assms endpoint_in_semifin in_mono)
 qed
+*)
 
 
 lemma card2_either_elt1_or_elt2:
@@ -2528,14 +2560,12 @@ lemma short_chain_on_path:
   shows "\<exists>P\<in>\<P>. X\<subseteq>P"
 proof -
   obtain x y where "x\<noteq>y" and "x\<in>X" and "y\<in>X"
-    using assms short_ch_def by auto
+    using assms short_ch_alt(1) by auto
   obtain P where "path P x y"
-    using \<open>x \<in> X\<close> \<open>x \<noteq> y\<close> \<open>y \<in> X\<close> assms short_ch_def
-    by metis
+    using \<open>x \<in> X\<close> \<open>x \<noteq> y\<close> \<open>y \<in> X\<close> assms short_ch_alt by metis
   have "X\<subseteq>P"
   proof
-    fix z
-    assume "z\<in>X"
+    fix z assume "z\<in>X"
     show "z\<in>P"
     proof cases
       assume "z=x"
@@ -2543,7 +2573,7 @@ proof -
     next
       assume "z\<noteq>x"
       have "z=y"
-        using \<open>x\<in>X\<close> \<open>y\<in>X\<close> \<open>z\<noteq>x\<close> \<open>z\<in>X\<close> \<open>x\<noteq>y\<close> assms short_ch_def
+        using \<open>x\<in>X\<close> \<open>y\<in>X\<close> \<open>z\<noteq>x\<close> \<open>z\<in>X\<close> \<open>x\<noteq>y\<close> assms short_ch_alt
         by metis
       thus "z\<in>P" using \<open>path P x y\<close> by (simp add: \<open>z=y\<close>)
     qed
@@ -2553,88 +2583,18 @@ proof -
 qed
 
 
+(*
 lemma all_aligned_on_long_chain:
   assumes "local_long_ch_by_ord f X"
   and a: "x\<in>X" and b: "y\<in>X" and c:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
 shows "[x;y;z] \<or> [x;z;y] \<or> [z;x;y]"
   using all_aligned_on_infinite_chain abc_sym assms local_local_long_ch_by_ord_def local_ordering_def
   by (smt (verit, ccfv_threshold) neqE)
-
-
-lemma long_chain_on_path:
-  assumes "local_long_ch_by_ord f X" and "finite X"
-  shows "\<exists>!P\<in>\<P>. X\<subseteq>P"
-proof -
-  obtain x y where "x\<in>X" and "y\<in>X" and "y\<noteq>x"
-    using local_local_long_ch_by_ord_def assms
-    by metis
-  obtain z where "z\<in>X" and "x\<noteq>z" and "y\<noteq>z"
-    using local_local_long_ch_by_ord_def assms
-    by metis
-  have "[x;y;z] \<or> [x;z;y] \<or> [z;x;y]"
-    using all_aligned_on_long_chain assms
-    using \<open>x \<in> X\<close> \<open>x \<noteq> z\<close> \<open>y \<in> X\<close> \<open>y \<noteq> x\<close> \<open>y \<noteq> z\<close> \<open>z \<in> X\<close>
-    by auto
-  then have path_exists: "\<exists>P\<in>\<P>. path P x y"
-    using all_aligned_on_long_chain abc_ex_path
-    by (metis \<open>y \<noteq> x\<close>)
-  obtain P where "path P x y"
-    using path_exists
-    by blast
-  have "X\<subseteq>P"
-  proof
-    fix e
-    assume "e\<in>X"
-    show "e\<in>P"
-    proof -
-      have "e=x \<or> e=y \<or> (e\<noteq>x \<and> e\<noteq>y)" by auto
-      moreover {
-        assume "e\<noteq>x \<and> e\<noteq>y"
-        have "[x;y;e] \<or> [x;e;y] \<or> [e;x;y]"
-          using all_aligned_on_long_chain all_aligned_on_long_chain assms
-                \<open>e \<in> X\<close> \<open>e \<noteq> x \<and> e \<noteq> y\<close> \<open>y \<in> X\<close> \<open>y \<noteq> x\<close> \<open>x\<in>X\<close>
-          by metis
-        hence ?thesis
-          using \<open>path P x y\<close> abc_ex_path path_unique
-          by blast
-      }
-      moreover {
-        assume "e=x"
-        have ?thesis
-          by (simp add: \<open>e = x\<close> \<open>path P x y\<close>)
-      }
-      moreover {
-        assume "e=y"
-        have "e\<in>P"
-          by (simp add: \<open>e = y\<close> \<open>path P x y\<close>)
-      }
-      ultimately show ?thesis by blast
-    qed
-  qed
-  hence "\<exists>P\<in>\<P>. X\<subseteq>P"
-    using \<open>path P x y\<close>
-    by blast
-  thus ?thesis
-    using path_unique
-    by (meson \<open>y \<in> X\<close> \<open>y \<noteq> z\<close> \<open>z \<in> X\<close> subsetD)
-qed
-
-text \<open>
-  Notice that this whole proof would be unnecessary if including path-belongingness in the
-  definition, as Schutz does. This would also keep path-belongingness independent of axiom O1 and O4,
-  thus enabling an independent statement of axiom O6, which perhaps we now lose. In exchange,
-  our definition is slightly weaker (for \<open>card X \<ge> 3\<close> and \<open>infinite X\<close>).
-\<close>
-
-lemma chain_on_path:
-  assumes "ch_by_ord f X"
-  shows "\<exists>P\<in>\<P>. X\<subseteq>P"
-  using assms ch_by_ord_def
-  using infinite_chain_on_path long_chain_on_path short_chain_on_path long_inf_chain_is_semifin
-  by meson
+*)
 
 subsubsection "More general results"
 
+(*
 (* In fact, it is xor. *)
 lemma ch_some_betw: "\<lbrakk>x \<in> X; y \<in> X; z \<in> X; x \<noteq> y; x \<noteq> z; y \<noteq> z; ch X\<rbrakk>
         \<Longrightarrow> [x;y;z] \<or> [y;x;z] \<or> [y;z;x]"
@@ -2672,10 +2632,11 @@ qed
 lemma ch_all_betw_f:
   assumes "[f\<leadsto>X|x..yy..z]" and "y\<in>X" and "y\<noteq>x" and "y\<noteq>z"
   shows "[x;y;z]"
+  (*using assms(1) assms(2) assms(3) assms(4) fin_ch_betw finite_long_chain_with_def by auto*)
 proof (rule ccontr)
   assume asm: "\<not> [x;y;z]"
   obtain Q where "Q\<in>\<P>" and "x\<in>Q \<and> y\<in>Q \<and> z\<in>Q"
-    using chain_on_path assms ch_by_ord_def asm fin_ch_betw finite_long_chain_with_def
+    using fin_chain_on_path assms ch_by_ord_def asm fin_ch_betw finite_long_chain_with_def
     by auto
   hence "[x;y;z] \<or> [y;x;z] \<or> [y;z;x]"
     using some_betw assms
@@ -2687,81 +2648,52 @@ proof (rule ccontr)
     using finite_long_chain_with_def local_local_long_ch_by_ord_def asm assms fin_ch_betw
     by (metis (no_types))
 qed
+*)
+
+
+(*
+lemma "local_long_ch_by_ord f X \<and> finite X \<longleftrightarrow> [f\<leadsto>X] \<and> card X \<ge> 3"
+by (metis card.infinite ch_by_ord_def long_chain_card_geq not_numeral_le_zero numeral_le_iff semiring_norm(74,75) short_ch_card(1))
+*)
 
 (* potential misnomer: Schutz defines bounds only for infinite chains *)
 lemma get_fin_long_ch_bounds:
   assumes "local_long_ch_by_ord f X"
-      and "finite X"
-    shows "\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. [f\<leadsto>X|x..y..z]"
-proof -
-  obtain x where "x = f 0" by simp
-  obtain z where "z = f (card X - 1)" by simp
-  obtain y where y_def: "y\<noteq>x \<and> y\<noteq>z \<and> y\<in>X"
-    by (metis assms(1) local_local_long_ch_by_ord_def)
-  have "x\<in>X"
-    using local_ordering_def \<open>x = f 0\<close> assms(1) local_local_long_ch_by_ord_def
-    by (metis card_gt_0_iff equals0D)
-  have "z\<in>X"
-    using local_ordering_def \<open>z = f (card X - 1)\<close> assms(1) local_local_long_ch_by_ord_def
-    by (metis card_gt_0_iff equals0D Suc_diff_1 lessI)
-  obtain n where "n<card X" and "f n = y"
-    using local_ordering_def y_def local_local_long_ch_by_ord_def assms
-    by metis
-  have "n>0"
-    using y_def \<open>f n = y\<close> \<open>x = f 0\<close>
-    using neq0_conv by blast
-  moreover have "n<card X - 1"
-    using y_def \<open>f n = y\<close> \<open>n < card X\<close> \<open>z = f (card X - 1)\<close> assms(2)
-    by (metis card.remove card_Diff_singleton less_SucE)
-  ultimately have "[f\<leadsto>X|x..y..z]"
-    using local_local_long_ch_by_ord_def y_def \<open>x = f 0\<close> \<open>z = f (card X - 1)\<close> abc_abc_neq assms ordering_ord_ijk_loc
-    unfolding finite_long_chain_with_def
-    by (metis (no_types, lifting) card_gt_0_iff diff_less equals0D zero_less_one)
-  thus ?thesis
-    using points_in_chain
-    by blast
+    and "finite X"
+  shows "\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. [f\<leadsto>X|x..y..z]"
+proof (rule bexI)+
+  show 1:"[f\<leadsto>X|f 0..f 1..f (card X - 1)]"
+    using assms unfolding finite_long_chain_with_def using index_injective
+    by (auto simp: finite_chain_with_alt local_long_ch_by_ord_def local_ordering_def)
+  show "f (card X - 1) \<in> X"
+    using 1 points_in_long_chain(3) by auto
+  show "f 0 \<in> X" "f 1 \<in> X"
+    using "1" points_in_long_chain by auto
 qed
 
 lemma get_fin_long_ch_bounds2:
   assumes "local_long_ch_by_ord f X"
-      and "finite X"
-    obtains x y z n\<^sub>x n\<^sub>y n\<^sub>z
-    where "x\<in>X \<and> y\<in>X \<and> z\<in>X \<and> [f\<leadsto>X|x..y..z] \<and> f n\<^sub>x = x \<and> f n\<^sub>y = y \<and> f n\<^sub>z = z"
-  by (meson assms(1) assms(2) finite_long_chain_with_def get_fin_long_ch_bounds index_middle_element)
+    and "finite X"
+  obtains x y z n\<^sub>x n\<^sub>y n\<^sub>z
+  where "x\<in>X" "y\<in>X" "z\<in>X" "[f\<leadsto>X|x..y..z]" "f n\<^sub>x = x" "f n\<^sub>y = y" "f n\<^sub>z = z"
+  using get_fin_long_ch_bounds assms
+  by (meson finite_chain_with_def finite_long_chain_with_alt index_middle_element)
 
 lemma long_ch_card_ge3:
   assumes "ch_by_ord f X" "finite X"
   shows "local_long_ch_by_ord f X \<longleftrightarrow> card X \<ge> 3"
-proof
-  assume "local_long_ch_by_ord f X"
-  then obtain a b c where "[f\<leadsto>X|a..b..c]"
-    using get_fin_long_ch_bounds assms(2) by blast
-  thus "3 \<le> card X"
-    by (metis (no_types) One_nat_def card_eq_0_iff diff_Suc_1 empty_iff
-        finite_long_chain_with_def index_middle_element leI less_3_cases less_one)
-next
-  assume "3 \<le> card X"
-  hence "\<not>short_ch X"
-    using assms(1) short_ch_card_2 by auto
-  thus "local_long_ch_by_ord f X"
-    using assms(1) ch_by_ord_def by auto
-qed
+  using assms ch_by_ord_def local_long_ch_by_ord_def short_ch_card(1) by auto
+
+lemma fin_ch_betw2:
+  assumes "[f\<leadsto>X|a..c]" and "b\<in>X"
+  obtains "b=a"|"b=c"|"[a;b;c]"
+  by (metis assms finite_long_chain_with_alt finite_long_chain_with_def)
 
 lemma chain_bounds_unique:
-  assumes "[f\<leadsto>X|a..b..c]" "[g\<leadsto>X|x..y..z]"
+  assumes "[f\<leadsto>X|a..c]" "[g\<leadsto>X|x..z]"
   shows "(a=x \<and> c=z) \<or> (a=z \<and> c=x)"
-proof -
-  have "\<forall>p\<in>X. (a = p \<or> p = c) \<or> [a;p;c]"
-    using assms(1) ch_all_betw_f by force
-  then show ?thesis
-    by (metis (full_types) abc_abc_neq abc_bcd_abd abc_sym assms(1,2) ch_all_betw_f points_in_chain)
-qed
-
-lemma chain_bounds_unique2:
-  assumes "[f\<leadsto>X|a..c]" "[g\<leadsto>X|x..z]" "card X \<ge> 3"
-  shows "(a=x \<and> c=z) \<or> (a=z \<and> c=x)"
-  using chain_bounds_unique
-  by (metis abc_ac_neq assms(1,2) ch_all_betw_f finite_chain_with_def points_in_chain short_ch_def)
+  using assms points_in_chain abc_abc_neq abc_bcd_acd abc_sym
+  by (metis (full_types) fin_ch_betw2 )
 
 subsection "Chain Equivalences"
 
