@@ -735,7 +735,7 @@ proof -
     have d_in_bc: "d \<in> bc" using bcd betw_c_in_path path_bc by blast
     have e_in_ac: "e \<in> ac" using betw_b_in_path cea path_ac by blast 
     show ?thesis
-      using O6 [where Q = ab and R = ac and S = bc and T = de and a = a and b = b and c = c] 
+      using O6_old [where Q = ab and R = ac and S = bc and T = de and a = a and b = b and c = c] 
             ab_neq_ac ab_neq_bc ac_neq_bc path_ab path_bc path_ac path_de bcd cea d_in_bc e_in_ac
       by auto
   qed
@@ -766,7 +766,7 @@ proof -
     have d_in_bc: "d \<in> bc" using bcd betw_c_in_path path_bc by blast
     have e_in_ac: "e \<in> ac" using betw_b_in_path cea path_ac by blast 
     show ?thesis
-      using O6 [where Q = ab and R = ac and S = bc and T = de and a = a and b = b and c = c] 
+      using O6_old [where Q = ab and R = ac and S = bc and T = de and a = a and b = b and c = c] 
             ab_neq_ac ab_neq_bc ac_neq_bc path_ab path_bc path_ac path_de bcd cea d_in_bc e_in_ac
       by auto
   qed
@@ -796,7 +796,7 @@ proof -
     have d_in_bc: "d \<in> bc" using bcd betw_c_in_path path_bc by blast
     have e_in_ac: "e \<in> ac" using betw_b_in_path cea path_ac by blast 
     show ?thesis
-      using O6 [where Q = ?ab and R = ac and S = bc and T = de and a = a and b = b and c = c] 
+      using O6_old [where Q = ?ab and R = ac and S = bc and T = de and a = a and b = b and c = c] 
             ab_neq_ac ab_neq_bc ac_neq_bc path_ab path_bc path_ac path_de bcd cea d_in_bc e_in_ac
             IntI Int_commute
       by (metis (no_types, lifting))
@@ -945,6 +945,96 @@ lemma unreach_ge2_then_ge2:
 using assms unreachable_subset_def by auto
 
 text \<open>
+  Schutz defines chains as subsets of paths. The result below proves that even though we do not
+  include this fact in our definition, it still holds, at least for finite chains.
+\<close>
+
+lemma obtain_index_fin_chain:
+  assumes "[f\<leadsto>X]" "x\<in>X" "finite X"
+  obtains i where "f i = x" "i<card X"
+proof -
+  have "\<exists>i<card X. f i = x"
+    using assms(1) unfolding ch_by_ord_def
+  proof (rule disjE)
+    assume asm: "short_ch_by_ord f X"
+    hence "card X = 2"
+      using short_ch_card(1) by auto
+    thus "\<exists>i<card X. f i = x"
+      using asm assms(2) unfolding chain_defs by force
+  next
+    assume asm: "local_long_ch_by_ord f X"
+    thus "\<exists>i<card X. f i = x"
+      using asm assms(2,3) unfolding chain_defs local_ordering_def by blast
+  qed
+  thus ?thesis using that by blast
+qed
+  
+
+lemma fin_chain_on_path2:
+  assumes "[f\<leadsto>X]" "finite X"
+  shows "\<exists>P\<in>\<P>. X\<subseteq>P"
+  using assms(1) unfolding ch_by_ord_def
+proof (rule disjE)
+  assume "short_ch_by_ord f X"
+  thus ?thesis
+    using short_ch_by_ord_def by auto
+next
+  assume asm: "local_long_ch_by_ord f X"
+  have "[f 0;f 1;f 2]"
+    using order_finite_chain asm assms(2) local_long_ch_by_ord_def by auto
+  then obtain P where "P\<in>\<P>" "{f 0,f 1,f 2} \<subseteq> P"
+    by (meson abc_ex_path empty_subsetI insert_subset)
+  then have "path P (f 0) (f 1)"
+    using `[f 0;f 1;f 2]` by (simp add: abc_abc_neq)
+  { 
+    fix x assume "x\<in>X"
+    then obtain i where i: "f i = x" "i<card X"
+      using obtain_index_fin_chain assms by blast
+    consider "i=0\<or>i=1"|"i>1" by linarith
+    hence "x\<in>P"
+    proof (cases)
+      case 1 thus ?thesis
+      using i(1) \<open>{f 0, f 1, f 2} \<subseteq> P\<close> by auto
+    next
+      case 2
+      hence "[f 0;f 1;f i]"
+        using assms i(2) order_finite_chain2 by auto
+      hence "{f 0,f 1,f i}\<subseteq>P"
+        using \<open>path P (f 0) (f 1)\<close> betw_c_in_path by blast
+      thus ?thesis by (simp add: i(1))
+    qed
+  }
+  thus ?thesis
+    using \<open>P\<in>\<P>\<close> by auto
+qed
+
+
+lemma fin_chain_on_path:
+  assumes "[f\<leadsto>X]" "finite X"
+  shows "\<exists>!P\<in>\<P>. X\<subseteq>P"
+proof -
+  obtain P where P: "P\<in>\<P>" "X\<subseteq>P"
+    using fin_chain_on_path2[OF assms] by auto
+  obtain a b where ab: "a\<in>X" "b\<in>X" "a\<noteq>b"
+    using assms(1) unfolding chain_defs by (metis assms(2) insertCI three_in_set3)
+  thus ?thesis using P ab by (meson eq_paths in_mono)
+qed
+
+
+lemma fin_chain_on_path3:
+  assumes "[f\<leadsto>X]" "finite X" "a\<in>X" "b\<in>X" "a\<noteq>b"
+  shows "X \<subseteq> path_of a b"
+proof -
+  let ?ab = "path_of a b"
+  obtain P where P: "P\<in>\<P>" "X\<subseteq>P" using fin_chain_on_path2[OF assms(1,2)] by auto
+  have "path P a b" using P assms(3-5) by auto
+  then have "path ?ab a b" using path_of_ex by blast
+  hence "?ab = P" using eq_paths \<open>path P a b\<close> by auto
+  thus ?thesis using P by simp
+qed
+
+
+text \<open>
   This lemma just proves that the chain obtained to bound the unreachable set of a path
   is indeed on that path. Extends I6; requires Theorem 2; used in Theorem 13.
   Seems to be assumed in Schutz' chain notation in I6.
@@ -954,52 +1044,21 @@ lemma chain_on_path_I6:
   assumes path_Q: "Q\<in>\<P>"
       and event_b: "b\<notin>Q" "b\<in>\<E>"
       and unreach: "Q\<^sub>x \<in> \<emptyset> Q b" "Q\<^sub>z \<in> \<emptyset> Q b" "Q\<^sub>x \<noteq> Q\<^sub>z"
-      and X_def: "ch_by_ord f X" "f 0 = Q\<^sub>x" "f (card X - 1) = Q\<^sub>z"
-          "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Q\<^sub>y\<in>\<E>. [(f(i-1)); Q\<^sub>y; f i] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b))"
-          "(short_ch X \<longrightarrow> Q\<^sub>x\<in>X \<and> Q\<^sub>z\<in>X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b))"
+      and X_def: "[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]"
+            "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Q\<^sub>y\<in>\<E>. [(f(i-1)); Q\<^sub>y; f i] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b))"
   shows "X\<subseteq>Q"
   (* by (smt X_def(1) chain_on_path eq_paths in_Q in_X path_Q subset_eq unreach(3)) *)
   (* smt has a really easy time of this, but no other method does (legacy code from thm13) *)
 proof -
-  have in_Q: "Q\<^sub>x\<in>Q \<and> Q\<^sub>z\<in>Q"
-    using unreachable_subset_def unreach(1,2) by blast
-  have fin_X: "finite X"
-    using unreach(3) not_less X_def by fastforce
-  {
-    assume "short_ch X"
-    hence ?thesis
-      by (metis X_def(5) in_Q short_ch_def subsetI unreach(3))
-  } moreover {
-    assume asm: "local_long_ch_by_ord f X"
-    have ?thesis
-      proof
-        fix x assume "x\<in>X"
-        then obtain i where "f i = x" "i < card X"
-          using asm unfolding ch_by_ord_def local_local_long_ch_by_ord_def local_ordering_def
-          using fin_X by auto
-        show "x\<in>Q"
-        proof (cases)
-          assume "x=Q\<^sub>x \<or> x=Q\<^sub>z"
-          thus ?thesis
-            using in_Q by blast
-        next
-          assume "\<not>(x=Q\<^sub>x \<or> x=Q\<^sub>z)"
-          hence "x\<noteq>Q\<^sub>x" "x\<noteq>Q\<^sub>z" by linarith+
-          have "i>0"
-            using X_def(2) `x\<noteq>Q\<^sub>x` \<open>f i = x\<close> gr_zeroI by force
-          have "i<card X - 1"
-            using X_def(3) \<open>f i = x\<close> \<open>i < card X\<close> \<open>x \<noteq> Q\<^sub>z\<close> less_imp_diff_less less_SucE
-            by (metis Suc_pred' cancel_comm_monoid_add_class.diff_cancel)
-          have "[Q\<^sub>x; f i; Q\<^sub>z]"
-            using X_def(2,3) \<open>0 < i\<close> \<open>i < card X - 1\<close> asm fin_X order_finite_chain
-            by auto
-          thus ?thesis
-            by (simp add: \<open>f i = x\<close> betw_b_in_path in_Q path_Q unreach(3))
-        qed
-      qed
-    }
-  ultimately show ?thesis
-    using X_def(1) ch_by_ord_def by blast
+  have 1: "path Q Q\<^sub>x Q\<^sub>z" using unreachable_subset_def unreach path_Q by simp
+  then have 2: "Q = path_of Q\<^sub>x Q\<^sub>z" using path_of_ex[of Q\<^sub>x Q\<^sub>z] by (meson eq_paths)
+  have "X\<subseteq>path_of Q\<^sub>x Q\<^sub>z"
+  proof (rule fin_chain_on_path3[of f])
+    from unreach(3) show "Q\<^sub>x \<noteq> Q\<^sub>z" by simp
+    from X_def chain_defs show "[f\<leadsto>X]" "finite X" by metis+
+    from assms(7) points_in_chain show "Q\<^sub>x \<in> X" "Q\<^sub>z \<in> X" by auto
+  qed
+  thus ?thesis using 2 by simp
 qed
 
 end (* context MinkowskiUnreachable *)
