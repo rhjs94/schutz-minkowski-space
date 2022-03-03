@@ -366,6 +366,22 @@ next
   qed
 qed
 
+theorem (*2ii*) index_injective2:
+  fixes i::nat and j::nat
+  assumes chX: "[f\<leadsto>X]"
+      and finiteX: "finite X"
+      and indices: "i<j" "j<card X"
+    shows "f i \<noteq> f j"
+  using assms(1) unfolding ch_by_ord_def
+proof (rule disjE)
+  assume asm: "short_ch_by_ord f X"
+  hence "card X = 2" using short_ch_card(1) by simp
+  hence "j=1" "i=0" using indices plus_1_eq_Suc by auto
+  thus ?thesis using asm unfolding chain_defs by force
+next
+  assume "local_long_ch_by_ord f X" thus ?thesis using index_injective assms by presburger
+qed
+
 text \<open>
   Surjectivity of the index function is easily derived from the definition of \<open>local_ordering\<close>,
   so we obtain bijectivity as an easy corollary to the second part of Theorem 2.
@@ -388,6 +404,33 @@ proof (unfold bij_betw_def, (rule conjI))
       using assms unfolding chain_defs local_ordering_def
       using atLeastLessThan_iff bot_nat_0.extremum by blast
   } ultimately show "f ` {0..<card X} = X" by blast
+qed
+
+corollary index_bij_betw2:
+  assumes chX: "[f\<leadsto>X]"
+    and finiteX: "finite X"
+  shows "bij_betw f {0..<card X} X"
+  using assms(1) unfolding ch_by_ord_def
+proof (rule disjE)
+  assume "local_long_ch_by_ord f X"
+  thus "bij_betw f {0..<card X} X" using index_bij_betw assms by presburger
+next
+  assume asm: "short_ch_by_ord f X"
+  show "bij_betw f {0..<card X} X"
+  proof (unfold bij_betw_def, (rule conjI))
+    show "inj_on f {0..<card X}"
+      using index_injective2[OF assms] by (metis (mono_tags) atLeastLessThan_iff inj_onI nat_neq_iff)
+    {
+      fix n assume asm2: "n \<in> {0..<card X}"
+      have "f n \<in> X"
+        using asm asm2 short_ch_card(1) apply (simp add: eval_nat_numeral)
+        by (metis One_nat_def less_Suc0 less_antisym short_ch_ord_in)
+    } moreover {
+      fix x assume asm2: "x \<in> X"
+      have "\<exists>n \<in> {0..<card X}. f n = x"
+        using short_ch_card(1) short_ch_by_ord_def asm asm2 atLeast0_lessThan_Suc by (auto simp: eval_nat_numeral)[1]
+    } ultimately show "f ` {0..<card X} = X" by blast
+  qed
 qed
 
 subsection "Totally ordered chains with indexing, additional lemmas about chains"
@@ -3038,45 +3081,11 @@ section "Results for segments, rays and chains"
 context MinkowskiChain begin
 
 lemma inside_not_bound:
-  assumes "[f\<leadsto>X|a..b..c]"
+  assumes "[f\<leadsto>X|a..c]"
       and "j<card X"
     shows "j>0 \<Longrightarrow> f j \<noteq> a" "j<card X - 1 \<Longrightarrow> f j \<noteq> c"
-proof -
-  have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
-    using assms(1) finite_long_chain_with_def by auto
-  show "f j \<noteq> a" if "j>0"
-  proof (cases)
-    assume "f j = c"
-    then have "[f 0; f j; b] \<or> [f 0; b; f j]"
-      using assms(1) fin_ch_betw finite_long_chain_with_def
-      by metis
-    thus ?thesis using abc_abc_neq bound_indices by blast
-  next
-    assume "f j \<noteq> c"
-    then have "[f 0; f j; c] \<or> [f 0; c; f j]"
-      using assms fin_ch_betw
-      unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-      by (metis abc_abc_neq assms that ch_all_betw_f nat_neq_iff)
-    thus ?thesis
-      using abc_abc_neq bound_indices by blast
-  qed
-  show "f j \<noteq> c" if "j<card X - 1"
-  proof (cases)
-    assume "f j = a"
-    show ?thesis
-      using \<open>f j = a\<close> assms(1) finite_long_chain_with_def
-      by blast
-  next
-    assume "f j \<noteq> a"
-    have "0 < card X"
-      using assms(2) by linarith
-    hence "[a; f j; f (card X - 1)] \<or> [f j; a; f (card X - 1)]"
-      using  assms fin_ch_betw finite_long_chain_with_def order_finite_chain
-      by (metis \<open>f j \<noteq> a\<close> diff_less le_numeral_extra(1-3) neq0_conv that)
-  thus "f j \<noteq> c"
-    using abc_abc_neq bound_indices by auto
-  qed
-qed
+  using index_injective2 assms finite_chain_def finite_chain_with_def apply metis
+  using index_injective2 assms finite_chain_def finite_chain_with_def by auto
 
 
 lemma some_betw2:
