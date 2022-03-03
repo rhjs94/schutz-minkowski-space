@@ -105,31 +105,6 @@ proof -
     by (simp add: chain_defs)
 qed
 
-(*lemma 
-  assumes "local_ordering f betw X" "finite X"
-  shows "local_long_ch_by_ord f X"
-  apply (simp add: chain_defs eval_nat_numeral)*)
-
-(*lemma overlap_chain: "\<lbrakk>[a;b;c]; [b;c;d]\<rbrakk> \<Longrightarrow> ch {a,b,c,d}"
-proof -
-  assume "[a;b;c]" and "[b;c;d]"
-  have "\<exists>f. local_ordering f betw {a,b,c,d}"
-  proof -
-    have f1: "[a;b;d]"
-      using \<open>[a;b;c]\<close> \<open>[b;c;d]\<close> by blast
-    have "[a;c;d]"
-      using \<open>[a;b;c]\<close> \<open>[b;c;d]\<close> abc_bcd_acd by blast
-    then show ?thesis
-      using f1 by (metis (no_types) \<open>[a;b;c]\<close> \<open>[b;c;d]\<close> abc_abc_neq overlap_ordering_loc)
-  qed
-  hence "\<exists>f. local_long_ch_by_ord f {a,b,c,d}"
-    apply (simp add: chain_defs eval_nat_numeral)
-    using \<open>[a;b;c]\<close> abc_abc_neq
-    by (smt (z3) \<open>[b;c;d]\<close> card.empty card_insert_disjoint card_insert_le finite.emptyI finite.insertI insertE insert_absorb insert_not_empty)
-  thus ?thesis
-    by (simp add: chain_defs)
-qed*)
-
 end (* context MinkowskiBetweenness *)
 
 
@@ -1047,8 +1022,6 @@ lemma chain_on_path_I6:
       and X_def: "[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]"
             "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Q\<^sub>y\<in>\<E>. [(f(i-1)); Q\<^sub>y; f i] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b))"
   shows "X\<subseteq>Q"
-  (* by (smt X_def(1) chain_on_path eq_paths in_Q in_X path_Q subset_eq unreach(3)) *)
-  (* smt has a really easy time of this, but no other method does (legacy code from thm13) *)
 proof -
   have 1: "path Q Q\<^sub>x Q\<^sub>z" using unreachable_subset_def unreach path_Q by simp
   then have 2: "Q = path_of Q\<^sub>x Q\<^sub>z" using path_of_ex[of Q\<^sub>x Q\<^sub>z] by (meson eq_paths)
@@ -1152,8 +1125,8 @@ theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
       and Qx_reachable: "Qx \<in> Q - \<emptyset> Q b"
       and Qy_unreachable: "Qy \<in> \<emptyset> Q b"
   shows "\<exists>Qz\<in>Q - \<emptyset> Q b. [Qx;Qy;Qz] \<and> Qx \<noteq> Qz"
-  using assms I7 order_finite_chain finite_long_chain_with_def
-  by (metis fin_ch_betw)
+  using assms I7 finite_long_chain_with_def fin_ch_betw
+  by (metis first_neq_last)
 
 subsection \<open>Theorem 5 (first existence theorem)\<close>
 text \<open>
@@ -2331,6 +2304,32 @@ proof -
     using abc_betw ch1 ch2 ch3 by (metis insert_commute)
 qed
 
+(*lemma
+  assumes "local_ordering f betw X" "card X > 2"
+  shows "local_long_ch_by_ord f X"
+  using assms by (simp add: eval_nat_numeral chain_defs)*)
+
+lemma overlap_chain: "\<lbrakk>[a;b;c]; [b;c;d]\<rbrakk> \<Longrightarrow> ch {a,b,c,d}"
+proof -
+  assume "[a;b;c]" and "[b;c;d]"
+  have "\<exists>f. local_ordering f betw {a,b,c,d}"
+  proof -
+    have f1: "[a;b;d]"
+      using \<open>[a;b;c]\<close> \<open>[b;c;d]\<close> by blast
+    have "[a;c;d]"
+      using \<open>[a;b;c]\<close> \<open>[b;c;d]\<close> abc_bcd_acd by blast
+    then show ?thesis
+      using f1 by (metis (no_types) \<open>[a;b;c]\<close> \<open>[b;c;d]\<close> abc_abc_neq overlap_ordering_loc)
+  qed
+  hence "\<exists>f. local_long_ch_by_ord f {a,b,c,d}"
+    apply (simp add: chain_defs eval_nat_numeral)
+    using \<open>[a;b;c]\<close> abc_abc_neq
+    by (smt (z3) \<open>[b;c;d]\<close> card.empty card_insert_disjoint card_insert_le finite.emptyI
+      finite.insertI insertE insert_absorb insert_not_empty)
+  thus ?thesis
+    by (simp add: chain_defs)
+qed
+
 text \<open>
   The book introduces Theorem 9 before the above three lemmas but can only complete the proof
   once they are proven.
@@ -2419,7 +2418,7 @@ lemma inf_chain_is_long:
 proof - 
   have "infinite X \<longrightarrow> card X \<noteq> 2" using card.infinite by simp
   hence "[f\<leadsto>X|x..] \<longrightarrow> local_long_ch_by_ord f X"
-    using local_local_long_ch_by_ord_def infinite_chain_def short_ch_def
+    using local_long_ch_by_ord_def infinite_chain_def short_ch_def
     by simp
   thus ?thesis using assms infinite_chain_def by blast
 qed
