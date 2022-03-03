@@ -2423,9 +2423,9 @@ text \<open>
 
 context MinkowskiChain begin
 
-subsection "Proofs for totally ordered index-chains"
+(*subsection "Proofs for totally ordered index-chains"*)
 
-subsubsection "General results"
+subsection "General results"
 
 lemma inf_chain_is_long:
   assumes "[f\<leadsto>X|x..]"
@@ -2449,7 +2449,7 @@ lemma endpoint_in_semifin:
   using three_in_long_chain
   using assms(1) by blast*)
 
-subsubsection "Index-chains lie on paths"
+(*subsection "Index-chains lie on paths"*)
 
 text \<open>
   Yet another corollary to Theorem 2, without indices, for arbitrary events on the chain.
@@ -2555,33 +2555,6 @@ lemma card2_either_elt1_or_elt2:
   shows "z=y"
 by (metis assms card_2_iff')
 
-lemma short_chain_on_path:
-  assumes "short_ch X"
-  shows "\<exists>P\<in>\<P>. X\<subseteq>P"
-proof -
-  obtain x y where "x\<noteq>y" and "x\<in>X" and "y\<in>X"
-    using assms short_ch_alt(1) by auto
-  obtain P where "path P x y"
-    using \<open>x \<in> X\<close> \<open>x \<noteq> y\<close> \<open>y \<in> X\<close> assms short_ch_alt by metis
-  have "X\<subseteq>P"
-  proof
-    fix z assume "z\<in>X"
-    show "z\<in>P"
-    proof cases
-      assume "z=x"
-      show "z\<in>P" using \<open>path P x y\<close> by (simp add: \<open>z=x\<close>)
-    next
-      assume "z\<noteq>x"
-      have "z=y"
-        using \<open>x\<in>X\<close> \<open>y\<in>X\<close> \<open>z\<noteq>x\<close> \<open>z\<in>X\<close> \<open>x\<noteq>y\<close> assms short_ch_alt
-        by metis
-      thus "z\<in>P" using \<open>path P x y\<close> by (simp add: \<open>z=y\<close>)
-    qed
-  qed
-  thus ?thesis
-    using \<open>path P x y\<close> by blast
-qed
-
 
 (*
 lemma all_aligned_on_long_chain:
@@ -2592,7 +2565,7 @@ shows "[x;y;z] \<or> [x;z;y] \<or> [z;x;y]"
   by (smt (verit, ccfv_threshold) neqE)
 *)
 
-subsubsection "More general results"
+(*subsection "More general results"*)
 
 (*
 (* In fact, it is xor. *)
@@ -2695,8 +2668,8 @@ lemma chain_bounds_unique:
   using assms points_in_chain abc_abc_neq abc_bcd_acd abc_sym
   by (metis (full_types) fin_ch_betw2 )
 
-subsection "Chain Equivalences"
-
+subsection "Chain Equivalences - old"
+(*
 subsubsection "Betweenness-chains and strong index-chains"
 
 lemma equiv_chain_1a:
@@ -3057,7 +3030,7 @@ lemma (in MinkowskiSpacetime) equiv_chain_2:
   "\<exists>f. [f\<leadsto>X|a..b..c] \<longleftrightarrow> [\<leadsto>X|a..b..c]"
   using equiv_chain_2a equiv_chain_2b
   by meson
-
+*)
 end (* context MinkowskiChain *)
 
 section "Results for segments, rays and chains"
