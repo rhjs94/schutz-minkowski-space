@@ -546,6 +546,41 @@ lemma chain_sym:
   using chain_sym_obtain [where f=f and a=a and b=b and c=c and X=X]
   using assms(1) by blast
 
+lemma chain_sym2:
+  assumes "[f\<leadsto>X|a..c]"
+    shows "[\<lambda>n. f (card X - 1 - n)\<leadsto>X|c..a]"
+proof -
+  {
+    assume asm: "a = f 0" "c = f (card X - 1)"
+      and asm_short: "short_ch_by_ord f X"
+    hence cardX: "card X = 2"
+      using short_ch_card(1) by auto
+    hence ac: "f 0 = a" "f 1 = c"
+      by (simp add: asm)+
+    (*hence fn_eq: "(\<lambda>n. if n = 0 then f 1 else f 0) = (\<lambda>n. f (card X - Suc n))" sorry*)
+    have "n=1 \<or> n=0" if "n<card X" for n
+      using cardX that by linarith
+    hence fn_eq: "(\<lambda>n. if n = 0 then f 1 else f 0) = (\<lambda>n. f (card X - Suc n))" if "n<card X" for n
+      by (metis One_nat_def Zero_not_Suc ac(2) asm(2) not_gr_zero old.nat.inject zero_less_diff)
+    have "c = f (card X - 1 - 0)" and "a = f (card X - 1 - (card X - 1))"
+    and "short_ch_by_ord (\<lambda>n. f (card X - 1 - n)) X"
+      apply (simp add: asm)+
+      using short_ch_sym[OF asm_short] fn_eq \<open>f 1 = c\<close> asm(2) short_ch_by_ord_def by fastforce
+  }
+  consider "short_ch_by_ord f X"|"\<exists>b. [f\<leadsto>X|a..b..c]"
+    using assms long_chain_2_imp_3 finite_chain_with_alt by fastforce
+  thus ?thesis
+    apply cases
+    using \<open>\<lbrakk>a=f 0; c=f (card X-1); short_ch_by_ord f X\<rbrakk> \<Longrightarrow> short_ch_by_ord (\<lambda>n. f (card X -1-n)) X\<close>
+      assms finite_chain_alt finite_chain_with_def apply auto[1]
+    using chain_sym finite_long_chain_with_alt by blast
+qed
+
+lemma chain_sym_obtain2:
+  assumes "[f\<leadsto>X|a..c]"
+  obtains g where "[g\<leadsto>X|c..a]" and "g=(\<lambda>n. f (card X - 1 - n))"
+  using assms chain_sym2 by auto
+
 
 end (* context MinkowskiBetweenness *)
 
@@ -3224,6 +3259,8 @@ lemma chain_shortening:
   assumes "[f\<leadsto>X|a..b..c]"
   shows "[f \<leadsto> {e\<in>X. [a;e;b] \<or> e=a \<or> e=b} |a..b]"
 proof (unfold finite_chain_with_def finite_chain_def, (intro conjI))
+
+  text \<open>Different forms of assumptions for compatibility with needed antecedents later.\<close>
   show "f 0 = a" using assms unfolding chain_defs by simp
   have chX: "local_long_ch_by_ord f X"
     using assms first_neq_last points_in_long_chain(1,3) short_ch_card(1) chain_defs
@@ -3310,9 +3347,171 @@ proof (unfold finite_chain_with_def finite_chain_def, (intro conjI))
     show ?thesis using 1 2 chain_defs by blast
   qed
 qed
+
+
+corollary ord_fin_ch_right:
+  assumes "[f\<leadsto>X|a..f i..c]" "j\<ge>i" "j<card X"
+  shows "[f i;f j;c] \<or> j = card X - 1 \<or> j = i"
+proof -
+  consider (inter)"j>i \<and> j<card X - 1"|(left)"j=i"|(right)"j=card X - 1"
+    using assms(3,2) by linarith
+  thus ?thesis
+    apply cases
+    using assms(1) chain_defs order_finite_chain2 apply force
+    by simp+
+qed
+
+
+lemma finite_long_chain_cong:
+  assumes "finite X" "local_long_ch_by_ord f X" "\<forall>n. n<card Y \<longrightarrow> g n = f n"
+  shows "local_long_ch_by_ord g X" sorry
+
+lemma short_chain_cong:
+  assumes "short_ch_by_ord f X" "\<forall>n. n<card Y \<longrightarrow> g n = f n"
+  shows "short_ch_by_ord g X" sorry
+
+
+lemma chain_shortening2:
+  assumes "[f\<leadsto>X|a..f i..c]" "i < card X"
+  fixes Y defines Y: "Y \<equiv> {e\<in>X. [f i;e;c] \<or> e=f i \<or> e=c}"
+  fixes g defines g: "g \<equiv> \<lambda>n. f (i+n)"
+  shows "[g \<leadsto> Y |f i..c]"
+proof -
+  have finX: "finite X" "Y\<subseteq>X"
+    using assms chain_defs apply meson
+    using Y by simp
+  hence finY: "finite Y" using rev_finite_subset by auto
+
+  text \<open>The events \<open>c\<close> and \<open>f i\<close> are different by assumption.\<close>
+  have "i < card X - 1"
+    using assms chain_defs by (metis order_finite_chain_indices2)
+  hence "c\<in>Y" "f i \<in> Y" "f i \<noteq> c"
+    using Y assms finite_long_chain_with_def points_in_long_chain[OF assms(1)] by auto
+  hence cardY: "card Y > 1"
+    using finY apply (simp add: eval_nat_numeral)
+    by (metis Suc_lessI card_1_singleton_iff card_gt_0_iff equals0D singletonD)
+
+  text \<open>Use the symmetry of chains!\<close>
+  (*let ?Y = "{e\<in>X. [b;e;c] \<or> e=b \<or> e=c}"*)
+  let ?Y' = "{e \<in> X. [c;e;f i] \<or> e = c \<or> e = f i}"
+  let ?Z = "{e \<in> X. [a;e;f i] \<or> e = a}"
+  (*have "?Z \<union> Y = X" unfolding Y Un_def using assms chain_defs sorry
+  have "?Z \<inter> Y = {}" sorry*)
+  have eqY: "Y = ?Y'" using abc_sym Y by blast
+  obtain g' where g': "g' = (\<lambda>n. f (card X - 1 - n))" by simp
+  hence g'X: "[g'\<leadsto>X|c..f i..a]" using Y assms(1) chain_sym by simp
+  hence g'Y': "[g'\<leadsto>?Y'|c .. f i]" using chain_shortening by simp
+  obtain f' where f': "f' = (\<lambda>n. g' (card  ?Y' - 1 - n))" by simp
+  hence f'Y': "[f'\<leadsto>?Y'|f i .. c]"
+    using chain_sym2 g'Y' by fastforce
+
+  text \<open>Bijections between index sets and event sets.\<close>
+  (*TODO this may be unnecessary: we just need to show \<open>card_iYX\<close>?!*)
+  have "{0..<i} \<union> {i..<card X} = {0..<card X}"
+    by (simp add: assms(2) ivl_disj_un_two(3) less_or_eq_imp_le)
+  hence "f`{0..<i} \<union> f`{i..<card X} = f`{0..<card X}" by blast
+  have bbfX: "bij_betw f {0..<card X} X"
+    using index_bij_betw[of f X] assms(1) chain_defs by auto
+  have im_X: "f`{0..<card X} = X"
+    using bbfX bij_betw_imp_surj_on[of f _ X] by meson
+  (*have "bij_betw f ({0..<i} \<union> {i..<card X}) ({e \<in> X. [a;e;f i] \<or> e = a} \<union> Y)"
+    using bij_betw_combine \<open>{0..<i} \<union> {i..<card X} = {0..<card X}\<close> \<open>?Z \<union> Y = X\<close> bbfX by presburger*)
+(*thm bij_betw_subset[OF bbfX]*)
+  have "f`{i..<card X} \<subseteq> X" using assms chain_defs
+    by (metis Un_upper2 \<open>f ` {0..<card X} = X\<close> \<open>f ` {0..<i} \<union> f ` {i..<card X} = f ` {0..<card X}\<close>)
+  have im_Y: "f`{i..<card X} = Y"
+    unfolding Y apply auto using \<open>f ` {i..<card X} \<subseteq> X\<close> apply auto[1] apply (simp_all add: assms(2))
+  proof -
+    fix j assume asm: "\<not> [f i;f j;c]" "f j \<noteq> c" "i \<le> j" "j < card X"
+    have "[f i;f j;c] \<or> f j = c \<or> f j = f i"
+      using ord_fin_ch_right[OF assms(1) asm(3,4)] finite_chain_with_def g' g'Y' by auto
+    thus "f j = f i" using asm by simp
+  next
+    fix x assume asm: "x\<in>X" "[f i;x;c]"
+    then obtain j where j: "j<card X" "f j = x"
+      using obtain_index_fin_chain[of f X x] assms chain_defs by metis
+    hence "i<j"
+      using order_finite_chain_indices[of f X "f i" x c i j "card X - 1"] assms asm chain_defs
+      by (smt (verit, best) add_cancel_left_right add_diff_cancel_left' add_diff_inverse_nat (*TODO*)
+        card_Diff1_less card_Diff_singleton_if finite_chain_with_cases gr_implies_not0 less_diff_conv
+        less_diff_conv2 less_one nat_1_add_1 nat_less_le not_gr_zero short_ch_card(1) zero_less_diff)
+    thus "x \<in> f ` {i..<card X}" using j asm
+      by (metis atLeastLessThan_iff image_iff less_imp_le_nat)
+  next
+    assume "c\<in>X"
+    have "f (card X - 1) = c" using assms chain_defs by meson
+    thus "c \<in> f ` {i..<card X}" using \<open>i < card X - 1\<close> by fastforce
+  qed
+  hence bbfY: "bij_betw f {i..<card X} Y"
+    using bij_betw_subset[OF bbfX] by simp
+  (*have "f`{0..<i} = ?Z" sorry
+  hence bbfZ: "bij_betw f {0..<i} ?Z"
+    using bij_betw_subset[OF bbfX] by (metis Un_upper1 \<open>{0..<i} \<union> {i..<card X} = {0..<card X}\<close>)*)
+  (*have "i = card {0..<i}" by simp*)
+  have card_iYX: "i + card Y = card X"
+    by (metis assms(2) bbfY bij_betw_same_card card_atLeastLessThan less_numeral_extra(3)
+      linordered_semidom_class.add_diff_inverse nat_diff_split zero_less_diff)
+
+  text \<open>On the domain of interest, \<open>f'\<close> and \<open>g\<close> are the same.\<close>
+  have "card X - 1 - (card Y - 1 - n) = i + n" if "n<card Y" for n::nat
+    using card_iYX that by auto
+  hence g_eq_f': "\<forall>n. n<card Y \<longrightarrow> g n = f' n"
+    unfolding g f' g' using eqY by metis
+
+  show ?thesis
+    using finite_long_chain_cong short_chain_cong g_eq_f' card_iYX chain_defs assms(2) eqY f'Y' \<open>c\<in>Y\<close>
+    by (metis (no_types, lifting) card_Diff1_less card_Diff_singleton diff_add_inverse zero_less_diff)
+
+  show ?thesis
+    unfolding finite_chain_with_def finite_chain_def apply (intro conjI)
+    proof -
+      show "finite Y"
+        by (simp add: finY)
+      show "g 0 = f i"
+      show "g (card Y - 1) = c"
+      show "[g\<leadsto>Y]"
+  
+  {
+    assume "Y \<noteq> {g 0, g 1}"
+    have 1: "i+1 = card X - 1 \<or> i+1 < card X - 1" "i+1>i"
+      apply (meson \<open>i < card X - 1\<close> discrete le_imp_less_or_eq) by simp
+    have "g 0 \<in> Y" "g 1 \<in> Y" "g 0 \<noteq> g 1"
+      unfolding g Y using assms using \<open>f i \<in> Y\<close> apply force
+      (*using Y \<open>c \<in> Y\<close> \<open>f ` {i..<card X} = Y\<close> \<open>i < card X - 1\<close> image_eqI less_diff_conv finite_chain_with_def g' g'Y' apply auto[1]*)
+      using 1(1) apply (rule disjE)
+      using Y \<open>c \<in> Y\<close> finite_chain_with_def g' g'Y' apply auto[1]
+      using Y \<open>f ` {i..<card X} = Y\<close> \<open>i < card X - 1\<close> image_eqI less_diff_conv apply auto[1]
+      using index_injective[OF _ finX(1) 1(2)] 1(1) assms(1,2) chain_defs by (smt (z3) 1(2) \<open>i < card X - 1\<close> add_cancel_left_right index_injective2 less_diff_conv)
+      (*by (metis Nat.add_0_right \<open>i < card X - 1\<close> abc_abc_neq card2_either_elt1_or_elt2 fin_ch_betw neq0_conv points_in_long_chain(1) points_in_long_chain(3) short_ch_card(1) thm2_ind1)*)
+    hence "card Y \<noteq> 2" (*TODO only smt found by sledgehammer?*)
+      by (smt (verit) \<open>Y \<noteq> {g 0, g 1}\<close> card_2_iff card_2_iff' insertI1 insert_commute)
+    hence "card Y \<ge> 3"
+      using cardY by auto
+  }
+  show ?thesis
+    unfolding finite_chain_with_def finite_chain_def apply (intro conjI)
+    unfolding chain_defs local_ordering_def apply (intro conjI)
+    apply (simp add: finY)
+    defer apply (simp add: g)+
+    using assms unfolding chain_defs using Nat.add_diff_assoc One_nat_def cardY card_iYX less_or_eq_imp_le apply presburger
+
+
+  have "f' = g"
+    (*unfolding f' g' g using eqY apply simp*)
+  proof (unfold f' g' g)
+    have cancel_1: "(x - 1 - (y - 1)) = (x - y)" if "y>1" for x y::nat
+      using that by auto
+    have move_n: "(x - (y - n)) = x - y + n" if "y<x" for n x y::nat
+      apply (cases "y>n")
+      apply (simp add: that less_imp_le_nat)
+    have "card X - 1 - (card ?Y' - 1 - n) = card X - 1 - (card Y - 1 - n)" for n::nat
+      using eqY by blast
+    also have "card X - 1 - (card Y - 1 - n) = card X - 1 - (card Y - 1) + n" for n::nat sorry
+    also have "(\<lambda>n. f (card X - 1 - (card Y - 1 - n))) = (\<lambda>n. f (card X - (card Y - n)))"
+      using cancel_1[OF cardY]
   
 
-thm finite_long_chain_with_alt
+thm finite_long_chain_with_alt chain_sym
 lemma some_betw2:
   assumes "[f\<leadsto>X|a..b..c]"
       and "j<card X" "j>0" "f j \<noteq> b"
