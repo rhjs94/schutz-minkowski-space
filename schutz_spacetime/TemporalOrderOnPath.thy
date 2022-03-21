@@ -522,6 +522,23 @@ proof
   }
 qed
 
+
+lemma finite_long_chain_with_card: "[f\<leadsto>Q|x..y..z] \<Longrightarrow> card Q \<ge> 3"
+  unfolding chain_defs numeral_3_eq_3 by fastforce
+
+
+lemma finite_long_chain_with_alt2:
+  assumes "finite Q" "local_long_ch_by_ord f Q" "f 0 = x" "f (card Q - 1) = z" "[x;y;z] \<and> y\<in>Q"
+  shows "[f\<leadsto>Q|x..y..z]"
+  using assms finite_chain_alt finite_chain_with_def finite_long_chain_with_alt by blast
+
+
+lemma finite_long_chain_with_alt3:
+  assumes "finite Q" "local_long_ch_by_ord f Q" "f 0 = x" "f (card Q - 1) = z" "y\<noteq>x \<and> y\<noteq>z \<and> y\<in>Q"
+  shows "[f\<leadsto>Q|x..y..z]"
+  using assms finite_chain_alt finite_chain_with_def finite_long_chain_with_def by auto
+
+
 (*lemma fin_ch_betw:
   assumes "[f\<leadsto>X|a..b..c]"
   shows "[a;b;c]"
@@ -3361,7 +3378,7 @@ proof -
     by simp+
 qed
 
-
+(*
 lemma finite_long_chain_cong:
   assumes "finite X" "local_long_ch_by_ord f X" "\<forall>n. n<card Y \<longrightarrow> g n = f n"
   shows "local_long_ch_by_ord g X" sorry
@@ -3480,13 +3497,13 @@ proof -
     using ab_def assms(4) \<open>f j \<noteq> a\<close>
     by (metis local_ordering_def abc_sym assms(1,2) finite_long_chain_with_def local_local_long_ch_by_ord_def subsetD)
 qed
-
+*)
 
 lemma i_le_j_events_neq:
   assumes "[f\<leadsto>X|a..b..c]"
     and "i<j" "j<card X"
   shows "f i \<noteq> f j"
-  by (meson assms  finite_long_chain_with_def index_injective)
+  using chain_defs by (meson assms index_injective2)
 
 lemma indices_neq_imp_events_neq:
   assumes "[f\<leadsto>X|a..b..c]"
@@ -3494,7 +3511,7 @@ lemma indices_neq_imp_events_neq:
     shows "f i \<noteq> f j"
   by (metis assms i_le_j_events_neq less_linear)
 
-
+(*
 lemma index_order2:
   assumes "[f\<leadsto>X|x..y..z]" and "f a = x" and "f b = y" and "f c = z"
       and "finite X \<longrightarrow> a < card X" and "finite X \<longrightarrow> b < card X" and "finite X \<longrightarrow> c < card X"
@@ -3509,7 +3526,7 @@ lemma index_order3:
   using index_order2 [where x=x and y=y and z=z and a=a and b=b and c=c and f=f and X=X]
   using assms local_local_long_ch_by_ord_def ordering_ord_ijk_loc
   by (smt abc_abc_neq abc_only_cba(1-3) linorder_neqE_nat)
-
+*)
 end (* context MinkowskiChain *)
 
 context MinkowskiSpacetime begin
@@ -3520,7 +3537,7 @@ lemma bound_on_path:
 proof -
   obtain a c where "a\<in>X" "c\<in>X" "[a;c;b]"
     using assms(4)
-    by (metis local_ordering_def inf_chain_is_long is_bound_f_def local_local_long_ch_by_ord_def zero_less_one)
+    by (metis local_ordering_def inf_chain_is_long is_bound_f_def local_long_ch_by_ord_def zero_less_one)
   thus ?thesis
     using abc_abc_neq assms(1) assms(3) betw_c_in_path by blast
 qed
@@ -3594,9 +3611,9 @@ proof -
   have "a\<noteq>b \<and> a\<in>Q & b\<in>Q"
     using X_is card_X events_X by force
   hence "short_ch {a,b}"
-    using path_Q short_ch_def no_c by blast
+    using path_Q no_c by (meson short_ch_intros(2))
   thus ?thesis
-    by (simp add: X_is ch_by_ord_def ch_def)
+    by (simp add: X_is chain_defs)
 qed
 
 lemma (in MinkowskiBetweenness) three_event_chain:
@@ -3628,24 +3645,26 @@ lemma (*for 10*) chain_append_at_left_edge:
     shows "[g\<leadsto>(insert b Y)|b .. a\<^sub>1 .. a\<^sub>n]"
 proof -
   let ?X = "insert b Y"
+  have ord_fY: "local_ordering f betw Y" using long_ch_Y finite_long_chain_with_card chain_defs
+    by (meson long_ch_card_ge3)
   have "b\<notin>Y"
-    by (metis abc_ac_neq abc_only_cba(1) bY ch_all_betw_f long_ch_Y)
+    using abc_ac_neq abc_only_cba(1) assms by (metis fin_ch_betw2 finite_long_chain_with_alt)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
-    using long_ch_Y by (simp add: finite_long_chain_with_def)
+    using long_ch_Y by (simp add: chain_defs)
   have fin_Y: "card Y \<ge> 3"
-    using  finite_long_chain_with_def long_ch_Y numeral_2_eq_2
-    by (metis ch_by_ord_def long_ch_card_ge3)
+    using finite_long_chain_with_def long_ch_Y numeral_2_eq_2 points_in_long_chain
+    by (metis abc_abc_neq bY card2_either_elt1_or_elt2 fin_chain_card_geq_2 leI le_less_Suc_eq numeral_3_eq_3)
   hence num_ord: "0 \<le> (0::nat) \<and> 0<(1::nat) \<and> 1 < card Y - 1 \<and> card Y - 1 < card Y"
     by linarith
   hence "[a\<^sub>1; f 1; a\<^sub>n]"
-    using order_finite_chain finite_long_chain_with_def long_ch_Y
+    using order_finite_chain chain_defs long_ch_Y
     by auto
   text \<open>Schutz has a step here that says \<open>[b a\<^sub>1 a\<^sub>2 a\<^sub>n]\<close> is a chain (using Theorem 9).
     We have no easy way of denoting an ordered 4-element chain, so we skip this step
     using an local_ordering lemma from our script for 3.6, which Schutz doesn't list.\<close>
   hence "[b; a\<^sub>1; f 1]"
     using bY abd_bcd_abc by blast
-  have "local_ordering2 g betw ?X"
+  have "local_ordering g betw ?X"
   proof -
     {
       fix n assume "finite ?X \<longrightarrow> n<card ?X"
@@ -3659,18 +3678,18 @@ proof -
         proof (cases "n = card ?X - 1")
           case True
           thus ?thesis
-            using \<open>b\<notin>Y\<close> card.insert diff_Suc_1 finite_long_chain_with_def long_ch_Y points_in_chain
+            using \<open>b\<notin>Y\<close> card.insert diff_Suc_1 long_ch_Y points_in_long_chain chain_defs
             by (metis \<open>g n = f (n - 1)\<close>)
         next
           case False
           hence "n < card Y"
-            using points_in_chain \<open>finite ?X \<longrightarrow> n < card ?X\<close> \<open>g n = f (n - 1)\<close> \<open>g n \<notin> Y\<close> \<open>b\<notin>Y\<close>
-            by (metis card.insert finite_long_chain_with_def finite_insert long_ch_Y not_less_simps(1))
+            using points_in_long_chain \<open>finite ?X \<longrightarrow> n < card ?X\<close> \<open>g n = f (n - 1)\<close> \<open>g n \<notin> Y\<close> \<open>b\<notin>Y\<close> chain_defs
+            by (metis card.insert finite_insert long_ch_Y not_less_simps(1))
           hence "n-1 < card Y - 1"
             using \<open>1 \<le> n\<close> diff_less_mono by blast
           hence "f(n-1)\<in>Y"
-            using long_ch_Y unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-            by (meson less_trans num_ord)
+            using long_ch_Y fin_Y unfolding chain_defs local_ordering_def
+            by (metis Suc_le_D card_3_dist diff_Suc_1 insert_absorb2 le_antisym less_SucI numeral_3_eq_3 set_le_three)
           thus ?thesis
             using \<open>g n = f (n - 1)\<close> by presburger
         qed
@@ -3678,12 +3697,19 @@ proof -
         thus "g n = b" by simp
       qed
     } moreover {
-      fix n n' n'' assume "(finite ?X \<longrightarrow> n'' < card ?X)" "Suc n = n' \<and> Suc n' = n''"
-      hence "[g n; g n'; g n'']"
-        using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def long_ch_Y ordering_ord_ijk_loc
-        by (smt (verit, ccfv_threshold) finite_long_chain_with_def local_local_long_ch_by_ord_def
+      fix n assume "(finite ?X \<longrightarrow> Suc(Suc n) < card ?X)"
+      hence "[g n; g (Suc n); g (Suc(Suc n))]"
+        apply (cases "n\<ge>1") (*TODO fix ugly long calls*)
+        using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def ordering_ord_ijk_loc[OF ord_fY] fin_Y
+        apply (metis Suc_diff_le card_insert_disjoint diff_Suc_1 finite_insert le_Suc_eq not_less_eq)
+        by (metis One_nat_def Suc_leI \<open>[b;a\<^sub>1;f 1]\<close> bound_indices diff_Suc_1 g_def
+          not_less_less_Suc_eq zero_less_Suc)
+        (*using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def long_ch_Y ordering_ord_ijk_loc chain_defs
+        using One_nat_def card.insert diff_Suc_Suc diff_diff_cancel diff_is_0_eq
+            finite_insert nat_less_le not_less not_less_eq_eq*)
+        (*by (smt (verit, ccfv_threshold) chain_defs
             One_nat_def card.insert diff_Suc_Suc diff_diff_cancel diff_is_0_eq
-            finite_insert nat_less_le not_less not_less_eq_eq)
+            finite_insert nat_less_le not_less not_less_eq_eq)*)
     } moreover {
       fix x assume "x\<in>?X" "x=b"
       have "(finite ?X \<longrightarrow> 0 < card ?X) \<and> g 0 = x"
@@ -3693,8 +3719,7 @@ proof -
       hence "\<exists>n. (finite ?X \<longrightarrow> n < card ?X) \<and> g n = x"
       proof -
         obtain n where "f n = x" "n < card Y"
-          using \<open>x\<in>?X\<close> \<open>x\<noteq>b\<close>
-          by (metis local_ordering_def finite_long_chain_with_def insert_iff long_ch_Y local_local_long_ch_by_ord_def)
+          using \<open>x\<in>?X\<close> \<open>x\<noteq>b\<close> local_ordering_def insert_iff long_ch_Y chain_defs by (metis ord_fY)
         have "(finite ?X \<longrightarrow> n+1 < card ?X)" "g(n+1) = x"
           apply (simp add: \<open>b\<notin>Y\<close> \<open>n < card Y\<close>)
           by (simp add: \<open>f n = x\<close> g_def)
@@ -3702,20 +3727,29 @@ proof -
       qed
     }
     ultimately show ?thesis
-      unfolding local_ordering2_def
+      unfolding local_ordering_def
       by smt (* sledgehammer proposes both meson and auto, neither of which work... *)
   qed
-  hence "local_local_long_ch_by_ord g ?X"
-    unfolding local_local_local_long_ch_by_ord_def
-    using points_in_chain finite_long_chain_with_def \<open>b\<notin>Y\<close>
-    by (metis abc_abc_neq bY insert_iff long_ch_Y points_in_chain)
   hence "local_long_ch_by_ord g ?X"
-    using ch_equiv fin_Y
-    by (meson finite_long_chain_with_def finite_insert long_ch_Y)
-  thus ?thesis
-    unfolding finite_long_chain_with_def
-    using bound_indices \<open>b\<notin>Y\<close> g_def num_ord points_in_chain long_ch_Y finite_long_chain_with_def
-    by (metis card.insert diff_Suc_1 finite_insert insert_iff less_trans nat_less_le)
+    unfolding local_long_ch_by_ord_def
+    using fin_Y \<open>b\<notin>Y\<close>
+    by (meson card_insert_le finite_insert le_trans)
+  show ?thesis
+    (*unfolding finite_long_chain_with_alt*)
+  proof (intro finite_long_chain_with_alt2)
+    (*have "4 \<le> card ?X"
+      using fin_Y \<open>b\<notin>Y\<close> card_insert_disjoint[of Y b] eval_nat_numeral
+      by (metis card.infinite not_less_eq_eq not_numeral_le_zero semiring_norm(26,27))*)
+    show "local_long_ch_by_ord g ?X" using \<open>local_long_ch_by_ord g ?X\<close> by simp
+    show "[b;a\<^sub>1;a\<^sub>n] \<and> a\<^sub>1 \<in> ?X" using bY long_ch_Y points_in_long_chain(1) by auto
+    show "g 0 = b" using g_def by simp
+    show "finite ?X" 
+      using fin_Y \<open>b\<notin>Y\<close> eval_nat_numeral by (metis card.infinite finite.insertI not_numeral_le_zero)
+    show "g (card ?X - 1) = a\<^sub>n"
+      using g_def \<open>b\<notin>Y\<close> bound_indices eval_nat_numeral
+      by (metis One_nat_def card.infinite card_insert_disjoint diff_Suc_Suc
+        diff_is_0_eq' less_nat_zero_code minus_nat.diff_0 nat_le_linear num_ord)
+  qed
 qed
 
 text \<open>
@@ -3732,15 +3766,16 @@ lemma (*for 10*) chain_append_at_right_edge:
 proof -
   let ?X = "insert b Y"
   have "b\<notin>Y"
-    by (metis Yb abc_abc_neq abc_only_cba(2) ch_all_betw_f long_ch_Y)
-  have fin_X: "finite ?X"
-    using finite_long_chain_with_def long_ch_Y by blast
+    using Yb abc_abc_neq abc_only_cba(2) long_ch_Y
+    by (metis fin_ch_betw2 finite_long_chain_with_def)
   have fin_Y: "card Y \<ge> 3"
-    by (meson ch_by_ord_def finite_long_chain_with_def long_ch_Y long_ch_card_ge3)
+    using finite_long_chain_with_card long_ch_Y by auto
+  hence fin_X: "finite ?X"
+    by (metis card.infinite finite.insertI not_numeral_le_zero)
   have "a\<^sub>1\<in>Y \<and> a\<^sub>n\<in>Y \<and> a\<in>Y"
-    using long_ch_Y points_in_chain by blast
+    using long_ch_Y points_in_long_chain by meson
   have "a\<^sub>1\<noteq>a \<and> a\<noteq> a\<^sub>n \<and> a\<^sub>1\<noteq>a\<^sub>n"
-    using finite_long_chain_with_def long_ch_Y by auto
+    using Yb abc_abc_neq finite_long_chain_with_def long_ch_Y by auto
   have "Suc (card Y) = card ?X"
     using \<open>b\<notin>Y\<close> fin_X finite_long_chain_with_def long_ch_Y by auto
   obtain f2 where f2_def: "[f2\<leadsto>Y|a\<^sub>n..a..a\<^sub>1]" "f2=(\<lambda>n. f (card Y - 1 - n))"
@@ -3773,9 +3808,9 @@ proof -
     proof (cases)
       assume "n \<le> card ?X - 2"
       show "?lhs=?rhs"
-        using \<open>n \<le> card ?X - 2\<close> finite_long_chain_with_def long_ch_Y sYX
-        by (metis Suc_1 Suc_diff_1 Suc_diff_le card_gt_0_iff diff_Suc_eq_diff_pred diff_commute
-            diff_diff_cancel equals0D less_one nat.simps(3) not_less)
+        using \<open>n \<le> card ?X - 2\<close> finite_long_chain_with_def long_ch_Y sYX \<open>Suc (card Y) = card ?X\<close>
+        by (metis (mono_tags, hide_lams) Suc_1 Suc_leD diff_Suc_Suc diff_commute diff_diff_cancel
+          diff_le_mono2 fin_chain_card_geq_2)
     next
       assume "\<not> n \<le> card ?X - 2"
       thus "?lhs=?rhs"
@@ -3797,13 +3832,19 @@ lemma S_is_dense:
 proof -
   have "k\<in>S" using k_def Max_in S_def
     by (metis finite_Collect_conjI finite_Collect_less_nat)
+  have "[f\<leadsto>Y]" "card Y \<ge> 3"
+    using long_ch_Y chain_defs apply meson
+    using finite_long_chain_with_card long_ch_Y by blast
+  hence "finite Y" by (metis card.infinite not_numeral_le_zero) 
   show "k' \<in> S"
   proof (rule ccontr)
-    assume "\<not>k'\<in>S"
-    hence "[a\<^sub>1; b; f k']"
-      using order_finite_chain S_def abc_acd_bcd abc_bcd_acd abc_sym long_ch_Y
-      by (smt finite_long_chain_with_def \<open>0 < k'\<close> \<open>k \<in> S\<close> \<open>k' < k\<close> le_numeral_extra(3)
-          less_trans mem_Collect_eq)
+    assume asm: "\<not>k'\<in>S"
+    have "k'<card Y" using S_def k'_def \<open>k\<in>S\<close> by auto
+    (*hence "f k' \<in> Y" using long_ch_Y chain_defs local_ordering_def by (metis \<open>3 \<le> card Y\<close> long_ch_card_ge3)*)
+    hence "[a\<^sub>1; b; f k']" using order_finite_chain[of f Y]
+      using S_def abc_acd_bcd abc_bcd_acd abc_sym long_ch_Y chain_defs oops
+      (*by (smt finite_long_chain_with_def \<open>0 < k'\<close> \<open>k \<in> S\<close> \<open>k' < k\<close> le_numeral_extra(3)
+          less_trans mem_Collect_eq)*)
     have "[a\<^sub>1; f k; b]"
       using S_def \<open>k \<in> S\<close> by blast
     have "[f k; b; f k']"
