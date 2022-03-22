@@ -5347,7 +5347,7 @@ proof -
 qed
 
 
-  
+
 end (* context MinkowskiSpacetime *)
 
 
@@ -5357,18 +5357,16 @@ lemma (in MinkowskiSpacetime) chain_remove_at_right_edge:
   assumes "[f\<leadsto>X|a..c]" "f (card X - 2) = p" "3 \<le> card X" "X = insert c Y" "c\<notin>Y"
   shows "[f\<leadsto>Y|a..p]"
 proof -
-
   have lch_X: "local_long_ch_by_ord f X"
-    using assms(1,3) finite_chain_with_def finite_long_chain_with_def ch_by_ord_def short_ch_card_2
+    using assms(1,3) chain_defs short_ch_card_2
     by fastforce
   have "p\<in>X"
-    by (metis local_ordering_def assms(2,3) card.empty card_gt_0_iff diff_less lch_X
-        local_local_long_ch_by_ord_def not_numeral_le_zero zero_less_numeral)
+    by (metis local_ordering_def assms(2) card.empty card_gt_0_iff diff_less lch_X
+        local_long_ch_by_ord_def not_numeral_le_zero zero_less_numeral)
   have bound_ind: "f 0 = a \<and> f (card X - 1) = c"
     using lch_X assms(1,3) unfolding finite_chain_with_def finite_long_chain_with_def
-    by (metis (no_types) One_nat_def Suc_1 ch_by_ord_def diff_Suc_Suc
-        less_Suc_eq_le neq0_conv numeral_3_eq_3 short_ch_card_2 zero_less_diff)
-  
+    by metis
+
   have "[a;p;c]"
   proof -
     have "card X - 2 < card X - 1"
@@ -5376,119 +5374,46 @@ proof -
     moreover have "card X - 2 > 0"
       using \<open>3 \<le> card X\<close> by linarith
     ultimately show ?thesis
-      using assms(2) lch_X bound_ind \<open>3 \<le> card X\<close> unfolding local_local_long_ch_by_ord_def local_ordering_def
-      by (metis One_nat_def diff_Suc_less less_le_trans zero_less_numeral)
+      using order_finite_chain[OF lch_X] \<open>3 \<le> card X\<close> assms(2) bound_ind
+      by (metis card.infinite diff_less le_numeral_extra(3) less_numeral_extra(1) not_gr_zero not_numeral_le_zero)
   qed
-  hence "p\<noteq>c"
-    using abc_abc_neq by blast
-  hence "p\<in>Y"
-    using \<open>p \<in> X\<close> assms(4) by blast
 
-  show ?thesis
-  proof (cases)
-    assume "3 = card X"
-    hence "2 = card Y"
-      by (metis assms(4,5) card.insert card.infinite diff_Suc_1 finite_insert nat.simps(3)
-          numeral_2_eq_2 numeral_3_eq_3)
-    have "a\<noteq>p"
-      using \<open>[a;p;c]\<close> abc_abc_neq by auto
-    moreover have "a\<in>Y \<and> p\<in>Y"
-      using \<open>[a;p;c]\<close> \<open>p \<in> Y\<close> abc_abc_neq assms(1,4) finite_chain_with_def points_in_chain
-      by fastforce
-    moreover have "short_ch Y"
+  have "[f\<leadsto>X|a..p..c]"
+    unfolding finite_long_chain_with_alt by (simp add: assms(1) \<open>[a;p;c]\<close> \<open>p\<in>X\<close>)
+
+  have 1: "x = a" if "x \<in> Y" "\<not> [a;x;p]" "x \<noteq> p" for x
+  proof -
+    have "x\<in>X"
+      using that(1) assms(4) by simp
+    hence 01: "x=a \<or> [a;p;x]"
+      by (metis that(2,3) \<open>[a;p;c]\<close> abd_acd_abcacb assms(1) fin_ch_betw2)
+    have 02: "x=c" if "[a;p;x]"
     proof -
-      obtain ap where "path ap a p"
-        using \<open>[a;p;c]\<close> abc_ex_path_unique calculation(1) by blast
-      hence "\<exists>Q. path Q a p"
-        by blast
-      moreover have "\<not> (\<exists>z\<in>Y. z \<noteq> a \<and> z \<noteq> p)"
-        using \<open>2 = card Y\<close> \<open>a \<in> Y \<and> p \<in> Y\<close> \<open>a \<noteq> p\<close>
-        by (metis card_2_iff')
-      ultimately show ?thesis
-        unfolding short_ch_def using \<open>a \<in> Y \<and> p \<in> Y\<close>
-        by blast
+      obtain i where i_def: "f i = x" "i<card X"
+        using \<open>x\<in>X\<close> chain_defs by (meson assms(1) obtain_index_fin_chain)
+      have "f 0 = a"
+        by (simp add: bound_ind)
+      have "card X - 2 < i"
+        using order_finite_chain_indices[OF lch_X _ that \<open>f 0 = a\<close> assms(2) i_def(1) _ _ i_def(2)]
+        by (metis card_eq_0_iff card_gt_0_iff diff_less i_def(2) less_nat_zero_code zero_less_numeral)
+      hence "i = card X - 1" using i_def(2) by linarith
+      thus ?thesis using bound_ind i_def(1) by blast
     qed
-    ultimately show ?thesis unfolding finite_chain_with_def by blast
-  next
-    assume "3 \<noteq> card X"
-    hence "4 \<le> card X"
-      using assms(3) by auto
-  
-    obtain b where "b = f 1" by simp
-    have "\<exists>b. [f\<leadsto>Y|a..b..p]"
-    proof
-      have "[a;b;p]"
-        using bound_ind \<open>b = f 1\<close> \<open>3 \<noteq> card X\<close> assms(2,3) lch_X order_finite_chain
-        by fastforce
-      hence all_neq: "b\<noteq>a \<and> b\<noteq>p \<and> a\<noteq>p"
-        using abc_abc_neq by blast
-      have "b\<in>X"
-        using \<open>b = f 1\<close> lch_X assms(3) unfolding local_local_long_ch_by_ord_def local_ordering_def
-        by force
-      hence "b\<in>Y"
-        using \<open>[a;b;p]\<close> \<open>[a;p;c]\<close> abc_only_cba(2) assms(4) by blast
-  
-      have "local_ordering f betw Y"
-        unfolding local_ordering_def
-      proof (safe)
-        show "\<And>n. infinite Y \<Longrightarrow> f n \<in> Y"
-          using assms(3) assms(4) by auto
-        show "\<And>n. n < card Y \<Longrightarrow> f n \<in> Y"
-          using assms(3,4,5) bound_ind lch_X
-          unfolding local_local_long_ch_by_ord_def local_ordering_def
-          using get_fin_long_ch_bounds indices_neq_imp_events_neq
-          by (smt Suc_less_eq add_leD1 cancel_comm_monoid_add_class.diff_cancel card_Diff1_less
-              card_Diff_singleton card_eq_0_iff card_insert_disjoint gr_implies_not0 insert_iff lch_X
-              le_add_diff_inverse less_SucI numeral_3_eq_3 plus_1_eq_Suc zero_less_diff)
-        { 
-          fix x assume "x\<in>Y"
-          hence "x\<in>X"
-            using assms(4) by blast
-          then obtain n where "n < card X" "f n = x"
-            using lch_X unfolding local_local_long_ch_by_ord_def local_ordering_def
-            using assms(3) by auto
-          show "\<exists>n. (finite Y \<longrightarrow> n < card Y) \<and> f n = x"
-          proof
-            show "(finite Y \<longrightarrow> n < card Y) \<and> f n = x"
-              using \<open>f n = x\<close> \<open>n < card X\<close> \<open>x \<in> Y\<close> assms(4,5) bound_ind
-              by (metis Diff_insert_absorb card.remove card_Diff_singleton
-                  finite.insertI insertI1 less_SucE)
-          qed
-        }
-        fix n n' n''
-        assume "(n::nat)<n'" "n'<n''"
-        {
-          assume "infinite Y"
-          show "[f n; f n'; f n'']"
-            using \<open>\<And>n. infinite Y \<Longrightarrow> f n \<in> Y\<close> \<open>infinite Y\<close> assms(5) bound_ind by blast
-        } {
-          assume "n'' < card Y"
-          show "[f n; f n'; f n'']"
-            using \<open>n < n'\<close> \<open>n' < n''\<close> \<open>n'' < card Y\<close> assms(4,5) lch_X order_finite_chain
-            using \<open>infinite Y \<Longrightarrow> [f n; f n'; f n'']\<close> by fastforce
-        }
-      qed
-      hence lch_Y: "local_long_ch_by_ord f Y"
-        using \<open>[a;p;c]\<close> \<open>b \<in> Y\<close> \<open>p \<in> X\<close> abc_abc_neq all_neq assms(4) bound_ind
-          local_local_long_ch_by_ord_def zero_into_local_ordering
-        by fastforce
-  
-      show "[f\<leadsto>Y|a..b..p]"
-        using all_neq lch_Y bound_ind \<open>b\<in>Y\<close> assms(2,3,4,5) unfolding finite_long_chain_with_def
-        by (metis Diff_insert_absorb One_nat_def add_leD1 card.infinite finite_insert plus_1_eq_Suc
-            diff_diff_left card_Diff_singleton not_one_le_zero insertI1 numeral_2_eq_2 numeral_3_eq_3)
-    qed
-  
-    thus ?thesis unfolding finite_chain_with_def
-      using points_in_chain by blast
+    show ?thesis using 01 02 assms(5) that(1) by auto
   qed
+
+  have "Y = {e \<in> X. [a;e;p] \<or> e = a \<or> e = p}"
+    apply (safe, simp_all add: assms(4) 1)
+    using \<open>[a;p;c]\<close> abc_only_cba(2) abc_abc_neq assms(4) by blast+
+
+  thus ?thesis using chain_shortening[OF \<open>[f\<leadsto>X|a..p..c]\<close>] by simp
 qed
 
 
 lemma (in MinkowskiChain) fin_long_ch_imp_fin_ch:
   assumes "[f\<leadsto>X|a..b..c]"
   shows "[f\<leadsto>X|a..c]"
-  using assms finite_chain_with_def points_in_chain by auto
+  using assms by (simp add: finite_long_chain_with_alt)
 
 
 text \<open>
