@@ -3857,53 +3857,28 @@ proof -
     on it too. Then since \<open>f`S\<close> must be on this path, there must be an ordering involving \<open>b\<close>, \<open>f k\<close>
     and \<open>f k'\<close> that leads to contradiction with the definition of \<open>S\<close> and \<open>k\<notin>S\<close>.
   \<close>
-  let ?P = "path_of a\<^sub>1 (f k)"
-  have "k\<in>S" using k_def Max_in S_def
-    by (metis finite_Collect_conjI finite_Collect_less_nat)
-  hence "k<card Y" using S_def by auto
-  have "[f\<leadsto>Y]" "card Y \<ge> 3"
-    using long_ch_Y chain_defs apply meson
-    using finite_long_chain_with_card long_ch_Y by blast
+  have "[f\<leadsto>Y]" using long_ch_Y chain_defs by meson
+  have "card Y \<ge> 3" using finite_long_chain_with_card long_ch_Y by blast
   hence "finite Y" by (metis card.infinite not_numeral_le_zero)
-  (*obtain P where "Y\<subseteq>P" "P\<in>\<P>" using long_ch_Y fin_chain_on_path chain_defs by metis
-  hence "b\<in>P"*)
-  have "b \<in> ?P" using ord_path_of S_def \<open>k\<in>S\<close> by auto
-  have "Y \<subseteq> ?P" (*using fin_chain_on_path3 ord_path_of \<open>k\<in>S\<close> path_unique assms chain_defs*)
-    (*apply (intro fin_chain_on_path3)
-    using long_ch_Y chain_defs*)
-  proof (intro fin_chain_on_path3)
-    show "[f\<leadsto>Y]" using long_ch_Y chain_defs by meson
-    show "finite Y" using \<open>finite Y\<close> by simp
-    show "a\<^sub>1 \<in> Y" using long_ch_Y points_in_long_chain(1) by auto
-    show "a\<^sub>1 \<noteq> f k" using S_def \<open>k \<in> S\<close> abc_abc_neq by blast
-    show "f k \<in> Y" (* TODO must prove that Y is not a short chain? *)
-      using long_ch_Y \<open>k<card Y\<close> unfolding chain_defs local_ordering_def
-      using One_nat_def Suc_n_not_le_n \<open>3 \<le> card Y\<close> card.empty card_insert_if finite.emptyI
-        finite.insertI less_nat_zero_code numeral_3_eq_3 numeral_le_one_iff semiring_norm(70)
-      by force
-  qed
+  have "k\<in>S" using k_def Max_in S_def by (metis finite_Collect_conjI finite_Collect_less_nat)
+  hence "k<card Y" using S_def by auto
+  have "k'<card Y" using S_def k'_def \<open>k\<in>S\<close> by auto
   show "k' \<in> S"
   proof (rule ccontr)
     assume asm: "\<not>k'\<in>S"
-    have "k'<card Y" using S_def k'_def \<open>k\<in>S\<close> by auto
-    hence "f k' \<in> Y" using long_ch_Y chain_defs local_ordering_def
-      by (metis \<open>3 \<le> card Y\<close> long_ch_card_ge3)
-    hence "[a\<^sub>1; b; f k']"
-      using order_finite_chain2 long_ch_Y \<open>k \<in> S\<close> \<open>k' < card Y\<close> chain_defs
-      by (smt (z3) abc_acd_abd asm le_numeral_extra(3) assms mem_Collect_eq)
-      (*using order_finite_chain[of f Y]
-      using S_def abc_acd_bcd abc_bcd_acd abc_sym long_ch_Y chain_defs oops*)
-      (*by (smt finite_long_chain_with_def \<open>0 < k'\<close> \<open>k \<in> S\<close> \<open>k' < k\<close> le_numeral_extra(3)
-          less_trans mem_Collect_eq)*)
-    have "[a\<^sub>1; f k; b]"
-      using S_def \<open>k \<in> S\<close> by blast
-    have "[f k; b; f k']"
-      using abc_acd_bcd \<open>[a\<^sub>1; b; f k']\<close> \<open>[a\<^sub>1; f k; b]\<close> by blast
-    (*have "k' < card Y"
-      using S_def \<open>k \<in> S\<close> \<open>k' < k\<close> less_trans by blast*)
-    hence 1: "[f 0;f k;f k']"
-      using \<open>[a\<^sub>1;f k;b]\<close> long_ch_Y unfolding finite_long_chain_with_def finite_chain_with_def
-      by blast
+    have 1: "[f 0;f k;f k']"
+    proof -
+      have "[a\<^sub>1; b; f k']"
+        using order_finite_chain2 long_ch_Y \<open>k \<in> S\<close> \<open>k' < card Y\<close> chain_defs
+        by (smt (z3) abc_acd_abd asm le_numeral_extra(3) assms mem_Collect_eq)
+      have "[a\<^sub>1; f k; b]"
+        using S_def \<open>k \<in> S\<close> by blast
+      have "[f k; b; f k']"
+        using abc_acd_bcd \<open>[a\<^sub>1; b; f k']\<close> \<open>[a\<^sub>1; f k; b]\<close> by blast
+      thus ?thesis
+        using \<open>[a\<^sub>1;f k;b]\<close> long_ch_Y unfolding finite_long_chain_with_def finite_chain_with_def
+        by blast
+    qed
     have 2: "[f 0;f k';f k]"
       apply (intro order_finite_chain2[OF \<open>[f\<leadsto>Y]\<close> \<open>finite Y\<close>]) by (simp add: \<open>k < card Y\<close> k'_def)
     show False using 1 2 abc_only_cba(2) by blast
