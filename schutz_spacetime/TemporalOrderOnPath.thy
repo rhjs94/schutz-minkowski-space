@@ -3856,6 +3856,7 @@ proof -
     We will prove this by contradiction. We can obtain the path that \<open>Y\<close> lies on, and show \<open>b\<close> is
     on it too. Then since \<open>f`S\<close> must be on this path, there must be an ordering involving \<open>b\<close>, \<open>f k\<close>
     and \<open>f k'\<close> that leads to contradiction with the definition of \<open>S\<close> and \<open>k\<notin>S\<close>.
+    Notice we need no knowledge about \<open>b\<close> except how it relates to \<open>S\<close>.
   \<close>
   have "[f\<leadsto>Y]" using long_ch_Y chain_defs by meson
   have "card Y \<ge> 3" using finite_long_chain_with_card long_ch_Y by blast
@@ -3894,13 +3895,11 @@ lemma (*for 10*) smallest_k_ex:
 proof -
 (* the usual suspects first, they'll come in useful I'm sure *)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
-    using finite_long_chain_with_def long_ch_Y by auto
+    using chain_defs long_ch_Y by auto
   have fin_Y: "finite Y"
-    using finite_long_chain_with_def long_ch_Y by blast
+    using chain_defs long_ch_Y by presburger
   have card_Y: "card Y \<ge> 3"
-    using finite_long_chain_with_def long_ch_Y points_in_chain
-    by (metis (no_types, lifting) One_nat_def antisym card2_either_elt1_or_elt2 diff_is_0_eq'
-        not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
+    using long_ch_Y points_in_long_chain finite_long_chain_with_card by blast
 
   text \<open>We consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>, and find the maximal one.\<close>
   let ?S = "{k::nat. [a\<^sub>1; f k; b] \<and> k < card Y}"
@@ -3928,13 +3927,12 @@ proof -
         show "[a\<^sub>1; b; f 1]"
         proof -
           have "f 1 \<in> Y"
-            by (metis local_ordering_def diff_0_eq_0 finite_long_chain_with_def less_one long_ch_Y local_local_long_ch_by_ord_def nat_neq_iff)
+            using long_ch_Y chain_defs local_ordering_def by (metis \<open>1 < card Y\<close> short_ch_ord_in(2))
           (* have "[[a\<^sub>1 b f 1]] \<or> [[a\<^sub>1 f 1 b]]" *)
           hence "[a\<^sub>1; f 1; a\<^sub>n]"
-            using bound_indices long_ch_Y
-            unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-            by (smt One_nat_def card.remove card_Diff1_less card_Diff_singleton diff_is_0_eq'
-                le_eq_less_or_eq less_SucE neq0_conv zero_less_diff zero_less_one)
+            using bound_indices long_ch_Y chain_defs local_ordering_def card_Y
+            by (smt (z3) Nat.lessE One_nat_def Suc_le_lessD Suc_lessD diff_Suc_1 diff_Suc_less
+              fin_ch_betw2 i_le_j_events_neq less_numeral_extra(1) numeral_3_eq_3)
           hence "[a\<^sub>1; b; f 1] \<or> [a\<^sub>1; f 1; b] \<or> [b; a\<^sub>1; f 1]"
             using abc_ex_path_unique some_betw abc_sym
             by (smt Y_def Yb \<open>f 1 \<in> Y\<close> abc_abc_neq cross_once_notin)
@@ -3985,13 +3983,11 @@ proof -
         show "[a\<^sub>1; b; f ?k]"
         proof -
           have "f ?k \<in> Y"
-            using \<open>k + 1 < card Y\<close>
-            by (metis local_ordering_def finite_long_chain_with_def long_ch_Y local_local_long_ch_by_ord_def)
+            using \<open>k + 1 < card Y\<close> long_ch_Y card_Y unfolding local_ordering_def chain_defs
+            by (metis One_nat_def Suc_numeral not_less_eq_eq numeral_3_eq_3 numerals(1) semiring_norm(2) set_le_two)
           have "[a\<^sub>1; f ?k; a\<^sub>n] \<or> f ?k = a\<^sub>n"
-            using bound_indices long_ch_Y \<open>k + 1 < card Y\<close>
-            unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-            by (metis (no_types, lifting) Suc_lessI add.commute add_gr_0 card_Diff1_less
-                card_Diff_singleton less_diff_conv plus_1_eq_Suc zero_less_one)
+            using fin_ch_betw2 inside_not_bound(1) long_ch_Y chain_defs
+            by (metis \<open>0 < k + 1\<close> \<open>k + 1 < card Y\<close> \<open>f (k + 1) \<in> Y\<close>)
           thus  "[a\<^sub>1; b; f ?k]"
           proof (rule disjE)
             assume "[a\<^sub>1; f ?k; a\<^sub>n]"
@@ -4050,13 +4046,13 @@ lemma greatest_k_ex:
 proof -
 (* the usual suspects first, they'll come in useful I'm sure *)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
-    using finite_long_chain_with_def long_ch_Y by auto
+    using chain_defs long_ch_Y by simp
   have fin_Y: "finite Y"
-    using finite_long_chain_with_def long_ch_Y by blast
+    using chain_defs long_ch_Y by presburger
   have card_Y: "card Y \<ge> 3"
-    using finite_long_chain_with_def long_ch_Y points_in_chain
-    by (metis (no_types, lifting) One_nat_def antisym card2_either_elt1_or_elt2 diff_is_0_eq'
-        not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
+    using long_ch_Y points_in_long_chain finite_long_chain_with_card by blast
+  have chY2: "local_long_ch_by_ord f Y"
+    using long_ch_Y chain_defs by (meson card_Y long_ch_card_ge3)
 
   text \<open>Again we consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>.\<close>
   let ?S = "{k::nat. [a\<^sub>n; f k; b] \<and> k < card Y}"
@@ -4083,15 +4079,16 @@ proof -
               not_less_eq numeral_2_eq_2 numeral_3_eq_3)
       next show "[f ?n; b; a\<^sub>n]"
         proof -
-          have "f ?n \<in> Y"
-            by (metis local_ordering_def diff_less finite_long_chain_with_def gr_implies_not0 long_ch_Y
-                local_local_long_ch_by_ord_def neq0_conv not_less_eq numeral_2_eq_2)
+          have "[f 0;f ?n; f (card Y - 1)]"
+            apply (intro order_finite_chain[of f Y], (simp_all add: chY2 fin_Y))
+            using card_Y by linarith
           hence "[a\<^sub>1; f ?n; a\<^sub>n]"
-            using bound_indices long_ch_Y
-            unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-            using card_Y by force
+            using long_ch_Y unfolding chain_defs by simp
+          have "f ?n \<in> Y"
+            using long_ch_Y eval_nat_numeral unfolding local_ordering_def chain_defs
+            by (metis card_1_singleton_iff card_Suc_eq card_gt_0_iff diff_Suc_less diff_self_eq_0 insert_iff numeral_2_eq_2)
           hence "[a\<^sub>n; b; f ?n] \<or> [a\<^sub>n; f ?n; b] \<or> [b; a\<^sub>n; f ?n]"
-            using abc_ex_path_unique some_betw abc_sym
+            using abc_ex_path_unique some_betw abc_sym \<open>[a\<^sub>1; f ?n; a\<^sub>n]\<close>
             by (smt Y_def Yb \<open>f ?n \<in> Y\<close> abc_abc_neq cross_once_notin)
           thus "[f ?n; b; a\<^sub>n]"
           proof -
@@ -4111,7 +4108,7 @@ proof -
   next assume "\<not>S={}"
     obtain k where "k = Min S"
       by simp
-    hence  "k \<in> S" using Max_in
+    hence  "k \<in> S"
       by (simp add: \<open>S \<noteq> {}\<close> \<open>finite S\<close>)
 
     show ?thesis
@@ -4126,14 +4123,12 @@ proof -
         show "[f ?k; b; a\<^sub>n]"
         proof -
           have "f ?k \<in> Y"
-            using \<open>k - 1 < card Y - 1\<close> long_ch_Y local_local_long_ch_by_ord_def local_ordering_def
-            by (metis diff_less finite_long_chain_with_def less_trans neq0_conv zero_less_one)
+            using \<open>k - 1 < card Y - 1\<close> long_ch_Y card_Y eval_nat_numeral unfolding local_ordering_def chain_defs
+            by (metis Suc_pred' less_Suc_eq less_nat_zero_code not_less_eq not_less_eq_eq set_le_two)
           have "[a\<^sub>1; f ?k; a\<^sub>n] \<or> f ?k = a\<^sub>1"
-            using bound_indices long_ch_Y \<open>k - 1 < card Y - 1\<close>
-            unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-            by (smt S_def \<open>k \<in> S\<close> add_diff_inverse_nat card_Diff1_less card_Diff_singleton
-                less_numeral_extra(4) less_trans mem_Collect_eq nat_add_left_cancel_less
-                neq0_conv zero_less_diff)
+            using bound_indices long_ch_Y \<open>k - 1 < card Y - 1\<close> chain_defs
+            unfolding finite_long_chain_with_alt
+            by (metis \<open>f (k - 1) \<in> Y\<close> card_Diff1_less card_Diff_singleton_if chY2 index_injective)
           thus  "[f ?k; b; a\<^sub>n]"
           proof (rule disjE)
             assume "[a\<^sub>1; f ?k; a\<^sub>n]"
@@ -4152,7 +4147,7 @@ proof -
               hence "?k \<ge> k"
                 by (simp add: \<open>finite S\<close> \<open>k = Min S\<close>)
               thus False
-                using \<open>f (k - 1) \<noteq> a\<^sub>1\<close> finite_long_chain_with_def long_ch_Y
+                using \<open>f (k - 1) \<noteq> a\<^sub>1\<close> chain_defs long_ch_Y
                 by auto
             qed
             moreover have "\<not> [b; a\<^sub>n; f ?k]"
@@ -4174,11 +4169,18 @@ proof -
           hence "k'>k"
             using S_def \<open>k \<in> S\<close> abc_only_cba(2) less_SucE
             by (metis (no_types, lifting) add_diff_inverse_nat less_one mem_Collect_eq
-                not_less_eq plus_1_eq_Suc)
-          hence "k'\<in>S"
-            using S_is_dense long_ch_Y S_def \<open>\<not>S={}\<close> \<open>k = Min S\<close> \<open>k'<card Y - 1\<close>
-            by (smt Yb \<open>k \<in> S\<close> abc_acd_bcd abc_only_cba(3) card_Diff1_less card_Diff_singleton
-                finite_long_chain_with_def k'_def(3) less_le mem_Collect_eq neq0_conv order_finite_chain)
+                not_less_eq plus_1_eq_Suc)thm S_is_dense
+          hence "k'\<in>S"         
+            apply (intro S_is_dense[of f Y a\<^sub>1 a a\<^sub>n _ b "Max S"])
+            apply (simp add: long_ch_Y)
+            apply (smt (verit, ccfv_SIG) S_def \<open>k \<in> S\<close> abc_acd_abd abc_only_cba(4)
+              add_diff_inverse_nat bound_indices chY2 diff_add_zero diff_is_0_eq fin_Y k'_def(1,3)
+              less_add_one less_diff_conv2 less_nat_zero_code mem_Collect_eq nat_diff_split order_finite_chain)
+            apply (simp add: \<open>S \<noteq> {}\<close>, simp, simp)
+            using k'_def S_def (* interesting: this result should involve symmetry, but is found by sledgehammer/smt *)
+            by (smt (verit, ccfv_SIG) \<open>k \<in> S\<close> abc_acd_abd abc_only_cba(4) add_diff_cancel_right'
+              add_diff_inverse_nat bound_indices chY2 fin_Y le_eq_less_or_eq less_nat_zero_code
+              mem_Collect_eq nat_diff_split nat_neq_iff order_finite_chain zero_less_diff zero_less_one)
           thus False
             using S_def abc_only_cba(2) k'_def(3)
             by blast
