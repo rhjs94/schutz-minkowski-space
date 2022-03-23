@@ -5547,11 +5547,9 @@ next
       by (metis local_ordering_def)
     have "j > card X - 2 \<and> j < card X - 1"
     proof -
-      have "j > card X - 2 \<and> j < card X - 1 \<or> j < card X - 2 \<and> j > card X - 1"
-        using index_order [where b=j and a="card X - 2" and c="card X - 1"]
-        using \<open>[p;q;c]\<close> \<open>f j = q\<close> \<open>j < card X\<close> f_ch p_def
-        by (metis (no_types, lifting) One_nat_def card_gt_0_iff diff_less empty_iff
-            finite_long_chain_with_def lessI zero_less_numeral)
+      have "j > card X - 2 \<and> j < card X - 1 \<or> j > card X - 1 \<and> j < card X - 2"
+        apply (intro order_finite_chain_indices[OF lch_fX \<open>finite X\<close> \<open>[p;q;c]\<close>])
+        using p_def \<open>f j = q\<close> IH.prems(3) finite_chain_with_def \<open>j < card X\<close> by auto
       thus ?thesis by linarith
     qed
     thus False by linarith
@@ -5574,45 +5572,47 @@ next
       have "card X - 1 > card X - 2"
         using \<open>j < card X - 1\<close> by linarith
       thus ?thesis
+        (*using order_finite_chain[OF lch_gX \<open>finite X\<close>] apply (simp add: \<open>d = g (card X - 2)\<close>)
+        using \<open>j < card Y - 1\<close> \<open>card Y = card X - 1\<close> \<open>d = g (card X - 2)\<close> \<open>g j = p\<close>*)
         using lch_gX \<open>j < card Y - 1\<close> \<open>card Y = card X - 1\<close> \<open>d = g (card X - 2)\<close> \<open>g j = p\<close>
-        unfolding local_local_long_ch_by_ord_def local_ordering_def
-        by (metis (mono_tags, lifting) One_nat_def card_Diff1_less card_Diff_singleton
-            diff_diff_left finite_long_chain_with_def g_ch numeral_2_eq_2 plus_1_eq_Suc)
+          order_finite_chain[OF lch_gX] chain_defs local_ordering_def (*TODO?*)
+          by (smt (z3) IH.prems(3-5) asm_false chain_bounds_unique chain_remove_at_right_edge p_def
+            \<open>\<And>thesis. (\<And>Y. \<lbrakk>X = insert c Y; c \<notin> Y\<rbrakk> \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close>)
     qed
     moreover have "d\<in>X"
-      using lch_gX \<open>d = g (card X - 2)\<close> unfolding local_local_long_ch_by_ord_def local_ordering_def
+      using lch_gX \<open>d = g (card X - 2)\<close> unfolding local_long_ch_by_ord_def local_ordering_def
       by auto
     ultimately show False
-      using p_closest abc_sym IH.prems(5) chain_bounds_unique f_ch g_ch
+      using p_closest abc_sym IH.prems(3-5) chain_bounds_unique f_ch g_ch
       by blast
   qed
 
   hence ch_gY: "local_long_ch_by_ord g Y"
-    using IH.prems(1,4,5) g_ch f_ch ch_fY card_Y ch_by_ord_def chain_remove_at_right_edge fin_Y
-    by (metis Y_def chain_bounds_unique finite_chain_with_def finite_long_chain_with_def long_ch_card_ge3)
+    using IH.prems(1,4,5) g_ch f_ch ch_fY card_Y chain_remove_at_right_edge fin_Y chain_defs
+    by (metis Y_def chain_bounds_unique long_ch_card_ge3)
   
   have "f i \<in> Y \<or> f i = c"
-    by (metis local_ordering_def \<open>X = insert c Y\<close> \<open>i < card X\<close> lch_fX insert_iff local_local_long_ch_by_ord_def)
+    by (metis local_ordering_def \<open>X = insert c Y\<close> \<open>i < card X\<close> lch_fX insert_iff local_long_ch_by_ord_def)
   thus "f i = g i"
   proof (rule disjE)
     assume "f i \<in> Y"
     hence "f i \<noteq> c"
       using \<open>c \<notin> Y\<close> by blast
     hence "i < card Y"
-      using \<open>X = insert c Y\<close> \<open>c\<notin>Y\<close> IH(3,4) f_ch fin_Y finite_long_chain_with_def not_less_less_Suc_eq
-      by fastforce
+      using \<open>X = insert c Y\<close> \<open>c\<notin>Y\<close> IH(3,4) f_ch fin_Y chain_defs not_less_less_Suc_eq
+      by (metis \<open>card Y = card X - 1\<close> card_insert_disjoint)
     hence "3 \<le> card Y"
       using card_Y le_add2 by presburger
     show "f i = g i"
       using IH(1) [of Y]
       using \<open>n = card Y - 3\<close> \<open>3 \<le> card Y\<close> \<open>i < card Y\<close>
       using Y_def card_Y chain_remove_at_right_edge le_add2
-      by (metis IH.prems(1,3,4,5) chain_bounds_unique2)
+      by (metis IH.prems(1,3,4,5) chain_bounds_unique)
   next
     assume "f i = c"
     show ?thesis
-      using IH.prems(2,5) \<open>f i = c\<close> chain_bounds_unique f_ch g_ch indices_neq_imp_events_neq
-      by (metis \<open>card Y = card X - 1\<close> Y_def card_insert_disjoint fin_Y finite_long_chain_with_def lessI)
+      using IH.prems(2,5) \<open>f i = c\<close> chain_bounds_unique f_ch g_ch indices_neq_imp_events_neq chain_defs
+      by (metis \<open>card Y = card X - 1\<close> Y_def card_insert_disjoint fin_Y lessI)
   qed
 qed
 
@@ -5625,8 +5625,7 @@ lemma (in MinkowskiSpacetime) chain_unique_induction_cx:
       and "[g\<leadsto>X|x..z]"
       and "c = x \<or> a = z"
     shows "f i = g (card X - i - 1)"
-  using chain_sym chain_unique_induction_ax
-  by (smt (verit, best) assms diff_right_commute finite_chain_with_def fin_long_ch_imp_fin_ch)
+  using chain_sym_obtain2 chain_unique_induction_ax assms diff_right_commute by smt
 
 
 
@@ -5661,12 +5660,11 @@ lemma (in MinkowskiSpacetime) chain_unique_upto_rev:
   shows "f i = g i \<or> f i = g (card X - i - 1)" "a=x\<and>c=z \<or> c=x\<and>a=z"
 proof -
   have "(a=x \<or> c=z) \<or> (a=z \<or> c=x)"
-    using chain_bounds_unique
-    by (metis assms(1,2) finite_chain_with_def points_in_chain short_ch_def)
+    using chain_bounds_unique by (metis assms(1,2))
   thus "f i = g i \<or> f i = g (card X - i - 1)"
     using assms(3) \<open>i < card X\<close> assms chain_unique_upto_rev_cases by blast
   thus "(a=x\<and>c=z) \<or> (c=x\<and>a=z)"
-    by (meson assms(1-3) chain_bounds_unique2)
+    by (meson assms(1-3) chain_bounds_unique)
 qed
 
 
@@ -5683,12 +5681,13 @@ proof
   then obtain n where "n\<in>{i..j}" "f n = x"
     using assms(4) by blast
   hence "f n \<in> X"
-    by (metis local_ordering_def assms(1) inf_chain_is_long local_local_long_ch_by_ord_def)
+    by (metis local_ordering_def assms(1) inf_chain_is_long local_long_ch_by_ord_def)
   thus "x\<in>X"
     using \<open>f n = x\<close> by blast
 qed
 
 
+(*
 lemma f_inj_on_index_subset:
   assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
   shows "inj_on f {i..j}"
@@ -5703,9 +5702,10 @@ proof (safe)
       assume "x\<le>y"
       hence "x<y"
         using \<open>x \<noteq> y\<close> le_imp_less_or_eq by blast
-      obtain n where "n>y" by blast
+      obtain n where "n>y" "n<card X"
       hence "[f x; f y; f n]"
-        using assms(1) \<open>x<y\<close> inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
+        using assms(1) \<open>x<y\<close> (*inf_chain_is_long ordering_ord_ijk_loc*) order_finite_chain2[of f X x y n] chain_defs
+oops
       hence "?P x y"
         using abc_abc_neq by blast
     } moreover { (* TODO: use a wlog theorem for sets instead? *)
@@ -5772,12 +5772,15 @@ proof -
     using card_Collect_nat
     by (simp add: assms(3))
 qed
+*)
 
 
 lemma fin_long_subchain_of_semifin:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i+1" "Y=f`{i..j}"
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i+1"
     "g = (\<lambda>n. f(n+i))"
-  shows "[g\<leadsto>Y|(f i)..(f j)]" (* "j=i+1 \<longrightarrow> short_ch Y" "j>i+1 \<longrightarrow> fin_local_long_ch_by_ord g Y" *)
+  shows "[g\<leadsto>f`{i..j}|(f i)..(f j)]" (* "j=i+1 \<longrightarrow> short_ch Y" "j>i+1 \<longrightarrow> fin_local_long_ch_by_ord g Y" *)
+  using chain_shortening[of f X] assms index_bij_betw2[of f X] oops
+(*
 proof -
   obtain k where "k=i+1" by simp
   hence ind_ord: "i<k \<and> k<j" using assms(3) by simp
@@ -5888,6 +5891,7 @@ proof -
   thus ?thesis
     using fin_long_ch_imp_fin_ch by blast
 qed
+*)
 
 end (*Context MinkowskiSpacetime*)
 
@@ -5896,6 +5900,8 @@ end (*Context MinkowskiSpacetime*)
 section "Extensions of results to infinite chains"
 context MinkowskiSpacetime begin
 
+(* TODO Doesn't work this way anymore because infinite chains are now local only, and thm 2 is finite chains only *)
+(*
 lemma i_neq_j_imp_events_neq_inf:
   assumes "[f\<leadsto>X|(f 0)..]" "i\<noteq>j"
   shows "f i \<noteq> f j"
@@ -5908,7 +5914,7 @@ proof -
       assume "i<j"
       then obtain k where "k>j" by blast
       hence "[f i; f j; f k]"
-        using \<open>i < j\<close> assms(1) inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
+        using \<open>i < j\<close> assms(1) inf_chain_is_long local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
       thus "?P i j"
         using abc_abc_neq by blast
     next
@@ -6106,6 +6112,7 @@ proof -
   moreover have "f 0 = g 0" using inf_chain_origin_unique assms by blast
   ultimately show ?thesis using assms by auto
 qed
+*)
 
 end (*context MinkowskiSpacetime*)
 
@@ -7288,10 +7295,12 @@ proof
 qed
 
 
+(*
 lemma ray_of_bounds:
   assumes "[f\<leadsto>X|(f 0)..]" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
   shows "all_bounds X = insert c (ray c b)"
   using ray_of_bounds3 assms infinite_chain_on_path by blast
+*)
 
 
 lemma int_in_closed_ray:
@@ -7315,6 +7324,7 @@ proof
 qed
 
 
+(*
 lemma bound_any_f:
   assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "is_bound c X"
   shows "is_bound_f c X f"
@@ -7347,6 +7357,7 @@ next
   then show "[f 0; c; Q\<^sub>b']"
   by (metis (full_types) assms(2,4) closest_bound_def inf_chain_unique is_bound_f_def)
 qed
+*)
 
 end (* context MinkowskiSpacetime *)
 
@@ -7372,7 +7383,7 @@ proof -
   obtain X f where X_def: "ch_by_ord f X" "f 0 = Q\<^sub>x" "f (card X - 1) = Q\<^sub>z"
       "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
       "short_ch X \<longrightarrow> Q\<^sub>x \<in> X \<and> Q\<^sub>z \<in> X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b)"
-    using I6 [OF assms(1-6)] by blast
+    using I6_old [OF assms(1-6)] by blast
   hence fin_X: "finite X"
     using unreach(3) not_less by fastforce
   obtain N where "N=card X" "N\<ge>2"
@@ -7391,8 +7402,8 @@ proof -
       using X_def \<open>card X = 2\<close> short_ch_card_2  unreach(3) by blast+
   }
   hence "[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]"
-    unfolding finite_chain_with_def
-    by (metis X_def(1-3,5) ch_by_ord_def fin_X finite_long_chain_with_def get_fin_long_ch_bounds unreach(3))
+    using chain_defs
+    by (metis X_def(1-3) fin_X)
 
   text \<open>
   Further on, we split the proof into two cases, namely the split Schutz absorbs into his
@@ -7401,8 +7412,7 @@ proof -
   have y_int: "Q\<^sub>y\<in>interval Q\<^sub>x Q\<^sub>z"
     using interval_def seg_betw xyz by auto
   have X_in_Q: "X\<subseteq>Q"
-    using chain_on_path_I6 [where Q=Q and X=X] X_def event_b path_Q unreach
-    by blast
+    using chain_on_path_I6 [where Q=Q and X=X] X_def event_b path_Q unreach \<open>[f\<leadsto>X|Q\<^sub>x .. Q\<^sub>z]\<close> by blast
 
   show ?thesis
   proof (cases)
@@ -7421,9 +7431,7 @@ proof -
     proof (rule disjE)
       assume "Q\<^sub>y\<in>X"
       then obtain i where i_def: "i<card X" "Q\<^sub>y = f i"
-        using X_def(1)
-        unfolding ch_by_ord_def local_local_long_ch_by_ord_def local_ordering_def
-        by (metis X_def(5) abc_abc_neq fin_X short_ch_def xyz)
+        using X_def(1) by (metis fin_X obtain_index_fin_chain)
       have "i\<noteq>0 \<and> i\<noteq>card X - 1"
         using X_def(2,3)
         by (metis abc_abc_neq i_def(2) xyz)
@@ -7438,7 +7446,8 @@ proof -
       have "Q\<^sub>y\<in>\<Union>?S"
       proof -
         obtain c where "[f\<leadsto>X|Q\<^sub>x..c..Q\<^sub>z]"
-          using X_def(1) \<open>N = card X\<close> \<open>N\<noteq>2\<close> \<open>[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]\<close> finite_chain_with_def short_ch_card_2 by auto
+          using X_def(1) \<open>N = card X\<close> \<open>N\<noteq>2\<close> \<open>[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]\<close> short_ch_card_2
+          by (metis \<open>2 \<le> N\<close> le_neq_implies_less long_chain_2_imp_3)
         have "interval Q\<^sub>x Q\<^sub>z = \<Union>?S \<union> X"
           using int_split_to_segs [OF `[f\<leadsto>X|Q\<^sub>x..c..Q\<^sub>z]`] by auto
         thus ?thesis
@@ -7947,8 +7956,7 @@ proof -
   let ?S = "{segment (f i) (f (i+1)) | i. i<(card Q-1)}"
   let ?N = "card Q"
   let ?g = "\<lambda> i. segment (f i) (f (i+1))"
-  have "?N \<ge> 3"
-    by (meson ch_by_ord_def f_def finite_long_chain_with_def long_ch_card_ge3)
+  have "?N \<ge> 3" using chain_defs f_def by (meson finite_long_chain_with_card)
   have "?g ` {0..?N-2} = ?S"
   proof (safe)
     fix i assume "i\<in>{(0::nat)..?N-2}"
@@ -7983,12 +7991,12 @@ proof -
         by auto
       show False
       proof (cases)
-        assume "j=i+1"
-        hence "[f i; f j; f (j+1)]"
-          using asm(2) assms finite_long_chain_with_def order_finite_chain `?N\<ge>3`
-          by (metis (no_types, lifting) One_nat_def Suc_diff_Suc Suc_less_eq add.commute
-              add_leD2 atLeastAtMost_iff card.remove card_Diff_singleton less_Suc_eq_le
-              less_add_one numeral_2_eq_2 numeral_3_eq_3 plus_1_eq_Suc)
+        assume "j=i+1" hence "j=Suc i" by linarith
+        have "Suc(Suc i) < ?N" using asm(1,2) eval_nat_numeral \<open>j = Suc i\<close> by auto
+        hence "[f i; f (Suc i); f (Suc (Suc i))]"
+          using assms short_ch_card `?N\<ge>3` chain_defs local_ordering_def
+          by (metis short_ch_alt(1) three_in_set3)
+        hence "[f i; f j; f (j+1)]" by (simp add: \<open>j = i + 1\<close>)
         obtain e where "e\<in>?g j" using segment_nonempty abc_ex_path asm(3)
           by (metis \<open>[f i; f j; f (j+1)]\<close> \<open>f i \<noteq> f j\<close> \<open>j = i + 1\<close>)
         hence "e\<in>?g i"
@@ -8003,8 +8011,8 @@ proof -
         have "i < card Q \<and> j < card Q \<and> (i+1) < card Q"
           using add_mono_thms_linordered_field(3) asm(1,2) assms `?N\<ge>3` by auto
         hence "f i \<in> Q \<and> f j \<in> Q \<and> f (i+1) \<in> Q"
-          using f_def unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-          by blast
+          using f_def unfolding chain_defs local_ordering_def
+          by (metis One_nat_def Suc_diff_le Suc_eq_plus1 \<open>3 \<le> card Q\<close> add_Suc card_1_singleton_iff card_gt_0_iff card_insert_if diff_Suc_1 diff_Suc_Suc less_natE less_numeral_extra(1) nat.discI numeral_3_eq_3)
         hence "f i \<in> P \<and> f j \<in> P \<and> f (i+1) \<in> P"
           using path_is_union assms
           by (simp add: subset_iff)
@@ -8096,8 +8104,8 @@ proof -
     hence "?N\<ge>3"
       using \<open>2 \<le> card Q\<close> by linarith
     then obtain c where "[f\<leadsto>Q|a..c..b]"
-      using assms ch_by_ord_def finite_chain_with_def short_ch_card_2 \<open>2 \<le> card Q\<close> \<open>card Q \<noteq> 2\<close>
-      by force
+      using assms chain_defs short_ch_card_2 \<open>2 \<le> card Q\<close> \<open>card Q \<noteq> 2\<close>
+      by (metis three_in_set3)
     show ?thesis
       using number_of_segments [OF assms(1,2) \<open>[f\<leadsto>Q|a..c..b]\<close>]
       using S_def \<open>card Q \<noteq> 2\<close> by presburger
