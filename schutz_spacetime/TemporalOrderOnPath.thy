@@ -5434,10 +5434,9 @@ proof (induct "card X - 3" arbitrary: X a c x z)
     using Nil.hyps Nil.prems(1) by auto
 
   obtain b where f_ch: "[f\<leadsto>X|a..b..c]"
-    by (metis Nil.prems(1,3) finite_chain_with_def short_ch_def three_in_set3)
+    using chain_defs by (metis Nil.prems(1,3) three_in_set3)
   obtain y where g_ch: "[g\<leadsto>X|x..y..z]"
-    using Nil.prems finite_chain_with_def short_ch_card_2
-    by (metis Suc_n_not_le_n ch_by_ord_def numeral_2_eq_2 numeral_3_eq_3)
+    using Nil.prems chain_defs by (metis three_in_set3)
 
   have "i=1 \<or> i=0 \<or> i=2"
     using \<open>card X = 3\<close> Nil.prems(2) by linarith
@@ -5453,11 +5452,18 @@ proof (induct "card X - 3" arbitrary: X a c x z)
       hence "g i \<noteq> b"
         by (simp add: \<open>f i = b \<and> g i = y\<close>)
       have "g i \<in> X"
-        using \<open>f i = b \<and> g i = y\<close>  g_ch points_in_chain by blast
+        using \<open>f i = b \<and> g i = y\<close>  g_ch points_in_long_chain by blast
+      have "X = {a,b,c}"
+        using f_ch unfolding finite_long_chain_with_alt
+        using \<open>card X = 3\<close> points_in_long_chain[OF f_ch] abc_abc_neq[of a b c]
+        apply (simp add:eval_nat_numeral)
+        by (smt (verit, ccfv_SIG) Zero_not_Suc \<open>\<And>thesis. (\<And>y. [g\<leadsto>X|x..y..z] \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close>
+          \<open>a \<in> X\<close> \<open>b \<in> X\<close> \<open>c \<in> X\<close> \<open>i = 1\<close> card.infinite card_1_singleton_iff card_insert_disjoint
+          card_subset_eq empty_iff empty_subsetI finite_insert gr0_implies_Suc insert_absorb
+          insert_commute insert_iff insert_subset lessI less_one not0_implies_Suc old.nat.inject
+          points_in_long_chain(2) rev_finite_subset) (*TODO why is this so long? find name of needed lemma*)
       hence "(g i = a \<or> g i = c)"
-        using \<open>g i \<noteq> b\<close> \<open>card X = 3\<close> points_in_chain
-        by (smt  f_ch card2_either_elt1_or_elt2 card_Diff_singleton diff_Suc_1
-            finite_long_chain_with_def insert_Diff insert_iff numeral_2_eq_2 numeral_3_eq_3)
+        using \<open>g i \<noteq> b\<close> \<open>g i \<in> X\<close> by blast
       hence "\<not> [a; g i; c]"
         using abc_abc_neq by blast
       hence "g i \<notin> X"
@@ -5471,16 +5477,16 @@ proof (induct "card X - 3" arbitrary: X a c x z)
   next
     assume "i = 0 \<or> i = 2"
     show ?thesis
-      using Nil.prems(5) \<open>card X = 3\<close> \<open>i = 0 \<or> i = 2\<close> chain_bounds_unique f_ch g_ch
-      by (metis diff_Suc_1 finite_long_chain_with_def numeral_2_eq_2 numeral_3_eq_3)
+      using Nil.prems(5) \<open>card X = 3\<close> \<open>i = 0 \<or> i = 2\<close> chain_bounds_unique f_ch g_ch chain_defs
+      by (metis diff_Suc_1 numeral_2_eq_2 numeral_3_eq_3)
   qed
 next
   case IH: (Suc n)
   have lch_fX: "local_long_ch_by_ord f X"
-    using ch_by_ord_def finite_chain_with_def finite_long_chain_with_def long_ch_card_ge3 IH(3,5)
+    using chain_defs long_ch_card_ge3 IH(3,5)
     by fastforce
   have lch_gX: "local_long_ch_by_ord g X"
-    using IH(3,6) ch_by_ord_def finite_chain_with_def finite_long_chain_with_def long_ch_card_ge3
+    using IH(3,6) chain_defs long_ch_card_ge3
     by fastforce
   have fin_X: "finite X"
     using IH(4) le_0_eq by fastforce
@@ -5491,11 +5497,9 @@ next
     using IH.hyps(2) by linarith
 
   obtain b where f_ch: "[f\<leadsto>X|a..b..c]"
-    using \<open>ch_by_ord f X\<close> IH(3,5) finite_chain_with_def short_ch_card_2
-    by auto
+    using IH(3,5) chain_defs by (metis three_in_set3)
   obtain y where g_ch: "[g\<leadsto>X|x..y..z]"
-    using \<open>ch_by_ord f X\<close> IH.prems(1,4) finite_chain_with_def short_ch_card_2
-    by auto
+    using IH.prems(1,4) chain_defs by (metis three_in_set3)
 
   obtain p where p_def: "p = f (card X - 2)" by simp
   have "[a;p;c]"
@@ -5505,17 +5509,16 @@ next
     moreover have "card X - 2 > 0"
       using \<open>3 \<le> card X\<close> by linarith
     ultimately show ?thesis
-      using f_ch p_def unfolding finite_long_chain_with_def local_local_long_ch_by_ord_def local_ordering_def
-      by (metis card_Diff1_less card_Diff_singleton)
+      using f_ch p_def chain_defs \<open>[f\<leadsto>X]\<close> order_finite_chain2 by force
   qed
   hence "p\<noteq>c \<and> p\<noteq>a"
     using abc_abc_neq by blast
 
   obtain Y where Y_def: "X = insert c Y" "c\<notin>Y"
-    using f_ch points_in_chain
+    using f_ch points_in_long_chain
     by (meson mk_disjoint_insert)
   hence fin_Y: "finite Y"
-    using f_ch finite_long_chain_with_def by auto
+    using f_ch chain_defs by auto
   hence "n = card Y - 3"
     using \<open>Suc n = card X - 3\<close> \<open>X = insert c Y\<close> \<open>c\<notin>Y\<close> card_insert_if
     by auto
@@ -5525,15 +5528,14 @@ next
     using Y_def(1,2) fin_X by auto
   have "p\<in>Y"
     using \<open>X = insert c Y\<close> \<open>[a;p;c]\<close> abc_abc_neq lch_fX p_def IH.prems(1,3) Y_def(2)
-    by (metis chain_remove_at_right_edge finite_chain_with_def points_in_chain)
+    by (metis chain_remove_at_right_edge points_in_chain)
   have "[f\<leadsto>Y|a..p]"
     using chain_remove_at_right_edge [where f=f and a=a and c=c and X=X and p=p and Y=Y]
     using fin_long_ch_imp_fin_ch  [where f=f and a=a and c=c and b=b and X=X]
     using f_ch p_def \<open>card X \<ge> 3\<close> Y_def
     by blast
   hence ch_fY: "local_long_ch_by_ord f Y"
-    unfolding finite_chain_with_def
-    using card_Y ch_by_ord_def fin_Y finite_long_chain_with_def long_ch_card_ge3
+    using card_Y fin_Y chain_defs long_ch_card_ge3
     by force
 
   have p_closest: "\<not> (\<exists>q\<in>X. [p;q;c])"
@@ -5541,12 +5543,12 @@ next
     assume "(\<exists>q\<in>X. [p;q;c])"
     then obtain q where "q\<in>X" "[p;q;c]" by blast
     then obtain j where "j < card X" "f j = q"
-      using lch_fX lch_gX fin_X points_in_chain \<open>p\<noteq>c \<and> p\<noteq>a\<close>
-      by (metis local_ordering_def local_local_long_ch_by_ord_def)
+      using lch_fX lch_gX fin_X points_in_chain \<open>p\<noteq>c \<and> p\<noteq>a\<close> chain_defs
+      by (metis local_ordering_def)
     have "j > card X - 2 \<and> j < card X - 1"
     proof -
       have "j > card X - 2 \<and> j < card X - 1 \<or> j < card X - 2 \<and> j > card X - 1"
-        using index_order3 [where b=j and a="card X - 2" and c="card X - 1"]
+        using index_order [where b=j and a="card X - 2" and c="card X - 1"]
         using \<open>[p;q;c]\<close> \<open>f j = q\<close> \<open>j < card X\<close> f_ch p_def
         by (metis (no_types, lifting) One_nat_def card_gt_0_iff diff_less empty_iff
             finite_long_chain_with_def lessI zero_less_numeral)
