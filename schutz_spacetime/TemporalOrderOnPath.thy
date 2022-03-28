@@ -1772,54 +1772,6 @@ text \<open>
   Note \<open>a'b'c'\<close> don't necessarily form a triangle, as there still needs to be paths between them.
 \<close>
 
-
-lemma (in MinkowskiChain) tri_betw_no_path_single_case:
-  assumes a'b'c': "[a'; b'; c']"
-      and tri_abc: "\<triangle> a b c"
-      and ab'c: "[a; b'; c]"
-      and bc'a: "[b; c'; a]"
-      and ca'b: "[c; a'; b]"
-  shows "False"
-proof -
-  have abc_a'b'c'_neq: "a \<noteq> a' \<and> a \<noteq> b' \<and> a \<noteq> c'
-                      \<and> b \<noteq> a' \<and> b \<noteq> b' \<and> b \<noteq> c'
-                      \<and> c \<noteq> a' \<and> c \<noteq> b' \<and> c \<noteq> c'"
-    using abc_abc_neq assms by (metis triangle_not_betw_abc triangle_permutes(4))
-  have c'b'a': "[c'; b'; a']" using abc_sym a'b'c' by simp
-  have nopath_a'c'b: "\<not> (\<exists>Q\<in>\<P>. a' \<in> Q \<and> c' \<in> Q \<and> b \<in> Q)"
-  proof (rule notI)
-    assume "\<exists>Q\<in>\<P>. a' \<in> Q \<and> c' \<in> Q \<and> b \<in> Q"
-    then obtain Q where path_Q: "Q \<in> \<P>"
-                    and a'_inQ: "a' \<in> Q"
-                    and c'_inQ: "c' \<in> Q"
-                    and b_inQ: "b \<in> Q" by blast
-    then have ac_inQ: "a \<in> Q \<and> c \<in> Q" using eq_paths
-        by (metis abc_a'b'c'_neq ca'b bc'a betw_a_in_path betw_c_in_path)
-    thus False using b_inQ path_Q tri_abc triangle_diff_paths by blast
-  qed
-  then have tri_a'bc': "\<triangle> a' b c'"
-      by (smt bc'a ca'b a'b'c' paths_tri abc_ex_path_unique)
-  obtain ab' where path_ab': "path ab' a b'" using ab'c abc_a'b'c'_neq abc_ex_path by blast
-  obtain a'b where path_a'b: "path a'b a' b" using tri_a'bc' triangle_paths(1) by blast
-  then have "\<exists>x\<in>a'b. [a'; x; b] \<and> [a; b'; x]"
-      using collinearity2 [where a = a' and b = b and c = c' and e = b' and d = a and de = ab']
-            bc'a betw_b_in_path c'b'a' path_ab' tri_a'bc' by blast
-  then obtain x where x_in_a'b: "x \<in> a'b"
-                  and a'xb: "[a'; x; b]"
-                  and ab'x: "[a; b'; x]" by blast
-  (* ab' \<inter> a'b = {c} doesn't follow as immediately as in Schutz. *)
-  have c_in_ab': "c \<in> ab'" using ab'c betw_c_in_path path_ab' by auto
-  have c_in_a'b: "c \<in> a'b" using ca'b betw_a_in_path path_a'b by auto 
-  have ab'_a'b_distinct: "ab' \<noteq> a'b"
-      using c_in_a'b path_a'b path_ab' tri_abc triangle_diff_paths by blast
-  have "ab' \<inter> a'b = {c}"
-      using paths_cross_at ab'_a'b_distinct c_in_a'b c_in_ab' path_a'b path_ab' by auto
-  then have "x = c" using ab'x path_ab' x_in_a'b betw_c_in_path by auto
-  then have "[a'; c; b]" using a'xb by auto
-  thus ?thesis using ca'b abc_only_cba by blast
-qed
-
-
 theorem (*8*) (in MinkowskiChain) tri_betw_no_path:
   assumes tri_abc: "\<triangle> a b c"
       and ab'c: "[a; b'; c]"
@@ -1832,6 +1784,50 @@ proof -
                       \<and> c \<noteq> a' \<and> c \<noteq> b' \<and> c \<noteq> c'"
       using abc_ac_neq
       by (metis ab'c abc_abc_neq bc'a ca'b tri_abc triangle_not_betw_abc triangle_permutes(4))
+
+  have tri_betw_no_path_single_case: False
+    if a'b'c': "[a'; b'; c']" and tri_abc: "\<triangle> a b c"
+      and ab'c: "[a; b'; c]" and bc'a: "[b; c'; a]" and ca'b: "[c; a'; b]"
+    for a b c a' b' c'
+  proof -
+    have abc_a'b'c'_neq: "a \<noteq> a' \<and> a \<noteq> b' \<and> a \<noteq> c'
+                        \<and> b \<noteq> a' \<and> b \<noteq> b' \<and> b \<noteq> c'
+                        \<and> c \<noteq> a' \<and> c \<noteq> b' \<and> c \<noteq> c'"
+      using abc_abc_neq that by (metis triangle_not_betw_abc triangle_permutes(4))
+    have c'b'a': "[c'; b'; a']" using abc_sym a'b'c' by simp
+    have nopath_a'c'b: "\<not> (\<exists>Q\<in>\<P>. a' \<in> Q \<and> c' \<in> Q \<and> b \<in> Q)"
+    proof (rule notI)
+      assume "\<exists>Q\<in>\<P>. a' \<in> Q \<and> c' \<in> Q \<and> b \<in> Q"
+      then obtain Q where path_Q: "Q \<in> \<P>"
+                      and a'_inQ: "a' \<in> Q"
+                      and c'_inQ: "c' \<in> Q"
+                      and b_inQ: "b \<in> Q" by blast
+      then have ac_inQ: "a \<in> Q \<and> c \<in> Q" using eq_paths
+          by (metis abc_a'b'c'_neq ca'b bc'a betw_a_in_path betw_c_in_path)
+      thus False using b_inQ path_Q tri_abc triangle_diff_paths by blast
+    qed
+    then have tri_a'bc': "\<triangle> a' b c'"
+        by (smt bc'a ca'b a'b'c' paths_tri abc_ex_path_unique)
+    obtain ab' where path_ab': "path ab' a b'" using ab'c abc_a'b'c'_neq abc_ex_path by blast
+    obtain a'b where path_a'b: "path a'b a' b" using tri_a'bc' triangle_paths(1) by blast
+    then have "\<exists>x\<in>a'b. [a'; x; b] \<and> [a; b'; x]"
+        using collinearity2 [where a = a' and b = b and c = c' and e = b' and d = a and de = ab']
+              bc'a betw_b_in_path c'b'a' path_ab' tri_a'bc' by blast
+    then obtain x where x_in_a'b: "x \<in> a'b"
+                    and a'xb: "[a'; x; b]"
+                    and ab'x: "[a; b'; x]" by blast
+    (* ab' \<inter> a'b = {c} doesn't follow as immediately as in Schutz. *)
+    have c_in_ab': "c \<in> ab'" using ab'c betw_c_in_path path_ab' by auto
+    have c_in_a'b: "c \<in> a'b" using ca'b betw_a_in_path path_a'b by auto 
+    have ab'_a'b_distinct: "ab' \<noteq> a'b"
+        using c_in_a'b path_a'b path_ab' tri_abc triangle_diff_paths by blast
+    have "ab' \<inter> a'b = {c}"
+        using paths_cross_at ab'_a'b_distinct c_in_a'b c_in_ab' path_a'b path_ab' by auto
+    then have "x = c" using ab'x path_ab' x_in_a'b betw_c_in_path by auto
+    then have "[a'; c; b]" using a'xb by auto
+    thus ?thesis using ca'b abc_only_cba by blast
+  qed
+
   show ?thesis
   proof (rule notI)
     assume path_a'b'c': "\<exists>Q\<in>\<P>. a' \<in> Q \<and> b' \<in> Q \<and> c' \<in> Q"
@@ -1841,123 +1837,9 @@ proof -
     thus False
       apply (cases)
       using tri_betw_no_path_single_case[of a' b' c'] ab'c bc'a ca'b tri_abc apply blast
-      using tri_betw_no_path_single_case by (smt (verit, ccfv_SIG)
-        ab'c bc'a ca'b paths_tri tri_abc tri_three_paths triangle_paths_unique)+
+      using tri_betw_no_path_single_case ab'c bc'a ca'b tri_abc triangle_permutes abc_sym by blast+
   qed
 qed
-(*
-    proof (cases)
-      assume a'b'c': "[a'; b'; c']"
-      then have c'b'a': "[c'; b'; a']" using abc_sym by simp
-      have nopath_a'c'b: "\<not> (\<exists>Q\<in>\<P>. a' \<in> Q \<and> c' \<in> Q \<and> b \<in> Q)"
-      proof (rule notI)
-        assume "\<exists>Q\<in>\<P>. a' \<in> Q \<and> c' \<in> Q \<and> b \<in> Q"
-        then obtain Q where path_Q: "Q \<in> \<P>"
-                        and a'_inQ: "a' \<in> Q"
-                        and c'_inQ: "c' \<in> Q"
-                        and b_inQ: "b \<in> Q" by blast
-        then have ac_inQ: "a \<in> Q \<and> c \<in> Q" using eq_paths
-            by (metis abc_a'b'c'_neq ca'b bc'a betw_a_in_path betw_c_in_path)
-        thus False using b_inQ path_Q tri_abc triangle_diff_paths by blast
-      qed
-      then have tri_a'bc': "\<triangle> a' b c'"
-          by (smt bc'a ca'b path_a'b'c' paths_tri abc_ex_path_unique)
-      obtain ab' where path_ab': "path ab' a b'" using ab'c abc_a'b'c'_neq abc_ex_path by blast
-      obtain a'b where path_a'b: "path a'b a' b" using tri_a'bc' triangle_paths(1) by blast
-      then have "\<exists>x\<in>a'b. [a'; x; b] \<and> [a; b'; x]"
-          using collinearity2 [where a = a' and b = b and c = c' and e = b' and d = a and de = ab']
-                bc'a betw_b_in_path c'b'a' path_ab' tri_a'bc' by blast
-      then obtain x where x_in_a'b: "x \<in> a'b"
-                      and a'xb: "[a'; x; b]"
-                      and ab'x: "[a; b'; x]" by blast
-      (* ab' \<inter> a'b = {c} doesn't follow as immediately as in Schutz. *)
-      have c_in_ab': "c \<in> ab'" using ab'c betw_c_in_path path_ab' by auto
-      have c_in_a'b: "c \<in> a'b" using ca'b betw_a_in_path path_a'b by auto 
-      have ab'_a'b_distinct: "ab' \<noteq> a'b"
-          using c_in_a'b path_a'b path_ab' tri_abc triangle_diff_paths by blast
-      have "ab' \<inter> a'b = {c}"
-          using paths_cross_at ab'_a'b_distinct c_in_a'b c_in_ab' path_a'b path_ab' by auto
-      then have "x = c" using ab'x path_ab' x_in_a'b betw_c_in_path by auto
-      then have "[a'; c; b]" using a'xb by auto
-      thus False using ca'b abc_only_cba by blast
-    next
-      assume b'c'a': "[b'; c'; a']"
-      then have a'c'b': "[a'; c'; b']" using abc_sym by simp
-      have nopath_a'cb': "\<not> (\<exists>Q\<in>\<P>. a' \<in> Q \<and> c \<in> Q \<and> b' \<in> Q)"
-      proof (rule notI)
-        assume "\<exists>Q\<in>\<P>. a' \<in> Q \<and> c \<in> Q \<and> b' \<in> Q"
-        then obtain Q where path_Q: "Q \<in> \<P>"
-                        and a'_inQ: "a' \<in> Q"
-                        and c_inQ: "c \<in> Q"
-                        and b'_inQ: "b' \<in> Q" by blast
-        then have ab_inQ: "a \<in> Q \<and> b \<in> Q"
-            using eq_paths
-            by (metis ab'c abc_a'b'c'_neq betw_a_in_path betw_c_in_path ca'b)
-        thus False using c_inQ path_Q tri_abc triangle_diff_paths by blast
-      qed
-      then have tri_a'cb': "\<triangle> a' c b'"
-          by (smt ab'c abc_ex_path_unique b'c'a' ca'b paths_tri)
-      obtain bc' where path_bc': "path bc' b c'"
-          using abc_a'b'c'_neq abc_ex_path_unique bc'a
-          by blast
-      obtain b'c where path_b'c: "path b'c b' c" using tri_a'cb' triangle_paths(3) by blast
-      then have "\<exists>x\<in>b'c. [b'; x; c] \<and> [b; c'; x]"
-          using collinearity2 [where a = b' and b = c and c = a'
-                                 and e = c' and d = b and de = bc']
-                bc'a betw_b_in_path a'c'b' path_bc' tri_a'cb'
-          by (meson ca'b triangle_permutes(5))
-      then obtain x where x_in_b'c: "x \<in> b'c"
-                      and b'xc: "[b'; x; c]"
-                      and bc'x: "[b; c'; x]" by blast
-      have a_in_bc': "a \<in> bc'" using bc'a betw_c_in_path path_bc' by blast
-      have a_in_b'c: "a \<in> b'c" using ab'c betw_a_in_path path_b'c by blast
-      have bc'_b'c_distinct: "bc' \<noteq> b'c"
-          using a_in_bc' path_b'c path_bc' tri_abc triangle_diff_paths by blast
-      have "bc' \<inter> b'c = {a}"
-          using paths_cross_at bc'_b'c_distinct a_in_b'c a_in_bc' path_b'c path_bc' by auto
-      then have "x = a" using bc'x betw_c_in_path path_bc' x_in_b'c by auto
-      then have "[b'; a; c]" using b'xc by auto
-      thus False using ab'c abc_only_cba by blast
-    next
-      assume c'a'b': "[c'; a'; b']"
-      then have b'a'c': "[b'; a'; c']" using abc_sym by simp
-      have nopath_c'ab': "\<not> (\<exists>Q\<in>\<P>. c' \<in> Q \<and> a \<in> Q \<and> b' \<in> Q)"
-      proof (rule notI)
-        assume "\<exists>Q\<in>\<P>. c' \<in> Q \<and> a \<in> Q \<and> b' \<in> Q"
-        then obtain Q where path_Q: "Q \<in> \<P>"
-                        and c'_inQ: "c' \<in> Q"
-                        and a_inQ: "a \<in> Q"
-                        and b'_inQ: "b' \<in> Q" by blast
-        then have bc_inQ: "b \<in> Q \<and> c \<in> Q"
-            using eq_paths ab'c abc_a'b'c'_neq bc'a betw_a_in_path betw_c_in_path by blast
-        thus False using a_inQ path_Q tri_abc triangle_diff_paths by blast
-      qed
-      then have tri_a'cb': "\<triangle> b' a c'"
-          by (smt bc'a abc_ex_path_unique c'a'b' ab'c paths_tri)
-      obtain ca' where path_ca': "path ca' c a'"
-          using abc_a'b'c'_neq abc_ex_path_unique ca'b
-          by blast
-      obtain c'a where path_c'a: "path c'a c' a" using tri_a'cb' triangle_paths(3) by blast
-      then have "\<exists>x\<in>c'a. [c'; x; a] \<and> [c; a'; x]"
-          using collinearity2 [where a = c' and b = a and c = b'
-                                 and e = a' and d = c and de = ca']
-                ab'c b'a'c' betw_b_in_path path_ca' tri_a'cb' triangle_permutes(5) by blast
-      then obtain x where x_in_c'a: "x \<in> c'a"
-                      and c'xa: "[c'; x; a]"
-                      and ca'x: "[c; a'; x]" by blast
-      have b_in_ca': "b \<in> ca'" using betw_c_in_path ca'b path_ca' by blast
-      have b_in_c'a: "b \<in> c'a" using bc'a betw_a_in_path path_c'a by auto
-      have ca'_c'a_distinct: "ca' \<noteq> c'a"
-          using b_in_c'a path_c'a path_ca' tri_abc triangle_diff_paths by blast
-      have "ca' \<inter> c'a = {b}"
-          using b_in_c'a b_in_ca' ca'_c'a_distinct path_c'a path_ca' paths_cross_at by auto
-      then have "x = b" using betw_c_in_path ca'x path_ca' x_in_c'a by auto
-      then have "[c'; b; a]" using c'xa by auto
-      thus False using abc_only_cba bc'a by blast
-    qed
-  qed
-qed
-*)
 
 subsection \<open>Theorem 9\<close>
 text \<open>
