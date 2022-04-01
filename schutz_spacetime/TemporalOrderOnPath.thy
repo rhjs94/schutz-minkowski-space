@@ -3,7 +3,7 @@
                 University of Edinburgh, 2021          
 *)
 theory TemporalOrderOnPath
-imports Main Minkowski TernaryOrdering
+imports Main Minkowski TernaryOrdering "HOL-Library.Disjoint_Sets"
 begin
 
 text \<open>
@@ -5112,6 +5112,7 @@ proof -
   then show ?thesis by auto
 qed
 
+(*
 text \<open>
   We define \<open>disjoint\<close> to be the same as in HOL-Library.DisjointSets.
   This saves importing a lot of baggage we don't need.
@@ -5119,13 +5120,15 @@ text \<open>
 \<close>
 
 abbreviation disjoint
-  where "disjoint A \<equiv> (\<forall>a\<in>A. \<forall>b\<in>A. a \<noteq> b \<longrightarrow> a \<inter> b = {})"
+  where "disjoint A \<equiv> \<forall>a\<in>A. \<forall>b\<in>A. a \<noteq> b \<longrightarrow> a \<inter> b = {}"
+*)
 
 lemma
   fixes S:: "('a set) set" and P1:: "'a set" and P2:: "'a set"
   assumes "\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={}))" "P1\<inter>P2={}"
   shows "disjoint (S\<union>{P1,P2})"
-proof (rule ballI)
+  by (smt (z3) Un_iff assms(1,2) disjointI inf_sup_aci(1) insertE sup_bot_right)
+(*proof (unfold disjoint_def, rule ballI)
   let ?U = "S\<union>{P1,P2}"
   fix a assume "a\<in>?U"
   then consider (aS)"a\<in>S"|(a1)"a=P1"|(a2)"a=P2"
@@ -5169,26 +5172,28 @@ proof (rule ballI)
     thus ?thesis
       by meson
   qed
-qed
+qed*)
 lemma
   fixes S:: "('a set) set" and P1:: "'a set" and P2:: "'a set"
   assumes "disjoint (S\<union>{P1,P2})" "P1\<notin>S" "P2\<notin>S" "P1\<noteq>P2"
   shows "\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={}))" "P1\<inter>P2={}"
-proof (rule ballI)
+  apply (smt (z3) IntD2 Un_insert_right assms(1,2,3) disjoint_def inf_sup_absorb insert_iff)
+  by (metis Un_insert_right assms(1,4) disjoint_def insertCI)
+(*proof (rule ballI)
   show "P1\<inter>P2={}"
-    using assms(1,4) by simp
+    using assms(1,4) disjoint_def by (metis disjoint_unionD2 insertI1 insert_commute)
   fix x assume "x\<in>S"
   show "x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})"
   proof (rule conjI, rule_tac[2] conjI, rule_tac[3] ballI, rule_tac[3] impI)
     show "x\<inter>P1={}"
-      using \<open>x \<in> S\<close> assms(1,2) by fastforce
+      using \<open>x \<in> S\<close> assms(1,2) disjoint_def by (metis inf_sup_ord(3,4) insertCI subsetD)
     show "x\<inter>P2={}"
-      using \<open>x \<in> S\<close> assms(1,3) by fastforce
+      using \<open>x \<in> S\<close> assms(1,3) disjoint_def by (metis Un_insert_right insertCI sup_bot.right_neutral)
     fix y assume "y\<in>S" "x\<noteq>y"
     thus "x\<inter>y={}"
       by (simp add: \<open>x \<in> S\<close> assms(1))
   qed
-qed
+qed*)
 
 
 text \<open>
@@ -5213,11 +5218,6 @@ proof -
     using fin_chain_card_geq_2 f_def by blast
   have "finite Q"
     by (metis card.infinite card_Q rel_simps(28))
-(* Hooray for theorem 10! Without it, we couldn't so brazenly go from a set of events
-   to an ordered chain of events. The line below doesn't need f_def (which is needed for S_def)! *)
-  have ch_Q: "ch Q"
-    using Q_def card_Q path_P path_finsubset_chain [where X=Q and Q=P]
-    by blast
   have f_def_2: "a\<in>Q \<and> b\<in>Q"
     using f_def points_in_chain finite_chain_with_def by auto
   have "a\<noteq>b"
@@ -5228,7 +5228,7 @@ proof -
       by (simp add: S_def)
     have "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)" "(\<forall>x\<in>S. is_segment x)" "P1\<inter>P2={}"
          "(\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))"
-      using assms ch_Q \<open>finite Q\<close> segmentation_ex_N2
+      using assms f_def \<open>finite Q\<close> segmentation_ex_N2
         [where P=P and Q=Q and N="card Q"]
       by (metis (no_types, lifting) \<open>card Q = 2\<close>)+
   } moreover {
@@ -5245,7 +5245,7 @@ proof -
       using S_def \<open>card Q \<ge> 3\<close> by auto
     have "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)" "(\<forall>x\<in>S. is_segment x)" "P1\<inter>P2={}"
          "(\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))"
-      using f_def_2 assms ch_Q \<open>card Q \<ge> 3\<close> c_def pro_equiv
+      using f_def_2 assms f_def \<open>card Q \<ge> 3\<close> c_def pro_equiv
         segmentation_ex_Nge3 [where P=P and Q=Q and N="card Q" and S=S and a=a and b=c and c=b and f=f]
       using points_in_long_chain \<open>finite Q\<close> S_def2 by metis+
   }
@@ -5253,7 +5253,7 @@ proof -
                   "(\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))" by meson+
   thus "disjoint (S\<union>{P1,P2})" "P1\<noteq>P2" "P1\<notin>S" "P2\<notin>S"
        "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)" "(\<forall>x\<in>S. is_segment x)"
-         apply (simp add: Int_commute)
+         unfolding disjoint_def apply (simp add: Int_commute)
         apply (metis P2_def Un_iff old_thesis(1,3) \<open>a \<noteq> b\<close> disjoint_iff f_def_2 path_P pro_betw prolong_betw2)
        apply (metis P1_def Un_iff old_thesis(1,4) \<open>a \<noteq> b\<close> disjoint_iff f_def_2 path_P pro_betw prolong_betw3)
       apply (metis P2_def Un_iff old_thesis(1,4) \<open>a \<noteq> b\<close> disjoint_iff f_def_2 path_P pro_betw prolong_betw)
@@ -5269,6 +5269,8 @@ theorem (*11*) segmentation:
                      (\<forall>x\<in>S. is_segment x) \<and> is_prolongation P1 \<and> is_prolongation P2"
 proof -
   let ?N = "card Q"
+(* Hooray for theorem 10! Without it, we couldn't so brazenly go from a set of events
+   to an ordered chain of events. *)
   obtain f a b where f_def: "[f\<leadsto>Q|a..b]"
     using path_finsubset_chain2[OF path_P Q_def(2,1)]
     by metis
