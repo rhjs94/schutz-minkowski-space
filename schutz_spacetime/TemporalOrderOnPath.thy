@@ -5196,6 +5196,14 @@ lemma
 qed*)
 
 
+text \<open>Some unfolding of the definition for a finite chain that happens to be short.\<close>
+lemma finite_chain_with_card_2:
+  assumes f_def: "[f\<leadsto>Q|a..b]"
+    and card_Q: "card Q = 2"
+  shows "finite Q" "f 0 = a" "f (card Q - 1) = b" "Q = {f 0, f 1}" "\<exists>Q. path Q (f 0) (f 1)"
+    using assms unfolding chain_defs by auto
+
+
 text \<open>
   Schutz says "As in the proof of the previous theorem [...]" - does he mean to imply that this
   should really be proved as induction? I can see that quite easily, induct on $N$, and add a segment
@@ -5209,8 +5217,7 @@ theorem (*11*) show_segmentation:
       and f_def: "[f\<leadsto>Q|a..b]"
     fixes P1 defines P1_def: "P1 \<equiv> prolongation b a"
     fixes P2 defines P2_def: "P2 \<equiv> prolongation a b"
-    fixes S  defines S_def: "S \<equiv> if card Q=2 then {segment a b}
-                                 else {segment (f i) (f (i+1)) | i. i<card Q-1}"
+    fixes S  defines S_def: "S \<equiv> {segment (f i) (f (i+1)) | i. i<card Q-1}"
     shows "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)" "(\<forall>x\<in>S. is_segment x)"
           "disjoint (S\<union>{P1,P2})" "P1\<noteq>P2" "P1\<notin>S" "P2\<notin>S"
 proof -
@@ -5224,9 +5231,12 @@ proof -
     using f_def chain_defs by (metis first_neq_last)
   {
     assume "card Q = 2"
+    hence "card Q - 1 = Suc 0" by simp
+    have "Q = {f 0, f 1}" "\<exists>Q. path Q (f 0) (f 1)" "f 0 = a" "f (card Q - 1) = b"
+      using \<open>card Q = 2\<close> finite_chain_with_card_2 f_def by auto
     hence "S={segment a b}"
-      by (simp add: S_def)
-    have "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)" "(\<forall>x\<in>S. is_segment x)" "P1\<inter>P2={}"
+      unfolding S_def using \<open>card Q - 1 = Suc 0\<close> by (simp add: eval_nat_numeral)
+    hence "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)" "(\<forall>x\<in>S. is_segment x)" "P1\<inter>P2={}"
          "(\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))"
       using assms f_def \<open>finite Q\<close> segmentation_ex_N2
         [where P=P and Q=Q and N="card Q"]
@@ -5274,7 +5284,7 @@ proof -
   obtain f a b where f_def: "[f\<leadsto>Q|a..b]"
     using path_finsubset_chain2[OF path_P Q_def(2,1)]
     by metis
-  let ?S = "if ?N=2 then {segment a b} else {segment (f i) (f (i+1)) | i. i<card Q-1}"
+  let ?S = "{segment (f i) (f (i+1)) | i. i<card Q-1}"
   let ?P1 = "prolongation b a"
   let ?P2 = "prolongation a b"
   have from_seg: "P = ((\<Union>?S) \<union> ?P1 \<union> ?P2 \<union> Q)" "(\<forall>x\<in>?S. is_segment x)"
@@ -8011,7 +8021,7 @@ theorem (*11*) segmentation_card:
       and f_def: "[f\<leadsto>Q|a..b]" (* This always exists given card Q > 2 *)
     fixes P1 defines P1_def: "P1 \<equiv> prolongation b a"
     fixes P2 defines  P2_def: "P2 \<equiv> prolongation a b"
-    fixes S defines S_def: "S \<equiv> (if card Q=2 then {segment a b} else {segment (f i) (f (i+1)) | i. i<card Q-1})"
+    fixes S defines S_def: "S \<equiv> {segment (f i) (f (i+1)) | i. i<card Q-1}"
     shows "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)"
         (* The union of these segments and prolongations with the separating points is the path. *)
           "card S = (card Q-1) \<and> (\<forall>x\<in>S. is_segment x)"
