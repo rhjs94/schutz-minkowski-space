@@ -7329,6 +7329,7 @@ proof -
     using betw_b_in_path path_Q unreach(1,2,3) unreach_on_path xyz by blast
   hence event_y: "Q\<^sub>y\<in>\<E>"
     using in_path_event path_Q by blast
+  text\<open>legacy: I6_old instead of I6\<close>
   obtain X f where X_def: "ch_by_ord f X" "f 0 = Q\<^sub>x" "f (card X - 1) = Q\<^sub>z"
       "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
       "short_ch X \<longrightarrow> Q\<^sub>x \<in> X \<and> Q\<^sub>z \<in> X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b)"
@@ -7340,7 +7341,7 @@ proof -
 
   text \<open>
   Then we have to manually show the bounds, defined via indices only, are in the obtained chain.
-  This step made me add the two-element-chain-case to I6 in \<open>Minkowski.thy\<close>;
+  This step made me add the two-element-chain-case to I6 in \<open>Minkowski.thy\<close> (legacy);
   this case is referenced here as \<open>X_def(5)\<close>.
 \<close>
   let ?a = "f 0"
@@ -7365,7 +7366,7 @@ proof -
 
   show ?thesis
   proof (cases)
-    text \<open>As usual, we treat short chains separately, and they have their own clause in I6.\<close>
+    text \<open>We treat short chains separately (legacy: they used to have a separate clause in I6, now I6_old).\<close>
     assume "N=2"
     thus ?thesis
       using X_def(1,5) xyz \<open>N = card X\<close> event_y short_ch_card_2 by auto
@@ -8065,5 +8066,11 @@ qed
 
 
 end (* context MinkowskiDense *)
+
+(*
+context MinkowskiSpacetime begin
+interpretation is_dense: MinkowskiDense apply unfold_locales oops
+end
+*)
 
 end
