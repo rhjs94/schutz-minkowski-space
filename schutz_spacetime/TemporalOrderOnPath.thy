@@ -6315,6 +6315,7 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct:
           \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; [a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]\<rbrakk> \<Longrightarrow> P I J"
   shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
               a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
+  (*using wlog_endpoints_distinct4 assms by (smt some_betw4a)*) (* uses previous wlog, but slower *)
   by (smt (verit, ccfv_SIG) assms some_betw4b)
 
 
@@ -6411,6 +6412,30 @@ proof -
       by smt
   qed
 qed
+
+
+lemma (in MinkowskiSpacetime) wlog_intro:
+  assumes path_A: "A\<in>\<P>"
+      and symmetric_Q: "\<And>a b I. Q I a b \<Longrightarrow> Q I b a"
+      and Q_implies_path: "\<And>a b I. \<lbrakk>I\<subseteq>A; Q I a b\<rbrakk> \<Longrightarrow> b\<in>A \<and> a\<in>A"
+      and symmetric_P: "\<And>I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>c d. Q J c d; P I J\<rbrakk> \<Longrightarrow> P J I"
+      and essential_cases: "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A\<rbrakk>
+            \<Longrightarrow> ((a=b \<and> b=c \<and> c=d) \<longrightarrow> P I J)
+              \<and> ((a=b \<and> b\<noteq>c \<and> c=d) \<longrightarrow> P I J)
+              \<and> ((a=b \<and> b=c \<and> c\<noteq>d) \<longrightarrow> P I J)
+              \<and> ((a=b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d) \<longrightarrow> P I J)
+              \<and> ((a\<noteq>b \<and> b=c \<and> c\<noteq>d \<and> a=d) \<longrightarrow> P I J)
+              \<and> (([a;b;c] \<and> a=d) \<longrightarrow> P I J)
+              \<and> (([b;a;c] \<and> a=d) \<longrightarrow> P I J)
+              \<and> ([a;b;c;d] \<longrightarrow> P I J)
+              \<and> ([a;c;b;d] \<longrightarrow> P I J)
+              \<and> ([a;c;d;b] \<longrightarrow> P I J)"
+      and antecedants: "Q I a b" "Q J c d" "I\<subseteq>A" "J\<subseteq>A"
+  shows "P I J"
+    using essential_cases antecedants
+    and wlog_endpoints_degenerate[OF path_A symmetric_Q Q_implies_path symmetric_P]
+    and wlog_endpoints_distinct[OF path_A symmetric_Q Q_implies_path symmetric_P]
+    by (smt (z3) Q_implies_path path_A symmetric_P symmetric_Q some_betw2 some_betw4b abc_only_cba(1))
 
 
 end (*context MinkowskiSpacetime*)
@@ -7602,6 +7627,104 @@ proof -
         ultimately show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u]" by blast
       qed
     qed
+  qed
+qed
+
+lemma (*for 14i*) union_of_bounded_sets_is_bounded_example:
+  assumes "\<forall>x\<in>A. [a;x;b]" "\<forall>x\<in>B. [c;x;d]" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
+    "card A > 1 \<or> infinite A" "card B > 1 \<or> infinite B"
+  shows "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>A\<union>B. [l;x;u]"
+  (*apply (rule wlog_intro[of Q])*)
+proof -
+  let ?P = "\<lambda> A B. \<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>A\<union>B. [l;x;u]"
+  let ?I = "\<lambda> A a b. (1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [a;x;b])"
+  let ?R = "\<lambda>A. \<exists>a b. ?I A a b"
+
+  show ?thesis
+    apply (rule wlog_intro[where A=Q and Q="?I" and P="?P"])
+    (*NOTE: this won't work if you don't provide instantiations yourself*)
+  proof -
+  
+    text \<open>Antecedents for the case we actually care about.\<close>
+    show "?I A a b" "?I B c d" using assms(1,2,6,7) by auto
+    show "A \<subseteq> Q" "B \<subseteq> Q" by (simp add: assms(3,4))+
+    show "Q\<in>\<P>" by (simp add: assms(5))
+  
+    text \<open>\<open>?I\<close> relates an event set to events on the same path as the set.\<close>
+    show on_path: "\<And>a b A. A \<subseteq> Q \<Longrightarrow> ?I A a b \<Longrightarrow> b \<in> Q \<and> a \<in> Q"
+    proof -
+      fix a b A assume "A\<subseteq>Q" "?I A a b"
+      show "b\<in>Q\<and>a\<in>Q"
+      proof (cases)
+        assume "card A \<le> 1 \<and> finite A"
+        thus ?thesis
+          using \<open>?I A a b\<close> by auto
+      next
+        assume "\<not> (card A \<le> 1 \<and> finite A)"
+        hence asmA: "card A > 1 \<or> infinite A"
+          by linarith
+        then obtain x y where "x\<in>A" "y\<in>A" "x\<noteq>y"
+        proof 
+          assume "1 < card A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
+          then show ?thesis 
+            by (metis One_nat_def Suc_le_eq card_le_Suc_iff insert_iff)
+        next
+          assume "infinite A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
+          then show ?thesis 
+          using infinite_imp_nonempty by (metis finite_insert finite_subset singletonI subsetI)
+      qed
+        have "x\<in>Q" "y\<in>Q"
+          using \<open>A \<subseteq> Q\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close> by auto
+        have "[a;x;b]" "[a;y;b]"
+          by (simp add: \<open>(1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [a;x;b])\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close>)+ 
+        hence "betw4 a x y b \<or> betw4 a y x b"
+          using \<open>x \<noteq> y\<close> abd_acd_abcdacbd by blast
+        hence "a\<in>Q \<and> b\<in>Q"
+          using \<open>Q\<in>\<P>\<close> \<open>x\<in>Q\<close> \<open>x\<noteq>y\<close> \<open>x\<in>Q\<close> \<open>y\<in>Q\<close> betw_a_in_path betw_c_in_path by blast
+        thus ?thesis by simp
+      qed
+    qed
+
+    text \<open>\<open>?I\<close> and \<open>?P\<close> satisfy the symmetry requirements.\<close>
+    show "\<And>a b I. ?I I a b \<Longrightarrow> ?I I b a" using abc_sym by blast
+    show "\<And>I J. ?R I \<Longrightarrow> ?R J \<Longrightarrow> ?P I J \<Longrightarrow> ?P J I" by (simp add: Un_commute)
+
+    text \<open>Finally, prove \<open>?P I J\<close> for all the essentially distinct cases.\<close> (*TODO name this goal in intro lemma?*)
+    show "\<And>I J a b c d. ?I I a b \<Longrightarrow> ?I J c d \<Longrightarrow> I \<subseteq> Q \<Longrightarrow> J \<subseteq> Q \<Longrightarrow>
+         (a = b \<and> b = c \<and> c = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         (a = b \<and> b \<noteq> c \<and> c = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         (a = b \<and> b = c \<and> c \<noteq> d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         (a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         (a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         ([a;b;c] \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         ([b;a;c] \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         ([a;b;c;d] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
+         ([a;c;b;d] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and> ([a;c;d;b] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u]))"
+    proof (intro conjI; intro impI)
+    { fix I J a b c d
+      assume asm1: "?I I a b" "?I J c d"  "I\<subseteq>Q" "J\<subseteq>Q"
+      {
+        assume "a = b \<and> b = c \<and> c = d" show "?P I J" sorry
+      } {
+        assume "a = b \<and> b \<noteq> c \<and> c = d" show "?P I J" sorry
+      } {
+        assume "a = b \<and> b = c \<and> c \<noteq> d" show "?P I J" sorry
+      } {
+        assume "a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d" show "?P I J" sorry
+      } {
+        assume "a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d" show "?P I J" sorry
+      } {
+        assume "[a;b;c] \<and> a = d" show "?P I J" sorry
+      } {
+        assume "[b;a;c] \<and> a = d" show "?P I J" sorry
+      } {
+        assume "[a;b;c;d]" show "?P I J" sorry
+      } {
+        assume "[a;c;b;d]" show "?P I J" sorry
+      } {
+        assume "[a;c;d;b]" show "?P I J" sorry
+      }
+    } qed
   qed
 qed
 
