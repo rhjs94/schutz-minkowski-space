@@ -1694,7 +1694,7 @@ theorem (*7*) (in MinkowskiChain) collinearity2:
       and bcd: "[b;c;d]"
       and cea: "[c;e;a]"
       and path_de: "path de d e"
-  shows "\<exists>f\<in>de. [a;f;b] \<and> [d;e;f]"
+  shows "\<exists>f. [a;f;b] \<and> [d;e;f]"
 proof -
   obtain ab where path_ab: "path ab a b" using tri_abc triangle_paths_unique by blast
   then obtain f where afb: "[a;f;b]"
@@ -2225,7 +2225,7 @@ proof -
                     and ahe: "[a;h;e]"
                     and f'bh: "[f'; b; h]"
         using collinearity2 [where a = a and b = e and c = c' and d = f' and e = b and de = f'b]
-              f'_def c'd'_def f'_def by blast
+              f'_def c'd'_def f'_def betw_c_in_path by blast
     have tri_dec: "\<triangle> d' e c'"
         using cross_once_notin S_neq_ab a_inS abc abc_abc_neq abc_ex_path
                 e_inS e_neq_a path_S path_ab c'd'_def paths_tri by smt
@@ -2233,7 +2233,7 @@ proof -
                     and d'ge: "[d'; g; e]"
                     and f'bg: "[f'; b; g]"
         using collinearity2 [where a = d' and b = e and c = c' and d = f' and e = b and de = f'b]
-              f'_def c'd'_def by blast
+              f'_def c'd'_def betw_c_in_path by blast
     have "\<triangle> e a d'" by (smt betw_c_in_path paths_tri2 S_neq_ab a_inS abc_ac_neq
                            abd e_inS e_neq_a c'd'_def path_S path_ab)
     thus False
@@ -2457,6 +2457,20 @@ proof -
         using a'_pick b'_pick c'_pick d'_pick x_pick d'_neq by auto
   qed
   thus ?thesis using picked_chain by simp
+qed
+
+theorem (*9*) chain4_alt:
+  assumes path_Q: "Q \<in> \<P>"
+      and abcd_inQ: "{a,b,c,d} \<subseteq> Q"
+      and abcd_distinct: "card {a,b,c,d} = 4"
+    shows "ch {a,b,c,d}"
+proof -
+  have abcd_neq: "a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d"
+    using abcd_distinct numeral_3_eq_3
+    by (smt (z3) card_1_singleton_iff card_2_iff card_3_dist insert_absorb2 insert_commute numeral_1_eq_Suc_0 numeral_eq_iff semiring_norm(85) semiring_norm(88) verit_eq_simplify(8))
+  have inQ: "a \<in> Q" "b \<in> Q" "c \<in> Q" "d \<in> Q"
+    using abcd_inQ by auto
+  show ?thesis using chain4[OF assms(1) inQ] abcd_neq by simp
 qed
 
 
