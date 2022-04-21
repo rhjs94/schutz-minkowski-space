@@ -275,11 +275,65 @@ text \<open>
   if it is dependent on two paths $S_1$ and $S_2$, where each of these two paths is dependent
   on some subset of $n - 1$ paths from the set $S$." [Schutz97]\<close>
 
-inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> 'a \<Rightarrow> bool" where
+inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> bool" where
+  dep_3: "dep3 T A B \<Longrightarrow> dep_path T {A, B}"
+| dep_n:   "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S'';
+             S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"
+
+lemma card_Suc_ex:
+  assumes "card A = Suc (card B)" "B \<subseteq> A"
+  shows "\<exists>b. A = insert b B \<and> b\<notin>B"
+proof -
+  have "card A \<ge> 1" using assms by simp
+  hence "finite A" using card_ge_0_finite card.infinite by fastforce
+  obtain b where "b\<in>A-B"
+    by (metis Diff_eq_empty_iff all_not_in_conv assms n_not_Suc_n subset_antisym)
+  show "\<exists>b. A = insert b B \<and> b\<notin>B"
+  proof
+    show "A = insert b B \<and> b\<notin>B"
+      using  \<open>b\<in>A-B\<close> \<open>finite A\<close> assms
+      by (metis DiffD1 DiffD2 Diff_insert_absorb Diff_single_insert card_insert_disjoint
+        card_subset_eq insert_absorb rev_finite_subset)
+  qed
+qed
+
+lemma
+  assumes "Suc (card S') = card S" "Suc (card S'') = card S"
+    and "S' \<noteq> S''" "S' \<subseteq> S" "S'' \<subseteq> S" (*"card S \<ge> 2"*)
+  shows "S' \<union> S'' = S" using assms card_Suc_ex (*eval_nat_numeral*)
+proof - oops
+  have "finite S"
+    using assms(4) card_ge_0_finite card.infinite by fastforce
+  obtain x where "insert x S' = S" "x\<notin>S'" using assms(1,4) card.insert_remove \<open>finite S\<close>
+oops
+
+lemma dep_path_card_2: "dep_path T S \<Longrightarrow> card S \<ge> 2"
+  by (induct rule: dep_path.induct, simp add: dep3_def dep3_event_def, linarith)
+
+lemma
+  assumes "dep3 T S1 S2" "dep_path S1 S'" "dep_path S2 S''"
+          "S' \<subseteq> S" "S'' \<subseteq> S" "card S' = card S - 1" "card S'' = card S - 1"
+  shows "S' \<union> S'' = S" using assms
+proof -
+  have 
+
+lemma "dep_path T S \<Longrightarrow> \<exists>x. S \<subseteq> SPRAY x \<and> T \<in> SPRAY x"
+proof (induction rule: dep_path.induct)
+  case dep_two
+  show ?case by (meson dep3_def dep3_event_def dep_two.hyps empty_subsetI insert_subset)
+next
+  case (dep_n T S1 S2 S' S'' S)
+  obtain x where "S' \<subseteq> SPRAY x" "S1 \<in> SPRAY x"
+    using dep_n.IH(1) by blast
+  have 
+  show ?case using dep_n dep3_def dep3_event_def
+oops
+
+(*inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> 'a \<Rightarrow> bool" where
   dep_two: "dep3_event T A B x \<Longrightarrow> dep_path T {A, B} x"
 | dep_n:   "\<lbrakk>S \<subseteq> SPRAY x; card S \<ge> 3; dep_path T {S1, S2} x;
              S' \<subseteq> S; S'' \<subseteq> S; card S' = card S - 1; card S'' = card S - 1;
-             dep_path S1 S' x; dep_path S2 S'' x\<rbrakk> \<Longrightarrow> dep_path T S x"
+             dep_path S1 S' x; dep_path S2 S'' x\<rbrakk> \<Longrightarrow> dep_path T S x"*)
 
 text \<open>
   "We also say that the set of $n + 1$ paths $S\cup\{T\}$ is a dependent set." [Schutz97]
