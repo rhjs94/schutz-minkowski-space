@@ -233,6 +233,9 @@ text \<open>The definition of \<open>SPRAY\<close> constrains $x, Q, R, S$ to be
 definition dep3_event :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
   "dep3_event Q R S x \<equiv> Q \<noteq> R \<and> Q \<noteq> S \<and> R \<noteq> S \<and> Q \<in> SPRAY x \<and> R \<in> SPRAY x \<and> S \<in> SPRAY x
                          \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"
+(*definition dep3_event :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "dep3_event Q R S x \<equiv> card {Q,R,S} = 3 \<and> {Q,R,S} \<subseteq> SPRAY x
+                         \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"*)
 
 definition dep3_spray :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> ('a set) set \<Rightarrow> bool" where
   "dep3_spray Q R S SPR \<equiv> \<exists>x. SPRAY x = SPR \<and> dep3_event Q R S x"
@@ -278,7 +281,7 @@ text \<open>
 inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> bool" where
   dep_3: "dep3 T A B \<Longrightarrow> dep_path T {A, B}"
 | dep_n:   "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S'';
-             S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"
+             S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"(* S' \<noteq> S'';*)
 
 lemma card_Suc_ex:
   assumes "card A = Suc (card B)" "B \<subseteq> A"
@@ -297,25 +300,29 @@ proof -
   qed
 qed
 
-lemma
+lemma union_of_subsets_by_singleton:
   assumes "Suc (card S') = card S" "Suc (card S'') = card S"
-    and "S' \<noteq> S''" "S' \<subseteq> S" "S'' \<subseteq> S" (*"card S \<ge> 2"*)
-  shows "S' \<union> S'' = S" using assms card_Suc_ex (*eval_nat_numeral*)
-proof - oops
+    and "S' \<noteq> S''" "S' \<subseteq> S" "S'' \<subseteq> S"
+  shows "S' \<union> S'' = S"
+    using assms card_Suc_ex (* TODO VERY LONG *)
+    by (smt (verit) Un_commute Un_insert_right insertI1 insert_absorb insert_eq_iff sup.absorb_iff2)
+(*proof -
   have "finite S"
-    using assms(4) card_ge_0_finite card.infinite by fastforce
-  obtain x where "insert x S' = S" "x\<notin>S'" using assms(1,4) card.insert_remove \<open>finite S\<close>
-oops
+    using assms(1,4) by (metis Zero_not_Suc card.infinite)
+  obtain x where "insert x S' = S" "x\<notin>S'"
+    using assms(1,4) by (metis card_Suc_ex)
+oops*)
 
 lemma dep_path_card_2: "dep_path T S \<Longrightarrow> card S \<ge> 2"
   by (induct rule: dep_path.induct, simp add: dep3_def dep3_event_def, linarith)
 
 lemma
   assumes "dep3 T S1 S2" "dep_path S1 S'" "dep_path S2 S''"
-          "S' \<subseteq> S" "S'' \<subseteq> S" "card S' = card S - 1" "card S'' = card S - 1"
-  shows "S' \<union> S'' = S" using assms
+          "S' \<subseteq> S" "S'' \<subseteq> S" "Suc (card S') = card S" "Suc (card S'') = card S"
+  shows "S' \<union> S'' = S" (*using assms union_of_subsets_by_singleton*)
 proof -
-  have 
+  have "S1 \<noteq> S2" using assms(1) dep3_def dep3_event_def by blast
+  hence "S' \<noteq> S''" using assms(2-3)
 
 lemma "dep_path T S \<Longrightarrow> \<exists>x. S \<subseteq> SPRAY x \<and> T \<in> SPRAY x"
 proof (induction rule: dep_path.induct)
