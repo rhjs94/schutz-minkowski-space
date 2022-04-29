@@ -119,8 +119,8 @@ text \<open>
   their own. Schutz's notation is: $Q(b,\emptyset)$.
 \<close>
 
-definition unreachable_subset :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a set" ("\<emptyset> _ _" [100, 100] 100) where
-  "unreachable_subset Q b \<equiv> {x\<in>Q. Q \<in> \<P> \<and> b \<in> \<E> \<and> b \<notin> Q \<and> \<not>(path_ex b x)}"
+definition unreachable_subset :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a set" ("unreach-on _ from _" [100, 100]) where
+  "unreach-on Q from b \<equiv> {x\<in>Q. Q \<in> \<P> \<and> b \<in> \<E> \<and> b \<notin> Q \<and> \<not>(path_ex b x)}"
 
 
 section "Primitives: Kinematic Triangle"
@@ -565,9 +565,11 @@ using abc_sym abc_abc_neq abc_bcd_abd assms by blast+
 
 section "Betweenness: Unreachable Subset Via a Path"
 
-definition unreachable_subset_via :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a set"
-                                     ("\<emptyset> _ from _ via _ at _" [100, 100, 100, 100] 100) where
-  "unreachable_subset_via Q Qa R x \<equiv> {Qy. [x;Qy;Qa] \<and> (\<exists>Rw\<in>R. Qa \<in> \<emptyset> Q Rw \<and> Qy \<in> \<emptyset> Q Rw)}"
+definition unreachable_subset_via :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a set" where
+  "unreachable_subset_via Q Qa R x \<equiv> {Qy. [x;Qy;Qa] \<and> (\<exists>Rw\<in>R. Qa \<in> unreach-on Q from Rw \<and> Qy \<in> unreach-on Q from Rw)}"
+
+definition unreachable_subset_via_notation ("unreach-via _ on _ from _ to _" [100, 100, 100, 100] 100)
+  where "unreach-via P on Q from a to x \<equiv> unreachable_subset_via Q a P x"
 
 (*definition unreachable_subset_via2 :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a set"
                                      ("unreach _ from _ via _ at _" [100, 100, 100, 100] 100) where
@@ -1257,13 +1259,13 @@ section "MinkowskiUnreachable: I5-I7"
 thm choice
 locale MinkowskiUnreachable = MinkowskiChain +
   (* I5 *)
-  assumes two_in_unreach: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>; b \<notin> Q\<rbrakk> \<Longrightarrow> \<exists>x\<in>\<emptyset> Q b. \<exists>y\<in>\<emptyset> Q b. x \<noteq> y"
-      and I6: "\<lbrakk>Q \<in> \<P>; b \<in> (\<E>-Q); {Qx,Qz} \<subseteq> \<emptyset> Q b; Qx\<noteq>Qz\<rbrakk>
+  assumes two_in_unreach: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>; b \<notin> Q\<rbrakk> \<Longrightarrow> \<exists>x\<in>unreach-on Q from b. \<exists>y\<in>unreach-on Q from b. x \<noteq> y"
+      and I6: "\<lbrakk>Q \<in> \<P>; b \<in> (\<E>-Q); {Qx,Qz} \<subseteq> unreach-on Q from b; Qx\<noteq>Qz\<rbrakk>
       \<Longrightarrow> \<exists>X f.  [f\<leadsto>X|Qx..Qz] \<and>
-                 (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and>
-                                         (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
-      and I7: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> Q - \<emptyset> Q b; Qy \<in> \<emptyset> Q b\<rbrakk>
-               \<Longrightarrow> \<exists>g X Qn. [g\<leadsto>X|Qx..Qy..Qn] \<and> Qn \<in> Q - \<emptyset> Q b"
+                 (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> unreach-on Q from b \<and>
+                                         (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b))"
+      and I7: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> Q - unreach-on Q from b; Qy \<in> unreach-on Q from b\<rbrakk>
+               \<Longrightarrow> \<exists>g X Qn. [g\<leadsto>X|Qx..Qy..Qn] \<and> Qn \<in> Q - unreach-on Q from b"
 begin
 
 (*
@@ -1304,14 +1306,14 @@ qed
 *)
 
 lemma I6_old:
-  assumes "Q \<in> \<P>" "b \<notin> Q" "b \<in> \<E>" "Qx \<in> (\<emptyset> Q b)" "Qz \<in> (\<emptyset> Q b)" "Qx\<noteq>Qz"
+  assumes "Q \<in> \<P>" "b \<notin> Q" "b \<in> \<E>" "Qx \<in> (unreach-on Q from b)" "Qz \<in> (unreach-on Q from b)" "Qx\<noteq>Qz"
   shows "\<exists>X. \<exists>f. ch_by_ord f X \<and> f 0 = Qx \<and> f (card X - 1) = Qz \<and>
-                 (\<forall>i\<in>{1..card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b)) \<and>
-                 (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+                 (\<forall>i\<in>{1..card X - 1}. (f i) \<in> unreach-on Q from b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b)) \<and>
+                 (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> unreach-on Q from b))"
 proof -
   from assms I6[of Q b Qx Qz] obtain f X
     where fX: "[f\<leadsto>X|Qx..Qz]"
-              "(\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
+              "(\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> unreach-on Q from b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b))"
     using DiffI Un_Diff_cancel by blast
   show ?thesis
   proof ((rule exI)+, intro conjI, rule_tac[4] ballI, rule_tac[5] impI; (intro conjI)?)
@@ -1319,9 +1321,9 @@ proof -
       using fX(1) chain_defs by meson+
     { 
       fix i assume i_asm: "i\<in>{1..card X - 1}"
-      show 2: "f i \<in> \<emptyset> Q b"
+      show 2: "f i \<in> unreach-on Q from b"
         using fX(2) i_asm by fastforce
-      show 3: "\<forall>Qy\<in>\<E>. [f (i - 1);Qy;f i] \<longrightarrow> Qy \<in> \<emptyset> Q b"
+      show 3: "\<forall>Qy\<in>\<E>. [f (i - 1);Qy;f i] \<longrightarrow> Qy \<in> unreach-on Q from b"
         using fX(2) i_asm by blast
     } {
       assume X_asm: "short_ch X"
@@ -1329,7 +1331,7 @@ proof -
         using fX(1) points_in_chain by auto
       have "{1..card X-1} = {1}"
         using X_asm short_ch_alt(2) by force
-      thus 5: "\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b"
+      thus 5: "\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> unreach-on Q from b"
         using fX(2) 1(2,3) by auto
     }
   qed
@@ -1337,7 +1339,7 @@ qed
 
 lemma card_unreach_geq_2:
   assumes "Q\<in>\<P>" "b\<in>\<E>-Q"
-  shows "2 \<le> card (\<emptyset> Q b) \<or> (infinite (\<emptyset> Q b))"
+  shows "2 \<le> card (unreach-on Q from b) \<or> (infinite (unreach-on Q from b))"
   using DiffD1 assms(1) assms(2) card_le_Suc0_iff_eq two_in_unreach by fastforce
 
 end
@@ -1347,7 +1349,7 @@ section "MinkowskiSymmetry: Symmetry"
 locale MinkowskiSymmetry = MinkowskiUnreachable +
   assumes Symmetry: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S;
                x \<in> Q\<inter>R\<inter>S; Q\<^sub>a \<in> Q; Q\<^sub>a \<noteq> x;
-               \<emptyset> Q from Q\<^sub>a via R at x = \<emptyset> Q from Q\<^sub>a via S at x\<rbrakk>
+               unreach-via R on Q from Q\<^sub>a to x = unreach-via S on Q from Q\<^sub>a to x\<rbrakk>
                \<Longrightarrow> \<exists>\<theta>::'a\<Rightarrow>'a.                               \<^cancel>\<open>i) there is a map \<theta>:\<E>\<Rightarrow>\<E>\<close>
                      bij_betw (\<lambda>P. {\<theta> y | y. y\<in>P}) \<P> \<P>      \<^cancel>\<open>ii) which induces a bijection \<Theta>\<close>
                      \<and> (y\<in>Q \<longrightarrow> \<theta> y = y)                    \<^cancel>\<open>iii) \<theta> leaves Q invariant\<close>
