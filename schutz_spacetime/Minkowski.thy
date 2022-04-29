@@ -280,8 +280,9 @@ text \<open>
 
 inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> bool" where
   dep_3: "dep3 T A B \<Longrightarrow> dep_path T {A, B}"
-| dep_n:   "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S'';
-             S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"(* S' \<noteq> S'';*)
+| dep_n:   "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S''; S' \<noteq> S'';
+             S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"
+(* S' \<noteq> S''; TODO is this one necessary? definitely easier...*)
 
 lemma card_Suc_ex:
   assumes "card A = Suc (card B)" "B \<subseteq> A"
@@ -304,37 +305,40 @@ lemma union_of_subsets_by_singleton:
   assumes "Suc (card S') = card S" "Suc (card S'') = card S"
     and "S' \<noteq> S''" "S' \<subseteq> S" "S'' \<subseteq> S"
   shows "S' \<union> S'' = S"
-    using assms card_Suc_ex (* TODO VERY LONG *)
-    by (smt (verit) Un_commute Un_insert_right insertI1 insert_absorb insert_eq_iff sup.absorb_iff2)
-(*proof -
-  have "finite S"
-    using assms(1,4) by (metis Zero_not_Suc card.infinite)
-  obtain x where "insert x S' = S" "x\<notin>S'"
-    using assms(1,4) by (metis card_Suc_ex)
-oops*)
+    (*using assms card_Suc_ex (* Takes VERY LONG *)
+    by (smt (verit) Un_commute Un_insert_right insertI1 insert_absorb insert_eq_iff sup.absorb_iff2)*)
+proof -
+  obtain x y where x: "insert x S' = S" "x\<notin>S'" and y: "insert y S'' = S" "y\<notin>S''"
+    using assms(1,2,4,5) by (metis card_Suc_ex)
+  have "x\<noteq>y" using x y assms(3) by (metis insert_eq_iff)
+  thus ?thesis using x(1) y(1) by blast
+qed
 
 lemma dep_path_card_2: "dep_path T S \<Longrightarrow> card S \<ge> 2"
   by (induct rule: dep_path.induct, simp add: dep3_def dep3_event_def, linarith)
 
-lemma
-  assumes "dep3 T S1 S2" "dep_path S1 S'" "dep_path S2 S''"
-          "S' \<subseteq> S" "S'' \<subseteq> S" "Suc (card S') = card S" "Suc (card S'') = card S"
-  shows "S' \<union> S'' = S" (*using assms union_of_subsets_by_singleton*)
+(* This one isn't needed if \<open>S' \<noteq> S''\<close> is in the definition, and may be hard *)
+(*lemma dep_subsprays_neq:
+  assumes deps: "dep3 T S1 S2" "dep_path S1 S'" "dep_path S2 S''"
+    and subs: "S' \<subseteq> S" "S'' \<subseteq> S"
+    and cards: "Suc (card S') = card S" "Suc (card S'') = card S"
+  shows "S' \<noteq> S''"
 proof -
-  have "S1 \<noteq> S2" using assms(1) dep3_def dep3_event_def by blast
-  hence "S' \<noteq> S''" using assms(2-3)
+  have "S1 \<noteq> S2" using deps(1) dep3_def dep3_event_def by blast
+oops*)
 
-lemma "dep_path T S \<Longrightarrow> \<exists>x. S \<subseteq> SPRAY x \<and> T \<in> SPRAY x"
+(*lemma "dep_path T S \<Longrightarrow> \<exists>x. S \<subseteq> SPRAY x \<and> T \<in> SPRAY x"
 proof (induction rule: dep_path.induct)
-  case dep_two
-  show ?case by (meson dep3_def dep3_event_def dep_two.hyps empty_subsetI insert_subset)
+  case dep_3
+  show ?case by (meson dep3_def dep3_event_def dep_3.hyps empty_subsetI insert_subset)
 next
   case (dep_n T S1 S2 S' S'' S)
-  obtain x where "S' \<subseteq> SPRAY x" "S1 \<in> SPRAY x"
-    using dep_n.IH(1) by blast
-  have 
+  obtain x y where x: "S' \<subseteq> SPRAY x" "S1 \<in> SPRAY x" and y: "S'' \<subseteq> SPRAY y" "S2 \<in> SPRAY y"
+    using dep_n.IH(1,2) by blast
+  obtain z where z: "dep3_event T S1 S2 z"
+    using dep3_def dep_n.hyps(1) by auto
   show ?case using dep_n dep3_def dep3_event_def
-oops
+oops*)
 
 (*inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> 'a \<Rightarrow> bool" where
   dep_two: "dep3_event T A B x \<Longrightarrow> dep_path T {A, B} x"
@@ -348,7 +352,7 @@ text \<open>
 \<close>
 
 definition dep_set :: "('a set) set \<Rightarrow> bool" where
-  "dep_set S \<equiv> \<exists>x. \<exists>S'\<subseteq>S. \<exists>P\<in>(S-S'). dep_path P S' x"
+  "dep_set S \<equiv> \<exists>S'\<subseteq>S. \<exists>P\<in>(S-S'). dep_path P S'"
 
 lemma dependent_superset:
   assumes "dep_set A" and "A\<subseteq>B"
@@ -357,33 +361,37 @@ lemma dependent_superset:
   by (meson Diff_mono dual_order.trans in_mono order_refl)
 
 lemma path_in_dep_set:
-  assumes "dep3_event P Q R x"
+  assumes "dep3 P Q R"
   shows "dep_set {P,Q,R}"
-  using dep_two assms dep3_event_def dep_set_def
-  by (metis DiffI insertE insertI1 singletonD subset_insertI)
+  using dep_3 assms dep3_def dep_set_def dep3_event_def
+  by (metis DiffI insert_iff singletonD subset_insertI)
 
 lemma path_in_dep_set2:
-  assumes "dep3_event P Q R x"
-  shows "dep_path P {P,Q,R} x"
+  assumes "dep3 P Q R"
+  shows "dep_path P {P,Q,R}"
 proof
-  let ?S1 = "Q"
-  let ?S2 = "R"
   let ?S' = "{P,R}"
   let ?S'' = "{P,Q}"
-  show "{P, Q, R} \<subseteq> SPRAY x" using assms dep3_event_def by blast
-  show "3 \<le> card {P, Q, R}" using assms dep3_event_def by auto
-  show "dep_path P {?S1, ?S2} x" using assms dep3_event_def by (simp add: dep_two)
+  have all_neq: "P\<noteq>Q" "P\<noteq>R" "R\<noteq>Q" using assms dep3_def dep3_event_def by auto
+  show "dep3 P Q R" using assms dep3_event_def by (simp add: dep_3)
+  show "dep_path Q ?S'" using assms dep3_event_permute(2) dep_3 dep3_def by meson
+  show "dep_path R ?S''" using assms dep3_event_permute(4) dep_3 dep3_def by meson
   show "?S' \<subseteq> {P, Q, R}" by simp
   show "?S'' \<subseteq> {P, Q, R}" by simp
-  show "card ?S' = card {P, Q, R} - 1" using assms dep3_event_def by auto
-  show "card ?S'' = card {P, Q, R} - 1" using assms dep3_event_def by auto
-  show "dep_path ?S1 ?S' x" by (simp add: assms dep3_event_permute(2) dep_two)
-  show "dep_path ?S2 ?S'' x" using assms dep3_event_permute(2,4) dep_two by blast
+  show "Suc (card ?S') = card {P, Q, R}" "Suc (card ?S'') = card {P, Q, R}"
+    using all_neq card_insert_disjoint by auto
+  show "?S' \<noteq> ?S''" by (simp add: all_neq(3) doubleton_eq_iff)
 qed
 
 
 definition indep_set :: "('a set) set \<Rightarrow> bool" where
-  "indep_set S \<equiv> \<not>(\<exists>T \<subseteq> S. dep_set T)"
+  "indep_set S \<equiv> \<not> dep_set S"
+
+lemma indep_set_has_no_dep_subsets: "indep_set S \<Longrightarrow> \<not>(\<exists>T \<subseteq> S. dep_set T)"
+  using indep_set_def dependent_superset by blast
+
+(*definition indep_set :: "('a set) set \<Rightarrow> bool" where
+  "indep_set S \<equiv> \<not>(\<exists>T \<subseteq> S. dep_set T)"*)
 
 
 section "Primitives: 3-SPRAY"
@@ -396,10 +404,10 @@ text \<open>
 \<close>
 
 definition n_SPRAY_basis :: "nat \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> bool"  where
-  "n_SPRAY_basis p S x \<equiv> S\<subseteq>SPRAY x \<and> card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
+  "n_SPRAY_basis p S x \<equiv> S\<subseteq>SPRAY x \<and> card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
 
 definition n_SPRAY :: "nat \<Rightarrow> 'a \<Rightarrow> bool" ("_-SPR _" [100,100]) where
-  "p-SPR x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"
+  "p-SPR x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
 
 (*definition three_SPRAY :: "'a \<Rightarrow> bool" where
   "three_SPRAY x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = 4 \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"*)
@@ -407,7 +415,7 @@ abbreviation three_SPRAY :: "'a \<Rightarrow> bool" where
   "three_SPRAY x \<equiv> 3-SPR x"
 
 lemma n_SPRAY_intro:
-  assumes "S\<subseteq>SPRAY x" "card S = (Suc p)" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S x"
+  assumes "S\<subseteq>SPRAY x" "card S = (Suc p)" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S"
   shows "p-SPR x"
   using assms n_SPRAY_def by blast
 
@@ -426,11 +434,11 @@ lemma three_SPRAY_alt:
     S1 \<noteq> S2 \<and> S1 \<noteq> S3 \<and> S1 \<noteq> S4 \<and> S2 \<noteq> S3 \<and> S2 \<noteq> S4 \<and> S3 \<noteq> S4
     \<and> S1 \<in> SPRAY x \<and> S2 \<in> SPRAY x \<and> S3 \<in> SPRAY x \<and> S4 \<in> SPRAY x
     \<and> (indep_set {S1, S2, S3, S4})
-    \<and> (\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x))"
+    \<and> (\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4}))"
   (is "three_SPRAY x \<longleftrightarrow> ?three_SPRAY' x")
 proof
   assume "three_SPRAY x"
-  then obtain S where ns: "S\<subseteq>SPRAY x" "card S = 4" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S x"
+  then obtain S where ns: "S\<subseteq>SPRAY x" "card S = 4" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S"
     using n_SPRAY_def by auto
   then obtain S\<^sub>1 S\<^sub>2 S\<^sub>3 S\<^sub>4 where
     "S = {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}" and
@@ -445,7 +453,7 @@ next
     "S\<^sub>1 \<noteq> S\<^sub>2 \<and> S\<^sub>1 \<noteq> S\<^sub>3 \<and> S\<^sub>1 \<noteq> S\<^sub>4 \<and> S\<^sub>2 \<noteq> S\<^sub>3 \<and> S\<^sub>2 \<noteq> S\<^sub>4 \<and> S\<^sub>3 \<noteq> S\<^sub>4"
     "S\<^sub>1 \<in> SPRAY x \<and> S\<^sub>2 \<in> SPRAY x \<and> S\<^sub>3 \<in> SPRAY x \<and> S\<^sub>4 \<in> SPRAY x"
     "indep_set {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}"
-    "\<forall>S\<in>SPRAY x. dep_path S {S\<^sub>1,S\<^sub>2,S\<^sub>3,S\<^sub>4} x"
+    "\<forall>S\<in>SPRAY x. dep_path S {S\<^sub>1,S\<^sub>2,S\<^sub>3,S\<^sub>4}"
     by metis
   show "three_SPRAY x"
     apply (intro n_SPRAY_intro[of "{S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4}"])
@@ -456,7 +464,7 @@ lemma three_SPRAY_intro:
   assumes "S1 \<noteq> S2 \<and> S1 \<noteq> S3 \<and> S1 \<noteq> S4 \<and> S2 \<noteq> S3 \<and> S2 \<noteq> S4 \<and> S3 \<noteq> S4"
     and "S1 \<in> SPRAY x \<and> S2 \<in> SPRAY x \<and> S3 \<in> SPRAY x \<and> S4 \<in> SPRAY x"
     and "indep_set {S1, S2, S3, S4}"
-    and "\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4} x"
+    and "\<forall>S\<in>SPRAY x. dep_path S {S1,S2,S3,S4}"
   shows "three_SPRAY x"
   unfolding three_SPRAY_alt by (metis assms)
 
