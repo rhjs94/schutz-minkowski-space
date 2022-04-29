@@ -909,12 +909,12 @@ lemma paths_are_events: "\<forall>Q\<in>\<P>. \<forall>a\<in>Q. a \<in> \<E>"
   by simp
 
 lemma same_empty_unreach:
-  "\<lbrakk>Q \<in> \<P>; a \<in> Q\<rbrakk> \<Longrightarrow> \<emptyset> Q a = {}"
+  "\<lbrakk>Q \<in> \<P>; a \<in> Q\<rbrakk> \<Longrightarrow> unreach-on Q from a = {}"
 apply (unfold unreachable_subset_def)
 by simp
 
 lemma same_path_reachable:
-  "\<lbrakk>Q \<in> \<P>; a \<in> Q; b \<in> Q\<rbrakk> \<Longrightarrow> a \<in> Q - \<emptyset> Q b"
+  "\<lbrakk>Q \<in> \<P>; a \<in> Q; b \<in> Q\<rbrakk> \<Longrightarrow> a \<in> Q - unreach-on Q from b"
 by (simp add: same_empty_unreach)
 
 text \<open>
@@ -923,7 +923,7 @@ text \<open>
 \<close>
 
 lemma same_path_reachable2:
-  "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; a \<in> Q; a \<in> R; b \<in> Q\<rbrakk> \<Longrightarrow> a \<in> R - \<emptyset> R b"
+  "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; a \<in> Q; a \<in> R; b \<in> Q\<rbrakk> \<Longrightarrow> a \<in> R - unreach-on R from b"
   unfolding unreachable_subset_def by blast
 
 (* This will never be used without R \<in> \<P> but we might as well leave it off as the proof doesn't
@@ -933,13 +933,13 @@ lemma cross_in_reachable:
       and a_inQ: "a \<in> Q"
       and b_inQ: "b \<in> Q"
       and b_inR: "b \<in> R"
-  shows "b \<in> R - \<emptyset> R a"
+  shows "b \<in> R - unreach-on R from a"
 unfolding unreachable_subset_def using a_inQ b_inQ b_inR path_Q by auto
 
 lemma reachable_path:
   assumes path_Q: "Q \<in> \<P>"
       and b_event: "b \<in> \<E>"
-      and a_reachable: "a \<in> Q - \<emptyset> Q b"
+      and a_reachable: "a \<in> Q - unreach-on Q from b"
   shows "\<exists>R\<in>\<P>. a \<in> R \<and> b \<in> R"
 proof -
   have a_inQ: "a \<in> Q" using a_reachable by simp
@@ -1103,7 +1103,7 @@ proof -
     thus ?thesis by blast
   next
     assume "a\<notin>Q"
-    then obtain b where "b\<in>\<emptyset> Q a"
+    then obtain b where "b\<in>unreach-on Q from a"
       using two_in_unreach \<open>a \<in> \<E>\<close> assms
       by blast
     thus ?thesis
@@ -1136,7 +1136,7 @@ proof
 qed
 
 lemma unreach_ge2_then_ge2:
-  assumes "\<exists>x\<in>\<emptyset> Q b. \<exists>y\<in>\<emptyset> Q b. x \<noteq> y"
+  assumes "\<exists>x\<in>unreach-on Q from b. \<exists>y\<in>unreach-on Q from b. x \<noteq> y"
   shows "\<exists>x\<in>Q. \<exists>y\<in>Q. x \<noteq> y"
 using assms unreachable_subset_def by auto
 
@@ -1150,9 +1150,9 @@ text \<open>
 lemma chain_on_path_I6:
   assumes path_Q: "Q\<in>\<P>"
       and event_b: "b\<notin>Q" "b\<in>\<E>"
-      and unreach: "Q\<^sub>x \<in> \<emptyset> Q b" "Q\<^sub>z \<in> \<emptyset> Q b" "Q\<^sub>x \<noteq> Q\<^sub>z"
+      and unreach: "Q\<^sub>x \<in> unreach-on Q from b" "Q\<^sub>z \<in> unreach-on Q from b" "Q\<^sub>x \<noteq> Q\<^sub>z"
       and X_def: "[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]"
-            "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Q\<^sub>y\<in>\<E>. [(f(i-1)); Q\<^sub>y; f i] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b))"
+            "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> unreach-on Q from b \<and> (\<forall>Q\<^sub>y\<in>\<E>. [(f(i-1)); Q\<^sub>y; f i] \<longrightarrow> Q\<^sub>y \<in> unreach-on Q from b))"
   shows "X\<subseteq>Q"
 proof -
   have 1: "path Q Q\<^sub>x Q\<^sub>z" using unreachable_subset_def unreach path_Q by simp
@@ -1247,16 +1247,16 @@ text \<open>
   The same assumptions as I7, different conclusion.
   This doesn't just give us boundedness, it gives us another event outside of the unreachable
   set, as long as we have one already.
-  I7 conclusion:  \<open>\<exists>X Q0 Qm Qn. [\<leadsto>X|Q0 .. Qm .. Qn] \<and> Q0 = ?Qx \<and> Qm = ?Qy \<and> Qn \<in> ?Q - \<emptyset> ?Q ?b\<close>
+  I7 conclusion:  \<open>\<exists>g X Qn. [g\<leadsto>X|Qx..Qy..Qn] \<and> Qn \<in> Q - unreach-on Q from b\<close>
 \<close>
 
 theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
   assumes path_Q: "Q \<in> \<P>"
       and b_nin_Q: "b \<notin> Q"
       and b_event: "b \<in> \<E>"
-      and Qx_reachable: "Qx \<in> Q - \<emptyset> Q b"
-      and Qy_unreachable: "Qy \<in> \<emptyset> Q b"
-  shows "\<exists>Qz\<in>Q - \<emptyset> Q b. [Qx;Qy;Qz] \<and> Qx \<noteq> Qz"
+      and Qx_reachable: "Qx \<in> Q - unreach-on Q from b"
+      and Qy_unreachable: "Qy \<in> unreach-on Q from b"
+  shows "\<exists>Qz\<in>Q - unreach-on Q from b. [Qx;Qy;Qz] \<and> Qx \<noteq> Qz"
   using assms I7 finite_long_chain_with_def fin_ch_betw
   by (metis first_neq_last)
 
@@ -1374,12 +1374,12 @@ lemma path_past_unreach:
 proof -
   obtain d where d_event: "d \<in> \<E>"
              and d_notinR: "d \<notin> R" using external_event path_R by blast
-  have b_reachable: "b \<in> R - \<emptyset> R a" using cross_in_reachable path_R a_inQ b_inQ b_inR path_Q by simp
+  have b_reachable: "b \<in> R - unreach-on R from a" using cross_in_reachable path_R a_inQ b_inQ b_inR path_Q by simp
   have a_notinR: "a \<notin> R" using cross_once_notin
                                Q_neq_R a_inQ a_neq_b b_inQ b_inR path_Q path_R by blast
-  then obtain u where "u \<in> \<emptyset> R a"
+  then obtain u where "u \<in> unreach-on R from a"
       using two_in_unreach a_inQ in_path_event path_Q path_R by blast
-  then obtain c where c_reachable: "c \<in> R - \<emptyset> R a"
+  then obtain c where c_reachable: "c \<in> R - unreach-on R from a"
                   and c_neq_b: "b \<noteq> c" using unreachable_set_bounded
                                         [where Q = R and Qx = b and b = a and Qy = u]
                                         path_R d_event d_notinR
@@ -1405,7 +1405,7 @@ proof -
   thus ?thesis
   proof cases
     assume e_eq_a: "e = a"
-    then have "\<exists>c. c \<in> \<emptyset> R b" using R_neq_Q a_inQ a_neq_b b_inQ e_inR path_Q path_R
+    then have "\<exists>c. c \<in> unreach-on R from b" using R_neq_Q a_inQ a_neq_b b_inQ e_inR path_Q path_R
                                     two_in_unreach path_unique in_path_event by metis
     thus ?thesis using R_neq_Q e_eq_a e_inR path_Q path_R
                        eq_paths ge2_events_lax by metis
@@ -1437,11 +1437,11 @@ section "3.4 Prolongation"
 context MinkowskiSpacetime begin
 
 lemma (in MinkowskiPrimitive) unreach_on_path:
-  "a \<in> \<emptyset> Q b \<Longrightarrow> a \<in> Q"
+  "a \<in> unreach-on Q from b \<Longrightarrow> a \<in> Q"
 using unreachable_subset_def by simp
 
 lemma (in MinkowskiUnreachable) unreach_equiv:
-  "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; a \<in> Q; b \<in> R; a \<in> \<emptyset> Q b\<rbrakk> \<Longrightarrow> b \<in> \<emptyset> R a"
+  "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; a \<in> Q; b \<in> R; a \<in> unreach-on Q from b\<rbrakk> \<Longrightarrow> b \<in> unreach-on R from a"
   unfolding unreachable_subset_def by auto
 
 theorem (*6i*) prolong_betw:
@@ -1456,11 +1456,11 @@ proof -
                 and path_ae: "path ae a e"
     using ex_crossing_at a_inQ path_Q in_path_event by blast
   have "b \<notin> ae" using a_inQ ab_neq b_inQ e_notinQ eq_paths path_Q path_ae by blast
-  then obtain f where f_unreachable: "f \<in> \<emptyset> ae b"
+  then obtain f where f_unreachable: "f \<in> unreach-on ae from b"
     using two_in_unreach b_inQ in_path_event path_Q path_ae by blast
-  then have b_unreachable: "b \<in> \<emptyset> Q f" using unreach_equiv
+  then have b_unreachable: "b \<in> unreach-on Q from f" using unreach_equiv
       by (metis (mono_tags, lifting) CollectD b_inQ path_Q unreachable_subset_def)
-  have a_reachable: "a \<in> Q - \<emptyset> Q f"
+  have a_reachable: "a \<in> Q - unreach-on Q from f"
       using same_path_reachable2 [where Q = ae and R = Q and a = a and b = f]
             path_ae a_inQ path_Q f_unreachable unreach_on_path by blast
   thus ?thesis
@@ -1849,7 +1849,7 @@ text \<open>
 \<close>
 
 lemma unreachable_bounded_path_only:
-  assumes d'_def: "d'\<notin> \<emptyset> ab e" "d'\<in>ab" "d'\<noteq>e"
+  assumes d'_def: "d'\<notin> unreach-on ab from e" "d'\<in>ab" "d'\<noteq>e"
       and e_event: "e \<in> \<E>"
       and path_ab: "ab \<in> \<P>"
       and e_notin_S: "e \<notin> ab"
@@ -1862,7 +1862,7 @@ proof (rule ccontr)
     using d'_def(3) by blast
   moreover have "ab\<in>\<P> \<and> e\<in>\<E> \<and> e\<notin>ab"
     by (simp add: e_event e_notin_S path_ab)
-  ultimately have "d'\<in> \<emptyset> ab e"
+  ultimately have "d'\<in> unreach-on ab from e"
     unfolding unreachable_subset_def using d'_def(2)
     by blast
   thus False
@@ -1888,17 +1888,17 @@ proof -
   have "ab\<in>\<P> \<and> e\<notin>ab"
     using S_neq_ab a_inS e_inS e_neq_a eq_paths path_S path_ab
     by auto
-  have "b \<in> ab - \<emptyset> ab e"
+  have "b \<in> ab - unreach-on ab from e"
     using cross_in_reachable path_ab path_be
     by blast
-  have "d \<in> \<emptyset> ab e"
+  have "d \<in> unreach-on ab from e"
     using no_de abd path_ab e_event \<open>e\<notin>ab\<close>
       betw_c_in_path unreachable_bounded_path_only
     by blast
   have  "\<exists>d' d'e. d'\<in>ab \<and> path d'e d' e \<and> [b; d; d']"
   proof -
-    obtain d' where "[b; d; d']" "d'\<in>ab" "d'\<notin> \<emptyset> ab e" "b\<noteq>d'" "e\<noteq>d'"
-      using unreachable_set_bounded \<open>b \<in> ab - \<emptyset> ab e\<close> \<open>d \<in> \<emptyset> ab e\<close> e_event \<open>e\<notin>ab\<close> path_ab
+    obtain d' where "[b; d; d']" "d'\<in>ab" "d'\<notin> unreach-on ab from e" "b\<noteq>d'" "e\<noteq>d'"
+      using unreachable_set_bounded \<open>b \<in> ab - unreach-on ab from e\<close> \<open>d \<in> unreach-on ab from e\<close> e_event \<open>e\<notin>ab\<close> path_ab
       by (metis DiffE)
     then obtain d'e where "path d'e d' e"
       using unreachable_bounded_path_only e_event \<open>e\<notin>ab\<close> path_ab
@@ -2091,14 +2091,14 @@ proof (cases)
     using \<open>[e; c'; f]\<close> by blast
 next
   assume "\<not>(\<exists>bf. path bf b f)"
-  hence "f \<in> \<emptyset> c'e b"
+  hence "f \<in> unreach-on c'e from b"
     using assms(1-5,7-9) abc_abc_neq betw_events eq_paths unreachable_bounded_path_only
     by metis
-  moreover have "c' \<in> c'e - \<emptyset> c'e b"
+  moreover have "c' \<in> c'e - unreach-on c'e from b"
     using c'd'_def cross_in_reachable path_ab by blast
   moreover have "b\<in>\<E> \<and> b\<notin>c'e"
-    using \<open>f \<in> \<emptyset> c'e b\<close> betw_events c'd'_def same_empty_unreach by auto
-  ultimately obtain f' where f'_def: "[c'; f; f']" "f'\<in>c'e" "f'\<notin> \<emptyset> c'e b" "c'\<noteq>f'" "b\<noteq>f'"
+    using \<open>f \<in> unreach-on c'e from b\<close> betw_events c'd'_def same_empty_unreach by auto
+  ultimately obtain f' where f'_def: "[c'; f; f']" "f'\<in>c'e" "f'\<notin> unreach-on c'e from b" "c'\<noteq>f'" "b\<noteq>f'"
     using unreachable_set_bounded c'd'_def
     by (metis DiffE)
   hence "[e; c'; f']"
@@ -2129,15 +2129,15 @@ next
     using betw_c_in_path f_def c'd'_def(5) by blast
   have "c'\<in> ab" "d'\<in> ab"
     using betw_a_in_path betw_c_in_path c'd'_def(1,2) path_ab by blast+
-  have "f \<in> \<emptyset> c'e b"
+  have "f \<in> unreach-on c'e from b"
     using no_path assms(1,4-9) path_S_2 \<open>f\<in>c'e\<close> \<open>c'\<in>ab\<close> \<open>d'\<in>ab\<close>
       abc_abc_neq betw_events eq_paths unreachable_bounded_path_only
     by metis
-  moreover have "c' \<in> c'e - \<emptyset> c'e b"
+  moreover have "c' \<in> c'e - unreach-on c'e from b"
     using c'd'_def cross_in_reachable path_ab \<open>c' \<in> ab\<close> by blast
   moreover have "b\<in>\<E> \<and> b\<notin>c'e"
-    using \<open>f \<in> \<emptyset> c'e b\<close> betw_events c'd'_def same_empty_unreach by auto
-  ultimately obtain f' where f'_def: "[c'; f; f']" "f'\<in>c'e" "f'\<notin> \<emptyset> c'e b" "c'\<noteq>f'" "b\<noteq>f'"
+    using \<open>f \<in> unreach-on c'e from b\<close> betw_events c'd'_def same_empty_unreach by auto
+  ultimately obtain f' where f'_def: "[c'; f; f']" "f'\<in>c'e" "f'\<notin> unreach-on c'e from b" "c'\<noteq>f'" "b\<noteq>f'"
     using unreachable_set_bounded c'd'_def
     by (metis DiffE)
   hence "[e; c'; f']"
@@ -2169,14 +2169,14 @@ proof -
     have "\<exists>e\<in>S. e \<noteq> a \<and> (\<exists>be\<in>\<P>. path be b e)"
     proof -
       have b_notinS: "b \<notin> S" using S_neq_ab a_inS path_S path_ab path_unique by blast
-      then obtain x y z where x_in_unreach: "x \<in> \<emptyset> S b"
-                        and y_in_unreach: "y \<in> \<emptyset> S b"
+      then obtain x y z where x_in_unreach: "x \<in> unreach-on S from b"
+                        and y_in_unreach: "y \<in> unreach-on S from b"
                         and x_neq_y: "x \<noteq> y"
-                        and z_in_reach: "z \<in> S - \<emptyset> S b"
+                        and z_in_reach: "z \<in> S - unreach-on S from b"
         using two_in_unreach [where Q = S and b = b]
           in_path_event path_S path_ab a_inS cross_in_reachable
         by blast
-      then obtain w where w_in_reach: "w \<in> S - \<emptyset> S b"
+      then obtain w where w_in_reach: "w \<in> S - unreach-on S from b"
                       and w_neq_z: "w \<noteq> z"
           using unreachable_set_bounded [where Q = S and b = b and Qx = z and Qy = x]
                 b_notinS in_path_event path_S path_ab by blast
@@ -7358,9 +7358,9 @@ subsection \<open>Theorem 13 (Connectedness of the Unreachable Set)\<close>
 theorem (*13*) unreach_connected:
   assumes path_Q: "Q\<in>\<P>"
       and event_b: "b\<notin>Q" "b\<in>\<E>"
-      and unreach: "Q\<^sub>x \<in> \<emptyset> Q b" "Q\<^sub>z \<in> \<emptyset> Q b" "Q\<^sub>x \<noteq> Q\<^sub>z"
+      and unreach: "Q\<^sub>x \<in> unreach-on Q from b" "Q\<^sub>z \<in> unreach-on Q from b" "Q\<^sub>x \<noteq> Q\<^sub>z"
       and xyz: "[Q\<^sub>x; Q\<^sub>y; Q\<^sub>z]"
-    shows "Q\<^sub>y \<in> \<emptyset> Q b"
+    shows "Q\<^sub>y \<in> unreach-on Q from b"
 proof -
 
   text \<open>First we obtain the chain from I6.\<close>
@@ -7370,8 +7370,8 @@ proof -
     using in_path_event path_Q by blast
   text\<open>legacy: I6_old instead of I6\<close>
   obtain X f where X_def: "ch_by_ord f X" "f 0 = Q\<^sub>x" "f (card X - 1) = Q\<^sub>z"
-      "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
-      "short_ch X \<longrightarrow> Q\<^sub>x \<in> X \<and> Q\<^sub>z \<in> X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> \<emptyset> Q b)"
+      "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> unreach-on Q from b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b))"
+      "short_ch X \<longrightarrow> Q\<^sub>x \<in> X \<and> Q\<^sub>z \<in> X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> unreach-on Q from b)"
     using I6_old [OF assms(1-6)] by blast
   hence fin_X: "finite X"
     using unreach(3) not_less by fastforce
@@ -7740,7 +7740,7 @@ proof -
       }
     } qed
   qed
-qed
+(*qed*) oops
 
 
 lemma (*for 14i*) union_of_bounded_sets_is_bounded2:
@@ -7753,7 +7753,7 @@ lemma (*for 14i*) union_of_bounded_sets_is_bounded2:
 
 text \<open>
   Schutz proves a mildly stronger version of this theorem than he states. Namely, he gives an
-  additional condition that has to be fulfilled by the bounds $y,z$ in the proof (\<open>y,z\<notin>\<emptyset> Q ab\<close>).
+  additional condition that has to be fulfilled by the bounds $y,z$ in the proof (\<open>y,z\<notin>unreach-on Q from ab\<close>).
   This condition is trivial given \<open>abc_abc_neq\<close>. His stating it in the proof makes me wonder
   whether his (strictly speaking) undefined notion of bounded set is somehow weaker than the
   version using strict betweenness in his theorem statement and used here in Isabelle.
@@ -7764,37 +7764,37 @@ theorem (*14i*) second_existence_thm_1:
   assumes path_Q: "Q\<in>\<P>"
       and events: "a\<notin>Q" "b\<notin>Q"
       and reachable: "path_ex a q1" "path_ex b q2" "q1\<in>Q" "q2\<in>Q" (* "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" *)(*  "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q" *)
-    shows "\<exists>y\<in>Q. \<exists>z\<in>Q. (\<forall>x\<in>\<emptyset> Q a. [y;x;z]) \<and> (\<forall>x\<in>\<emptyset> Q b. [y;x;z])"
+    shows "\<exists>y\<in>Q. \<exists>z\<in>Q. (\<forall>x\<in>unreach-on Q from a. [y;x;z]) \<and> (\<forall>x\<in>unreach-on Q from b. [y;x;z])"
 proof -
   text \<open>Slightly annoying: Schutz implicitly extends \<open>bounded\<close> to sets, so his statements are neater.\<close>
 
 (* alternative way of saying reachable *)
-  have "\<exists>q\<in>Q. q\<notin>(\<emptyset> Q a)" "\<exists>q\<in>Q. q\<notin>(\<emptyset> Q b)"
+  have "\<exists>q\<in>Q. q\<notin>(unreach-on Q from a)" "\<exists>q\<in>Q. q\<notin>(unreach-on Q from b)"
     using cross_in_reachable reachable by blast+
 
   text \<open>This is a helper statement for obtaining bounds in both directions of both unreachable sets.
   Notice this needs Theorem 13 right now, Schutz claims only Theorem 4. I think this is necessary?\<close>
-  have get_bds: "\<exists>la\<in>Q. \<exists>ua\<in>Q. la\<notin>\<emptyset> Q a \<and> ua\<notin>\<emptyset> Q a \<and> (\<forall>x\<in>\<emptyset> Q a. [la;x;ua])"
+  have get_bds: "\<exists>la\<in>Q. \<exists>ua\<in>Q. la\<notin>unreach-on Q from a \<and> ua\<notin>unreach-on Q from a \<and> (\<forall>x\<in>unreach-on Q from a. [la;x;ua])"
     if asm: "a\<notin>Q" "path_ex a q" "q\<in>Q"
     for a q
   proof -
-    obtain Qy where "Qy\<in>\<emptyset> Q a"
+    obtain Qy where "Qy\<in>unreach-on Q from a"
       using asm(2) \<open>a \<notin> Q\<close> in_path_event path_Q two_in_unreach by blast
-    then obtain la where "la \<in> Q - \<emptyset> Q a"
+    then obtain la where "la \<in> Q - unreach-on Q from a"
       using asm(2,3) cross_in_reachable by blast
-    then obtain ua where "ua \<in> Q - \<emptyset> Q a" "[la;Qy;ua]" "la \<noteq> ua"
+    then obtain ua where "ua \<in> Q - unreach-on Q from a" "[la;Qy;ua]" "la \<noteq> ua"
       using unreachable_set_bounded [where Q=Q and b=a and Qx=la and Qy=Qy]
-      using \<open>Qy \<in> \<emptyset> Q a\<close> asm in_path_event path_Q by blast
-    have "la \<notin> \<emptyset> Q a \<and> ua \<notin> \<emptyset> Q a \<and> (\<forall>x\<in>\<emptyset> Q a. (x\<noteq>la \<and> x\<noteq>ua) \<longrightarrow> [la;x;ua])"
+      using \<open>Qy \<in> unreach-on Q from a\<close> asm in_path_event path_Q by blast
+    have "la \<notin> unreach-on Q from a \<and> ua \<notin> unreach-on Q from a \<and> (\<forall>x\<in>unreach-on Q from a. (x\<noteq>la \<and> x\<noteq>ua) \<longrightarrow> [la;x;ua])"
     proof (intro conjI)
-      show "la \<notin> \<emptyset> Q a"
-        using \<open>la \<in> Q - \<emptyset> Q a\<close> by force
+      show "la \<notin> unreach-on Q from a"
+        using \<open>la \<in> Q - unreach-on Q from a\<close> by force
     next
-      show "ua \<notin> \<emptyset> Q a"
-        using \<open>ua \<in> Q - \<emptyset> Q a\<close> by force
-    next show "\<forall>x\<in>\<emptyset> Q a. x \<noteq> la \<and> x \<noteq> ua \<longrightarrow> [la;x;ua]"
+      show "ua \<notin> unreach-on Q from a"
+        using \<open>ua \<in> Q - unreach-on Q from a\<close> by force
+    next show "\<forall>x\<in>unreach-on Q from a. x \<noteq> la \<and> x \<noteq> ua \<longrightarrow> [la;x;ua]"
     proof (safe)
-      fix x assume "x\<in>\<emptyset> Q a" "x\<noteq>la" "x\<noteq>ua"
+      fix x assume "x\<in>unreach-on Q from a" "x\<noteq>la" "x\<noteq>ua"
       {
         assume "x=Qy" hence "[la;x;ua]" by (simp add: \<open>[la;Qy;ua]\<close>)
       } moreover {
@@ -7802,16 +7802,16 @@ proof -
         have "[Qy;x;la] \<or> [la;Qy;x]"
         proof -
           { assume "[x;la;Qy]"
-            hence "la\<in>\<emptyset> Q a"
-              using unreach_connected \<open>Qy\<in>\<emptyset> Q a\<close>\<open>x\<in>\<emptyset> Q a\<close>\<open>x\<noteq>Qy\<close> in_path_event path_Q that by blast
+            hence "la\<in>unreach-on Q from a"
+              using unreach_connected \<open>Qy\<in>unreach-on Q from a\<close>\<open>x\<in>unreach-on Q from a\<close>\<open>x\<noteq>Qy\<close> in_path_event path_Q that by blast
             hence False
-              using \<open>la \<in> Q - \<emptyset> Q a\<close> by blast }
+              using \<open>la \<in> Q - unreach-on Q from a\<close> by blast }
           thus "[Qy;x;la] \<or> [la;Qy;x]"
             using some_betw [where Q=Q and a=x and b=la and c=Qy] path_Q unreach_on_path
-            using \<open>Qy \<in> \<emptyset> Q a\<close> \<open>la \<in> Q - \<emptyset> Q a\<close> \<open>x \<in> \<emptyset> Q a\<close> \<open>x \<noteq> Qy\<close> \<open>x \<noteq> la\<close> by force
+            using \<open>Qy \<in> unreach-on Q from a\<close> \<open>la \<in> Q - unreach-on Q from a\<close> \<open>x \<in> unreach-on Q from a\<close> \<open>x \<noteq> Qy\<close> \<open>x \<noteq> la\<close> by force
         qed
         hence "[la;x;ua]"
-          (* by (smt DiffD1 DiffD2 \<open>Qy \<in> \<emptyset> Q a\<close> \<open>[la;Qy;ua]\<close> \<open>ua \<in> Q - \<emptyset> Q a\<close> \<open>x \<in> \<emptyset> Q a\<close> \<open>x \<noteq> la\<close> abc_abd_acdadc abc_acd_abd abc_only_cba abc_sym in_path_event path_Q some_betw that(1) that(2) unreach_connected unreach_on_path) *)
+          (* by (smt DiffD1 DiffD2 \<open>Qy \<in> unreach-on Q from a\<close> \<open>[la;Qy;ua]\<close> \<open>ua \<in> Q - unreach-on Q from a\<close> \<open>x \<in> unreach-on Q from a\<close> \<open>x \<noteq> la\<close> abc_abd_acdadc abc_acd_abd abc_only_cba abc_sym in_path_event path_Q some_betw that(1) that(2) unreach_connected unreach_on_path) *)
         proof
           assume "[Qy;x;la]"
           thus ?thesis using \<open>[la;Qy;ua]\<close> abc_acd_abd abc_sym by blast
@@ -7821,7 +7821,7 @@ proof -
             using \<open>[la;Qy;ua]\<close> \<open>x \<noteq> ua\<close> abc_abd_acdadc by auto
           have "\<not>[la;ua;x]"
             using unreach_connected that abc_abc_neq abc_acd_bcd in_path_event path_Q
-            by (metis DiffD2 \<open>Qy \<in> \<emptyset> Q a\<close> \<open>[la;Qy;ua]\<close> \<open>ua \<in> Q - \<emptyset> Q a\<close> \<open>x \<in> \<emptyset> Q a\<close>)
+            by (metis DiffD2 \<open>Qy \<in> unreach-on Q from a\<close> \<open>[la;Qy;ua]\<close> \<open>ua \<in> Q - unreach-on Q from a\<close> \<open>x \<in> unreach-on Q from a\<close>)
           show ?thesis
             using \<open>[la;x;ua] \<or> [la;ua;x]\<close> \<open>\<not> [la;ua;x]\<close> by linarith
         qed
@@ -7829,37 +7829,37 @@ proof -
       ultimately show "[la;x;ua]" by blast
     qed
   qed
-    thus ?thesis using \<open>la \<in> Q - \<emptyset> Q a\<close> \<open>ua \<in> Q - \<emptyset> Q a\<close> by force
+    thus ?thesis using \<open>la \<in> Q - unreach-on Q from a\<close> \<open>ua \<in> Q - unreach-on Q from a\<close> by force
   qed
 
-  have "\<exists>y\<in>Q. \<exists>z\<in>Q. (\<forall>x\<in>(\<emptyset> Q a)\<union>(\<emptyset> Q b). [y;x;z])"
+  have "\<exists>y\<in>Q. \<exists>z\<in>Q. (\<forall>x\<in>(unreach-on Q from a)\<union>(unreach-on Q from b). [y;x;z])"
   proof -
-    obtain la ua where "\<forall>x\<in>\<emptyset> Q a. [la;x;ua]"
+    obtain la ua where "\<forall>x\<in>unreach-on Q from a. [la;x;ua]"
       using events(1) get_bds reachable(1,3) by blast
-    obtain lb ub where "\<forall>x\<in>\<emptyset> Q b. [lb;x;ub]"
+    obtain lb ub where "\<forall>x\<in>unreach-on Q from b. [lb;x;ub]"
       using events(2) get_bds reachable(2,4) by blast
-    have "\<emptyset> Q a \<subseteq> Q" "\<emptyset> Q b \<subseteq> Q"
+    have "unreach-on Q from a \<subseteq> Q" "unreach-on Q from b \<subseteq> Q"
       by (simp add: subsetI unreach_on_path)+
-    moreover have "1 < card (\<emptyset> Q a) \<or> infinite (\<emptyset> Q a)"
+    moreover have "1 < card (unreach-on Q from a) \<or> infinite (unreach-on Q from a)"
       using two_in_unreach events(1) in_path_event path_Q reachable(1)
       by (metis One_nat_def card_le_Suc0_iff_eq not_less)
-    moreover have "1 < card (\<emptyset> Q b) \<or> infinite (\<emptyset> Q b)"
+    moreover have "1 < card (unreach-on Q from b) \<or> infinite (unreach-on Q from b)"
       using two_in_unreach events(2) in_path_event path_Q reachable(2)
       by (metis One_nat_def card_le_Suc0_iff_eq not_less)
     ultimately show ?thesis
-      using union_of_bounded_sets_is_bounded [where Q=Q and A="\<emptyset> Q a" and B="\<emptyset> Q b"]
-      using get_bds assms `\<forall>x\<in>\<emptyset> Q a. [la;x;ua]` `\<forall>x\<in>\<emptyset> Q b. [lb;x;ub]`
+      using union_of_bounded_sets_is_bounded [where Q=Q and A="unreach-on Q from a" and B="unreach-on Q from b"]
+      using get_bds assms `\<forall>x\<in>unreach-on Q from a. [la;x;ua]` `\<forall>x\<in>unreach-on Q from b. [lb;x;ub]`
       by blast
   qed
 
-  then obtain y z where "y\<in>Q" "z\<in>Q" "(\<forall>x\<in>(\<emptyset> Q a)\<union>(\<emptyset> Q b). [y;x;z])"
+  then obtain y z where "y\<in>Q" "z\<in>Q" "(\<forall>x\<in>(unreach-on Q from a)\<union>(unreach-on Q from b). [y;x;z])"
     by blast
   show ?thesis
   proof (rule bexI)+
     show "y\<in>Q" by (simp add: \<open>y \<in> Q\<close>)
     show "z\<in>Q" by (simp add: \<open>z \<in> Q\<close>)
-    show "(\<forall>x\<in>\<emptyset> Q a. [z;x;y]) \<and> (\<forall>x\<in>\<emptyset> Q b. [z;x;y])"
-      by (simp add: \<open>\<forall>x\<in>\<emptyset> Q a \<union> \<emptyset> Q b. [y;x;z]\<close> abc_sym)
+    show "(\<forall>x\<in>unreach-on Q from a. [z;x;y]) \<and> (\<forall>x\<in>unreach-on Q from b. [z;x;y])"
+      by (simp add: \<open>\<forall>x\<in>unreach-on Q from a \<union> unreach-on Q from b. [y;x;z]\<close> abc_sym)
   qed
 qed
 
@@ -7870,16 +7870,16 @@ theorem (*14*) second_existence_thm_2:
       and reachable: "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q"
     shows "\<exists>e\<in>Q. \<exists>ae\<in>\<P>. \<exists>be\<in>\<P>. path ae a e \<and> path be b e \<and> [c;d;e]"
 proof -
-  obtain y z where bounds_yz: "(\<forall>x\<in>\<emptyset> Q a. [z;x;y]) \<and> (\<forall>x\<in>\<emptyset> Q b. [z;x;y])"
+  obtain y z where bounds_yz: "(\<forall>x\<in>unreach-on Q from a. [z;x;y]) \<and> (\<forall>x\<in>unreach-on Q from b. [z;x;y])"
                and yz_inQ: "y\<in>Q" "z\<in>Q"
     using second_existence_thm_1 [where Q=Q and a=a and b=b]
     using path_Q events(1,2) reachable by blast
-  have "y\<notin>(\<emptyset> Q a)\<union>(\<emptyset> Q b)" "z\<notin>(\<emptyset> Q a)\<union>(\<emptyset> Q b)"
-    by (meson Un_iff \<open>(\<forall>x\<in>\<emptyset> Q a. [z;x;y]) \<and> (\<forall>x\<in>\<emptyset> Q b. [z;x;y])\<close> abc_abc_neq)+ 
+  have "y\<notin>(unreach-on Q from a)\<union>(unreach-on Q from b)" "z\<notin>(unreach-on Q from a)\<union>(unreach-on Q from b)"
+    by (meson Un_iff \<open>(\<forall>x\<in>unreach-on Q from a. [z;x;y]) \<and> (\<forall>x\<in>unreach-on Q from b. [z;x;y])\<close> abc_abc_neq)+ 
   let ?P = "\<lambda>e ae be. (e\<in>Q \<and> path ae a e \<and> path be b e \<and> [c;d;e])"
 
   have exist_ay: "\<exists>ay. path ay a y"
-    if "a\<notin>Q" "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" "y\<notin>(\<emptyset> Q a)" "y\<in>Q"
+    if "a\<notin>Q" "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" "y\<notin>(unreach-on Q from a)" "y\<in>Q"
     for a y
     using in_path_event path_Q that unreachable_bounded_path_only
     by blast
@@ -7894,8 +7894,8 @@ proof -
   thus ?thesis
   proof (cases)
     assume "[c;d;y]"
-    have "y\<notin>(\<emptyset> Q a)" "y\<notin>(\<emptyset> Q b)"
-      using \<open>y \<notin> \<emptyset> Q a \<union> \<emptyset> Q b\<close> by blast+
+    have "y\<notin>(unreach-on Q from a)" "y\<notin>(unreach-on Q from b)"
+      using \<open>y \<notin> unreach-on Q from a \<union> unreach-on Q from b\<close> by blast+
     then obtain ay yb where "path ay a y" "path yb b y"
       using `y\<in>Q` exist_ay events(1,2) reachable(1,2) by blast
     have "?P y ay yb"
@@ -7903,8 +7903,8 @@ proof -
     thus ?thesis by blast
   next
     assume "[c;d;z]"
-    have "z\<notin>(\<emptyset> Q a)" "z\<notin>(\<emptyset> Q b)"
-      using \<open>z \<notin> \<emptyset> Q a \<union> \<emptyset> Q b\<close> by blast+ 
+    have "z\<notin>(unreach-on Q from a)" "z\<notin>(unreach-on Q from b)"
+      using \<open>z \<notin> unreach-on Q from a \<union> unreach-on Q from b\<close> by blast+ 
     then obtain az bz where "path az a z" "path bz b z"
       using `z\<in>Q` exist_ay events(1,2) reachable(1,2) by blast
     have "?P z az bz"
@@ -7930,7 +7930,7 @@ proof -
     qed
     have "e\<in>Q"
       using \<open>[c;d;e]\<close> betw_c_in_path events(3-5) path_Q by blast
-    have "e\<notin> \<emptyset> Q a" "e\<notin> \<emptyset> Q b"
+    have "e\<notin> unreach-on Q from a" "e\<notin> unreach-on Q from b"
       using bounds_yz \<open>\<not> [y;e;z]\<close> abc_sym by blast+ 
     hence ex_aebe: "\<exists>ae be. path ae a e \<and> path be b e"
       using \<open>e \<in> Q\<close> events(1,2) in_path_event path_Q reachable(1,2) unreachable_bounded_path_only
@@ -7942,34 +7942,34 @@ qed
 
 text \<open>
   The assumption \<open>Q\<noteq>R\<close> in Theorem 14(iii) is somewhat implicit in Schutz.
-  If \<open>Q=R\<close>, \<open>\<emptyset> Q a\<close> is empty, so the third conjunct of the conclusion is meaningless.
+  If \<open>Q=R\<close>, \<open>unreach-on Q from a\<close> is empty, so the third conjunct of the conclusion is meaningless.
 \<close>
 
 theorem (*14*) second_existence_thm_3:
   assumes paths: "Q\<in>\<P>" "R\<in>\<P>" "Q\<noteq>R"
       and events: "x\<in>Q" "x\<in>R" "a\<in>R" "a\<noteq>x" "b\<notin>Q"
       and reachable: "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q"
-    shows "\<exists>e\<in>\<E>. \<exists>ae\<in>\<P>. \<exists>be\<in>\<P>. path ae a e \<and> path be b e \<and> (\<forall>y\<in>\<emptyset> Q a. [x;y;e])"
+    shows "\<exists>e\<in>\<E>. \<exists>ae\<in>\<P>. \<exists>be\<in>\<P>. path ae a e \<and> path be b e \<and> (\<forall>y\<in>unreach-on Q from a. [x;y;e])"
 proof -
   have "a\<notin>Q"
     using events(1-4) paths eq_paths by blast
-  hence "\<emptyset> Q a \<noteq> {}"
+  hence "unreach-on Q from a \<noteq> {}"
     by (metis events(3) ex_in_conv in_path_event paths(1,2) two_in_unreach)
 
-  then obtain d where "d\<in> \<emptyset> Q a" (*as in Schutz*)
+  then obtain d where "d\<in> unreach-on Q from a" (*as in Schutz*)
     by blast
   have "x\<noteq>d"
-    using \<open>d \<in> \<emptyset> Q a\<close> cross_in_reachable events(1) events(2) events(3) paths(2) by auto
+    using \<open>d \<in> unreach-on Q from a\<close> cross_in_reachable events(1) events(2) events(3) paths(2) by auto
   have "d\<in>Q"
-    using \<open>d \<in> \<emptyset> Q a\<close> unreach_on_path by blast
+    using \<open>d \<in> unreach-on Q from a\<close> unreach_on_path by blast
 
   have "\<exists>e\<in>Q. \<exists>ae be. [x;d;e] \<and> path ae a e \<and> path be b e"
     using second_existence_thm_2 [where c=x and Q=Q and a=a and b=b and d=d] (*as in Schutz*)
     using \<open>a \<notin> Q\<close> \<open>d \<in> Q\<close> \<open>x \<noteq> d\<close> events(1-3,5) paths(1,2) reachable by blast
   then obtain e ae be where conds: "[x;d;e] \<and> path ae a e \<and> path be b e" by blast
-  have "\<forall>y\<in>(\<emptyset> Q a). [x;y;e]"
+  have "\<forall>y\<in>(unreach-on Q from a). [x;y;e]"
   proof
-    fix y assume "y\<in>(\<emptyset> Q a)"
+    fix y assume "y\<in>(unreach-on Q from a)"
     hence "y\<in>Q"
       using unreach_on_path by blast
     show "[x;y;e]"
@@ -7980,18 +7980,18 @@ proof -
       thus False
       proof (cases)
         assume "y=x" thus False
-          using \<open>y \<in> \<emptyset> Q a\<close> events(2,3) paths(1,2) same_empty_unreach unreach_equiv unreach_on_path
+          using \<open>y \<in> unreach-on Q from a\<close> events(2,3) paths(1,2) same_empty_unreach unreach_equiv unreach_on_path
           by blast
       next
         assume "y=e" thus False
-          by (metis \<open>y\<in>Q\<close> assms(1) conds empty_iff same_empty_unreach unreach_equiv \<open>y \<in> \<emptyset> Q a\<close>)
+          by (metis \<open>y\<in>Q\<close> assms(1) conds empty_iff same_empty_unreach unreach_equiv \<open>y \<in> unreach-on Q from a\<close>)
       next
         assume "[y;x;e]"
         hence "[y;x;d]"
           using abd_bcd_abc conds by blast
-        hence "x\<in>(\<emptyset> Q a)"
+        hence "x\<in>(unreach-on Q from a)"
           using unreach_connected [where Q=Q and Q\<^sub>x=y and Q\<^sub>y=x and Q\<^sub>z=d and b=a]
-          using \<open>\<not>[x;y;e]\<close> \<open>a\<notin>Q\<close> \<open>d\<in>\<emptyset> Q a\<close> \<open>y\<in>\<emptyset> Q a\<close> conds in_path_event paths(1) by blast
+          using \<open>\<not>[x;y;e]\<close> \<open>a\<notin>Q\<close> \<open>d\<in>unreach-on Q from a\<close> \<open>y\<in>unreach-on Q from a\<close> conds in_path_event paths(1) by blast
         thus False
           using empty_iff events(2,3) paths(1,2) same_empty_unreach unreach_equiv unreach_on_path
           by metis
@@ -7999,9 +7999,9 @@ proof -
         assume "[x;e;y]"
         hence "[d;e;y]"
           using abc_acd_bcd conds by blast
-        hence "e\<in>(\<emptyset> Q a)"
+        hence "e\<in>(unreach-on Q from a)"
           using unreach_connected [where Q=Q and Q\<^sub>x=y and Q\<^sub>y=e and Q\<^sub>z=d and b=a]
-          using \<open>a \<notin> Q\<close> \<open>d \<in> \<emptyset> Q a\<close> \<open>y \<in> \<emptyset> Q a\<close>
+          using \<open>a \<notin> Q\<close> \<open>d \<in> unreach-on Q from a\<close> \<open>y \<in> unreach-on Q from a\<close>
             abc_abc_neq abc_sym events(3) in_path_event paths(1,2)
           by blast
         thus False
