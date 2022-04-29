@@ -751,7 +751,7 @@ lemma "infinite_chain f Q \<longleftrightarrow> [f\<leadsto>Q|f 0..]"
 text \<open>\<close>
 
 definition finite_chain :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "finite_chain f Q \<equiv> finite Q \<and> ch_by_ord f Q"
+  "finite_chain f Q \<equiv> finite Q \<and> [f\<leadsto>Q]"
 
 declare finite_chain_def [chain_defs]
 
