@@ -54,6 +54,11 @@ lemma three_subset: "\<lbrakk>x \<noteq> y; x \<noteq> z; y \<noteq> z; {x,y,z} 
   apply (erule_tac Y = "{x,y,z}" in card_subset_finite)
   by auto
 
+lemma three_in_set3:
+  assumes "card X \<ge> 3"
+  obtains x y z where "x\<in>X" and "y\<in>X" and "z\<in>X" and "x\<noteq>y" and "x\<noteq>z" and "y\<noteq>z"
+  using assms by (auto simp add: card_le_Suc_iff numeral_3_eq_3)
+
 lemma card_Collect_nat:
   assumes "(j::nat)>i"
   shows "card {i..j} = j-i+1"

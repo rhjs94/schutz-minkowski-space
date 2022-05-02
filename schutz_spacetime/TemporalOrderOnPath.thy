@@ -25,30 +25,6 @@ text \<open>
 
 context MinkowskiPrimitive begin
 
-lemma three_in_set3:
-  assumes "card X \<ge> 3"
-  obtains x y z where "x\<in>X" and "y\<in>X" and "z\<in>X" and "x\<noteq>y" and "x\<noteq>z" and "y\<noteq>z"
-  using assms by (auto simp add: card_le_Suc_iff numeral_3_eq_3)
-
-lemma paths_cross_once:
-  assumes path_Q: "Q \<in> \<P>"
-      and path_R: "R \<in> \<P>"
-      and Q_neq_R: "Q \<noteq> R"
-      and QR_nonempty: "Q\<inter>R \<noteq> {}"
-  shows "\<exists>!a\<in>\<E>. Q\<inter>R = {a}"
-proof -
-  have ab_inQR: "\<exists>a\<in>\<E>. a\<in>Q\<inter>R" using QR_nonempty in_path_event path_Q by auto
-  then obtain a where a_event: "a \<in> \<E>" and a_inQR: "a \<in> Q\<inter>R" by auto
-  have "Q\<inter>R = {a}"
-  proof (rule ccontr)
-    assume "Q\<inter>R \<noteq> {a}"
-    then have "\<exists>b\<in>Q\<inter>R. b \<noteq> a" using a_inQR by blast
-    then have "Q = R" using eq_paths a_inQR path_Q path_R by auto
-    thus False using Q_neq_R by simp
-  qed
-  thus ?thesis using a_event by blast
-qed
-
 lemma cross_once_notin:
   assumes "Q \<in> \<P>"
       and "R \<in> \<P>"

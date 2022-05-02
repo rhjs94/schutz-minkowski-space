@@ -111,6 +111,25 @@ lemma path_unique:
     shows "ab = ab'"
   using eq_paths assms by blast
 
+lemma paths_cross_once:
+  assumes path_Q: "Q \<in> \<P>"
+      and path_R: "R \<in> \<P>"
+      and Q_neq_R: "Q \<noteq> R"
+      and QR_nonempty: "Q\<inter>R \<noteq> {}"
+  shows "\<exists>!a\<in>\<E>. Q\<inter>R = {a}"
+proof -
+  have ab_inQR: "\<exists>a\<in>\<E>. a\<in>Q\<inter>R" using QR_nonempty in_path_event path_Q by auto
+  then obtain a where a_event: "a \<in> \<E>" and a_inQR: "a \<in> Q\<inter>R" by auto
+  have "Q\<inter>R = {a}"
+  proof (rule ccontr)
+    assume "Q\<inter>R \<noteq> {a}"
+    then have "\<exists>b\<in>Q\<inter>R. b \<noteq> a" using a_inQR by blast
+    then have "Q = R" using eq_paths a_inQR path_Q path_R by auto
+    thus False using Q_neq_R by simp
+  qed
+  thus ?thesis using a_event by blast
+qed
+
 
 section "Primitives: Unreachable Subset (from an Event)"
 
@@ -1369,12 +1388,32 @@ section "MinkowskiSymmetry: Symmetry"
 locale MinkowskiSymmetry = MinkowskiUnreachable +
   assumes Symmetry: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S;
                x \<in> Q\<inter>R\<inter>S; Q\<^sub>a \<in> Q; Q\<^sub>a \<noteq> x;
-               unreach-via R on Q from Q\<^sub>a to x = unreach-via S on Q from Q\<^sub>a to x\<rbrakk>
+               unreach-via R on Q from Q\<^sub>a = unreach-via S on Q from Q\<^sub>a\<rbrakk>
                \<Longrightarrow> \<exists>\<theta>::'a\<Rightarrow>'a.                               \<^cancel>\<open>i) there is a map \<theta>:\<E>\<Rightarrow>\<E>\<close>
                      bij_betw (\<lambda>P. {\<theta> y | y. y\<in>P}) \<P> \<P>      \<^cancel>\<open>ii) which induces a bijection \<Theta>\<close>
                      \<and> (y\<in>Q \<longrightarrow> \<theta> y = y)                    \<^cancel>\<open>iii) \<theta> leaves Q invariant\<close>
-                     \<and> (\<lambda>P. {\<theta> y | y. y\<in>P}) R = S     \<^cancel>\<open>iv) \<Theta> maps R to S\<close>"
+                     \<and> (\<lambda>P. {\<theta> y | y. y\<in>P}) R = S           \<^cancel>\<open>iv) \<Theta> maps R to S\<close>"
+begin
 
+lemma Symmetry_old:
+  assumes "Q \<in> \<P>" "R \<in> \<P>" "S \<in> \<P>" "Q \<noteq> R" "Q \<noteq> S" "R \<noteq> S"
+    and "x \<in> Q\<inter>R\<inter>S" "Q\<^sub>a \<in> Q" "Q\<^sub>a \<noteq> x"
+    and "unreach-via R on Q from Q\<^sub>a to x = unreach-via S on Q from Q\<^sub>a to x"
+  shows "\<exists>\<theta>::'a\<Rightarrow>'a. bij_betw (\<lambda>P. {\<theta> y | y. y\<in>P}) \<P> \<P>
+                  \<and> (y\<in>Q \<longrightarrow> \<theta> y = y)
+                  \<and> (\<lambda>P. {\<theta> y | y. y\<in>P}) R = S"
+proof -
+  have QS: "Q\<inter>S = {x}" and QR: "Q\<inter>R = {x}"
+    using assms(1-7) paths_cross_once by (metis Int_iff empty_iff insertE)+
+  have "unreach-via R on Q from Q\<^sub>a = unreach-via R on Q from Q\<^sub>a to x"
+    using unreach_via_for_crossing_paths QR by (simp add: Int_commute assms(1,2))
+  moreover have "unreach-via S on Q from Q\<^sub>a = unreach-via S on Q from Q\<^sub>a to x"
+    using unreach_via_for_crossing_paths QS by (simp add: Int_commute assms(1,3))
+  ultimately show ?thesis
+    using Symmetry[OF assms(1-9)] assms(10) by simp
+qed
+
+end
 
 section "MinkowskiContinuity: Continuity"
 
