@@ -1347,35 +1347,6 @@ text \<open>In order to more faithfully capture Schutz' definition of unreachabl
   we show that intersections of distinct paths are unique, and then define a new notation that
   doesn't carry the intersection of two paths around.\<close>
 
-lemma path_intersection_unique:
-  assumes "P\<in>\<P>" "Q\<in>\<P>" "P\<noteq>Q" "P\<inter>Q \<noteq> {}"
-  shows "\<exists>!x. x\<in>P\<inter>Q"
-  using IntD2 assms disjoint_iff_not_equal path_unique by fastforce
-
-lemma path_intersection_unique2:
-  assumes "P\<in>\<P>" "Q\<in>\<P>" "P\<noteq>Q" "P\<inter>Q \<noteq> {}"
-  obtains x where "P\<inter>Q = {x}"
-  using path_intersection_unique[OF assms] by (metis assms(4) is_singletonI' is_singleton_def)
-
-lemma path_intersection_unique3:
-  assumes "P\<in>\<P>" "Q\<in>\<P>"
-  shows "(P\<noteq>Q \<and> P\<inter>Q \<noteq> {}) \<longleftrightarrow> (\<exists>!x. x\<in>P\<inter>Q)"
-proof
-  assume "P \<noteq> Q \<and> P \<inter> Q \<noteq> {}"
-  thus "\<exists>!x. x \<in> P \<inter> Q"
-    using path_intersection_unique[OF assms] by auto
-next
-  assume x: "\<exists>!x. x \<in> P \<inter> Q"
-  then obtain x where "P\<inter>Q = {x}"
-    by (metis empty_iff is_singletonI' is_singleton_def)
-  have 1: "P \<inter> Q \<noteq> {}" using x by blast
-  have "\<not>P={x}"
-(*
-  have 2: "P \<noteq> Q" using 1 x
-  show "P \<noteq> Q \<and> P \<inter> Q \<noteq> {}" using 1 2 by simp
-*)
-oops
-
 lemma unreach_empty_on_same_path:
   assumes "P\<in>\<P>" "Q\<in>\<P>" "P=Q"
   shows "\<forall>x. unreach-via P on Q from a to x = {}"
@@ -1385,18 +1356,11 @@ lemma unreach_empty_on_same_path:
 definition unreachable_subset_via_notation_2 ("unreach-via _ on _ from _" [100, 100, 100] 100)
   where "unreach-via P on Q from a \<equiv> unreachable_subset_via Q a P (THE x. x\<in>Q\<inter>P)"
 
-lemma
+lemma unreach_via_for_crossing_paths:
   assumes "P\<in>\<P>" "Q\<in>\<P>" "P\<inter>Q = {x}"
-  shows "\<forall>x. (unreach-via P on Q from a to x = unreach-via P on Q from a) \<or> unreach-via P on Q from a to x = {}"
-  unfolding unreachable_subset_via_notation_2_def unreachable_subset_via_def unreachable_subset_def unreachable_subset_via_notation_def
-oops (* or something similar *)
-
-lemma
-  assumes "P\<in>\<P>" "Q\<in>\<P>" "P\<noteq>Q" "P\<inter>Q \<noteq> {}"
-  shows "\<forall>x. (unreach-via P on Q from a to x = unreach-via P on Q from a) \<or> unreach-via P on Q from a to x = {}"
-  unfolding unreachable_subset_via_notation_2_def unreachable_subset_via_def unreachable_subset_def unreachable_subset_via_notation_def
-oops (* or something similar *)
-
+  shows "unreach-via P on Q from a to x = unreach-via P on Q from a"
+  unfolding unreachable_subset_via_notation_2_def is_singleton_def unreachable_subset_via_notation_def
+  using the_equality assms by (metis Int_commute empty_iff insert_iff)
 
 end
 
