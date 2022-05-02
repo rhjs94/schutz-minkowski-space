@@ -1233,7 +1233,7 @@ theorem (*4*) (in MinkowskiUnreachable) unreachable_set_bounded:
       and Qx_reachable: "Qx \<in> Q - unreach-on Q from b"
       and Qy_unreachable: "Qy \<in> unreach-on Q from b"
   shows "\<exists>Qz\<in>Q - unreach-on Q from b. [Qx;Qy;Qz] \<and> Qx \<noteq> Qz"
-  using assms I7 finite_long_chain_with_def fin_ch_betw
+  using assms I7_old finite_long_chain_with_def fin_ch_betw
   by (metis first_neq_last)
 
 subsection \<open>Theorem 5 (first existence theorem)\<close>

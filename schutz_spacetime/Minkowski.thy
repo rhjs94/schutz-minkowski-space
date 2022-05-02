@@ -249,18 +249,16 @@ text \<open>
 \<close>
 
 text \<open>The definition of \<open>SPRAY\<close> constrains $x, Q, R, S$ to be in $\E$ and $\P$.\<close>
-definition dep3_event :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
-  "dep3_event Q R S x \<equiv> Q \<noteq> R \<and> Q \<noteq> S \<and> R \<noteq> S \<and> Q \<in> SPRAY x \<and> R \<in> SPRAY x \<and> S \<in> SPRAY x
-                         \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"
 (*definition dep3_event :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
-  "dep3_event Q R S x \<equiv> card {Q,R,S} = 3 \<and> {Q,R,S} \<subseteq> SPRAY x
+  "dep3_event Q R S x \<equiv> Q \<noteq> R \<and> Q \<noteq> S \<and> R \<noteq> S \<and> Q \<in> SPRAY x \<and> R \<in> SPRAY x \<and> S \<in> SPRAY x
                          \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"*)
+definition "dep3_event Q R S x
+  \<equiv> card {Q,R,S} = 3 \<and> {Q,R,S} \<subseteq> SPRAY x
+  \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"
 
-definition dep3_spray :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> ('a set) set \<Rightarrow> bool" where
-  "dep3_spray Q R S SPR \<equiv> \<exists>x. SPRAY x = SPR \<and> dep3_event Q R S x"
+definition "dep3_spray Q R S SPR \<equiv> \<exists>x. SPRAY x = SPR \<and> dep3_event Q R S x"
 
-definition dep3 :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "dep3 Q R S \<equiv> \<exists>x. dep3_event Q R S x"
+definition "dep3 Q R S \<equiv> \<exists>x. dep3_event Q R S x"
 
 text \<open>Some very simple lemmas related to \<open>dep3_event\<close>.\<close>
 
@@ -271,22 +269,35 @@ lemma dep3_nonspray:
   by (metis assms dep3_event_def)
 
 lemma dep3_path:
-  assumes dep3_QRSx: "dep3_event Q R S x"
+  assumes dep3_QRSx: "dep3 Q R S"
   shows "Q \<in> \<P>" "R \<in> \<P>" "S \<in> \<P>"
-proof -
-  have "{Q,R,S} \<subseteq> SPRAY x" using dep3_event_def using dep3_QRSx by simp
-  thus "Q \<in> \<P>" "R \<in> \<P>" "S \<in> \<P>" using SPRAY_path by auto
-qed
+  using assms dep3_event_def dep3_def SPRAY_path insert_subset by auto
+
+lemma dep3_distinct:
+  assumes dep3_QRSx: "dep3 Q R S"
+  shows "Q \<noteq> R" "Q \<noteq> S" "R \<noteq> S"
+  using assms dep3_def dep3_event_def by (simp_all add: card_3_dist)
 
 lemma dep3_is_event:
   "dep3_event Q R S x \<Longrightarrow> x \<in> \<E>"
 using SPRAY_event dep3_event_def by auto
 
+lemma dep3_event_old:
+  "dep3_event Q R S x \<longleftrightarrow> Q \<noteq> R \<and> Q \<noteq> S \<and> R \<noteq> S \<and> Q \<in> SPRAY x \<and> R \<in> SPRAY x \<and> S \<in> SPRAY x
+                       \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"
+  by (rule iffI; unfold dep3_event_def, (simp add: card_3_dist))
+
 lemma dep3_event_permute [no_atp]:
   assumes "dep3_event Q R S x"
     shows "dep3_event Q S R x" "dep3_event R Q S x" "dep3_event R S Q x"
      "dep3_event S Q R x" "dep3_event S R Q x"
-using dep3_event_def assms by auto
+using dep3_event_old assms by auto
+
+lemma dep3_permute [no_atp]:
+  assumes "dep3 Q R S"
+  shows "dep3 Q S R" "dep3 R Q S" "dep3 R S Q"
+    and "dep3 S Q R" "dep3 S R Q"
+  using dep3_event_permute dep3_def assms by meson+
 
 text \<open>
   "We next give recursive definitions of dependence and independence which will be used to
@@ -299,8 +310,8 @@ text \<open>
 
 inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> bool" where
   dep_3: "dep3 T A B \<Longrightarrow> dep_path T {A, B}"
-| dep_n:   "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S''; S' \<noteq> S'';
-             S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"
+| dep_n: "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S''; S' \<noteq> S'';
+           S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"
 (* S' \<noteq> S''; TODO is this one necessary? definitely easier...*)
 
 lemma card_Suc_ex:
@@ -334,7 +345,7 @@ proof -
 qed
 
 lemma dep_path_card_2: "dep_path T S \<Longrightarrow> card S \<ge> 2"
-  by (induct rule: dep_path.induct, simp add: dep3_def dep3_event_def, linarith)
+  by (induct rule: dep_path.induct, simp add: dep3_def dep3_event_old, linarith)
 
 (* This one isn't needed if \<open>S' \<noteq> S''\<close> is in the definition, and may be hard *)
 (*lemma dep_subsprays_neq:
@@ -382,16 +393,27 @@ lemma dependent_superset:
 lemma path_in_dep_set:
   assumes "dep3 P Q R"
   shows "dep_set {P,Q,R}"
-  using dep_3 assms dep3_def dep_set_def dep3_event_def
+  using dep_3 assms dep3_def dep_set_def dep3_event_old
   by (metis DiffI insert_iff singletonD subset_insertI)
 
-lemma path_in_dep_set2:
+thm dep_path.intros(2)
+(*lemma dep_path_intro_cases:
+  assumes ""
+  shows "dep_path T S"*)
+
+(*lemma assumes "dep_path P S" "S = {S1,S2}" shows "dep3 P S1 S2"*)
+
+(*lemma assumes "dep_path P S" "P\<in>S" shows "card S > 2"
+  apply (rule ccontr)
+  using dep_path_card_2 dep_3 dep3_distinct*)
+
+lemma path_in_dep_set2a:
   assumes "dep3 P Q R"
   shows "dep_path P {P,Q,R}"
 proof
   let ?S' = "{P,R}"
   let ?S'' = "{P,Q}"
-  have all_neq: "P\<noteq>Q" "P\<noteq>R" "R\<noteq>Q" using assms dep3_def dep3_event_def by auto
+  have all_neq: "P\<noteq>Q" "P\<noteq>R" "R\<noteq>Q" using assms dep3_def dep3_event_old by auto
   show "dep3 P Q R" using assms dep3_event_def by (simp add: dep_3)
   show "dep_path Q ?S'" using assms dep3_event_permute(2) dep_3 dep3_def by meson
   show "dep_path R ?S''" using assms dep3_event_permute(4) dep_3 dep3_def by meson
@@ -402,6 +424,39 @@ proof
   show "?S' \<noteq> ?S''" by (simp add: all_neq(3) doubleton_eq_iff)
 qed
 
+(*
+lemma path_in_dep_set2:
+  shows "dep_path P {P,Q,R}"
+  apply (intro dep_path.intros(2)[where T=P and S="{P,Q,R}"])
+proof
+  let ?S' = "{P,R}"
+  let ?S'' = "{P,Q}"
+  have all_neq: "P\<noteq>Q" "P\<noteq>R" "R\<noteq>Q" using assms dep3_def dep3_event_old by auto
+  show "dep3 P Q R" using assms dep3_event_def by (simp add: dep_3)
+  show "dep_path Q ?S'" using assms dep3_event_permute(2) dep_3 dep3_def by meson
+  show "dep_path R ?S''" using assms dep3_event_permute(4) dep_3 dep3_def by meson
+  show "?S' \<subseteq> {P, Q, R}" by simp
+  show "?S'' \<subseteq> {P, Q, R}" by simp
+  show "Suc (card ?S') = card {P, Q, R}" "Suc (card ?S'') = card {P, Q, R}"
+    using all_neq card_insert_disjoint by auto
+  show "?S' \<noteq> ?S''" by (simp add: all_neq(3) doubleton_eq_iff)
+qed
+*)
+
+(*
+thm dep_path.intros
+lemma path_dep_on_self:
+  assumes "P\<in>\<P>" "Ball S (\<lambda>P. P\<in>\<P>)" "card S \<ge> 2"
+  shows "dep_path P (insert P S)"
+proof (cases "card S = 2")
+  case True
+  then obtain S\<^sub>1 S\<^sub>2 where S: "S = {S\<^sub>1, S\<^sub>2}" "S\<^sub>1 \<noteq> S\<^sub>2"
+    by (meson card_2_iff)
+  have "dep_path P {P, S\<^sub>1, S\<^sub>2}"
+    using path_in_dep_set2
+  then obtain S\<^sub>1 where "S = {S\<^sub>1}" by blast
+  hence "dep3 P P S\<^sub>1"
+*)
 
 definition indep_set :: "('a set) set \<Rightarrow> bool" where
   "indep_set S \<equiv> \<not> dep_set S"
@@ -409,8 +464,14 @@ definition indep_set :: "('a set) set \<Rightarrow> bool" where
 lemma indep_set_has_no_dep_subsets: "indep_set S \<Longrightarrow> \<not>(\<exists>T \<subseteq> S. dep_set T)"
   using indep_set_def dependent_superset by blast
 
+lemma indep_set_alt_intro: "\<not>(\<exists>T \<subseteq> S. dep_set T) \<Longrightarrow> indep_set S"
+  using indep_set_def by blast
+
 (*definition indep_set :: "('a set) set \<Rightarrow> bool" where
   "indep_set S \<equiv> \<not>(\<exists>T \<subseteq> S. dep_set T)"*)
+
+lemma "dep_set S \<or> indep_set S"
+  by (simp add: indep_set_def)
 
 
 section "Primitives: 3-SPRAY"
@@ -1232,7 +1293,7 @@ definition is_bound_f :: "'a \<Rightarrow> 'a set \<Rightarrow> (nat\<Rightarrow
     \<forall>i j ::nat. [f\<leadsto>Q|(f 0)..] \<and> (i<j \<longrightarrow> [f i; f j; Q\<^sub>b])"
 
 
-definition is_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
+definition is_bound where
   "is_bound Q\<^sub>b Q \<equiv>
     \<exists>f::(nat\<Rightarrow>'a). is_bound_f Q\<^sub>b Q f"
 
@@ -1244,20 +1305,19 @@ text \<open>
 \<close>
 
 
-definition all_bounds :: "'a set \<Rightarrow> 'a set" where
+definition all_bounds where
   "all_bounds Q = {Q\<^sub>b. is_bound Q\<^sub>b Q}"
 
-definition bounded :: "'a set \<Rightarrow> bool" where
+definition bounded where
   "bounded Q \<equiv> \<exists> Q\<^sub>b. is_bound Q\<^sub>b Q"
 
-text \<open>Just to make sure Continuity is not too strong.\<close>
 lemma bounded_imp_inf:
   assumes "bounded Q"
   shows "infinite Q"
   using assms bounded_def is_bound_def is_bound_f_def chain_defs by meson
 
 
-definition closest_bound_f :: "'a \<Rightarrow> 'a set \<Rightarrow> (nat\<Rightarrow>'a) \<Rightarrow> bool" where
+definition closest_bound_f where
   "closest_bound_f Q\<^sub>b Q f \<equiv>
 \<^cancel>\<open>Q is an infinite chain indexed by f bound by Q\<^sub>b\<close>
     is_bound_f Q\<^sub>b Q f \<and>
@@ -1265,64 +1325,32 @@ definition closest_bound_f :: "'a \<Rightarrow> 'a set \<Rightarrow> (nat\<Right
     (\<forall> Q\<^sub>b'. (is_bound Q\<^sub>b' Q \<and> Q\<^sub>b' \<noteq> Q\<^sub>b) \<longrightarrow> [f 0; Q\<^sub>b; Q\<^sub>b'])"
 
 
-definition closest_bound :: "'a \<Rightarrow> 'a set \<Rightarrow> bool" where
+definition closest_bound where
   "closest_bound Q\<^sub>b Q \<equiv>
-\<^cancel>\<open>Q is an infinite chain indexed by f bound by Q\<^sub>b\<close>
-    \<exists>f. is_bound_f Q\<^sub>b Q f \<and>
-\<^cancel>\<open>Any other bound must be further from the start of the chain than the closest bound\<close>
-    (\<forall> Q\<^sub>b'. (is_bound Q\<^sub>b' Q \<and> Q\<^sub>b' \<noteq> Q\<^sub>b) \<longrightarrow> [f 0; Q\<^sub>b; Q\<^sub>b'])"
+    \<exists>f. is_bound_f Q\<^sub>b Q f
+     \<and> (\<forall> Q\<^sub>b'. (is_bound Q\<^sub>b' Q \<and> Q\<^sub>b' \<noteq> Q\<^sub>b) \<longrightarrow> [f 0; Q\<^sub>b; Q\<^sub>b'])"
+
+lemma "closest_bound Q\<^sub>b Q = (\<exists>f. closest_bound_f Q\<^sub>b Q f)"
+  unfolding closest_bound_f_def closest_bound_def by simp
 
 end (*MinkowskiChain*)
 
 section "MinkowskiUnreachable: I5-I7"
-thm choice
+
 locale MinkowskiUnreachable = MinkowskiChain +
   (* I5 *)
-  assumes two_in_unreach: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>; b \<notin> Q\<rbrakk> \<Longrightarrow> \<exists>x\<in>unreach-on Q from b. \<exists>y\<in>unreach-on Q from b. x \<noteq> y"
-      and I6: "\<lbrakk>Q \<in> \<P>; b \<in> (\<E>-Q); {Qx,Qz} \<subseteq> unreach-on Q from b; Qx\<noteq>Qz\<rbrakk>
-      \<Longrightarrow> \<exists>X f.  [f\<leadsto>X|Qx..Qz] \<and>
-                 (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> unreach-on Q from b \<and>
-                                         (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b))"
-      and I7: "\<lbrakk>Q \<in> \<P>; b \<notin> Q; b \<in> \<E>; Qx \<in> Q - unreach-on Q from b; Qy \<in> unreach-on Q from b\<rbrakk>
+  assumes I5: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>-Q\<rbrakk> \<Longrightarrow> \<exists>x y. {x,y} \<subseteq> unreach-on Q from b \<and> x \<noteq> y"
+      and I6: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>-Q; {Qx,Qz} \<subseteq> unreach-on Q from b; Qx\<noteq>Qz\<rbrakk>
+      \<Longrightarrow> \<exists>X f. [f\<leadsto>X|Qx..Qz]
+              \<and> (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> unreach-on Q from b
+                \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b))"
+      and I7: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>-Q; Qx \<in> Q - unreach-on Q from b; Qy \<in> unreach-on Q from b\<rbrakk>
                \<Longrightarrow> \<exists>g X Qn. [g\<leadsto>X|Qx..Qy..Qn] \<and> Qn \<in> Q - unreach-on Q from b"
 begin
 
-(*
-lemma I6_lem:
-  (*"\<lbrakk>Q \<in> \<P>; b \<in> (\<E>-Q); {Qx,Qy} \<subseteq> \<emptyset> Q b; Qx\<noteq>Qz\<rbrakk> \<Longrightarrow> \<exists>X f.
-    [f\<leadsto>X|Qx..Qz] \<and>
-    (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"*)
-  assumes "Q \<in> \<P>" "b \<in> (\<E>-Q)" "{Qx,Qz} \<subseteq> \<emptyset> Q b" "Qx\<noteq>Qz"
-  (*assumes "Q \<in> \<P>" "b \<notin> Q" "b \<in> \<E>" "Qx \<in> (\<emptyset> Q b)" "Qz \<in> (\<emptyset> Q b)" "Qx\<noteq>Qz"*)
-  shows "\<exists>X f.  [f\<leadsto>X|Qx..Qz] \<and>
-                (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and>
-                                        (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
-  (*obtains X f where "[f\<leadsto>X|Qx..Qz]"
-                    "(\<forall>i\<in>{1..card X-1}. (f i) \<in> \<emptyset> Q b \<and>
-                                        (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"*)
-  proof -
-  from assms I6[of Q b Qx Qz] obtain X f where I6_old: "ch_by_ord f X \<and> f 0 = Qx \<and> f (card X - 1) = Qz
-                         \<and> (\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> \<emptyset> Q b
-                              \<and> (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))
-                         \<and> (short_ch X \<longrightarrow> Qx\<in>X \<and> Qz\<in>X \<and> (\<forall>Qy\<in>\<E>. [Qx;Qy;Qz] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
-    by blast
-  show "\<exists>X f.  [f\<leadsto>X|Qx..Qz] \<and>
-                (\<forall>i\<in>{1 .. card X - 1}.  (f i) \<in> \<emptyset> Q b \<and>
-                                        (\<forall>Qy\<in>\<E>. [f(i-1); Qy; f i] \<longrightarrow> Qy \<in> \<emptyset> Q b))"
-  proof ((rule exI)+, rule conjI)
-    show "[f\<leadsto>X|Qx..Qz]"
-      using I6_old unfolding chain_defs
-      by (metis assms(4) card.infinite diff_is_0_eq' less_imp_le_nat less_numeral_extra(1))
-    { fix i assume "i\<in>{1..card X - 1}"
-      have "f i \<in> \<emptyset> Q b" "(\<forall>Qy\<in>\<E>. [f (i - 1);Qy;f i] \<longrightarrow> Qy \<in> \<emptyset> Q b)"
-      using I6_old \<open>i \<in> {1..card X - 1}\<close> apply blast
-      by (meson I6_old \<open>i \<in> {1..card X - 1}\<close>)
-    }
-    thus "\<forall>i\<in>{1..card X - 1}. f i \<in> \<emptyset> Q b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1);Qy;f i] \<longrightarrow> Qy \<in> \<emptyset> Q b)"
-      by blast
-  qed
-qed
-*)
+lemma two_in_unreach:
+  "\<lbrakk>Q \<in> \<P>; b \<in> \<E>; b \<notin> Q\<rbrakk> \<Longrightarrow> \<exists>x\<in>unreach-on Q from b. \<exists>y\<in>unreach-on Q from b. x \<noteq> y"
+  using I5 by fastforce
 
 lemma I6_old:
   assumes "Q \<in> \<P>" "b \<notin> Q" "b \<in> \<E>" "Qx \<in> (unreach-on Q from b)" "Qz \<in> (unreach-on Q from b)" "Qx\<noteq>Qz"
@@ -1356,6 +1384,11 @@ proof -
   qed
 qed
 
+lemma I7_old:
+  assumes "Q \<in> \<P>" "b \<notin> Q" "b \<in> \<E>" "Qx \<in> Q - unreach-on Q from b" "Qy \<in> unreach-on Q from b"
+  shows "\<exists>g X Qn. [g\<leadsto>X|Qx..Qy..Qn] \<and> Qn \<in> Q - unreach-on Q from b"
+  using I7 assms by auto
+
 lemma card_unreach_geq_2:
   assumes "Q\<in>\<P>" "b\<in>\<E>-Q"
   shows "2 \<le> card (unreach-on Q from b) \<or> (infinite (unreach-on Q from b))"
@@ -1386,7 +1419,7 @@ end
 section "MinkowskiSymmetry: Symmetry"
 
 locale MinkowskiSymmetry = MinkowskiUnreachable +
-  assumes Symmetry: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S;
+  assumes Symmetry: "\<lbrakk>{Q,R,S} \<subseteq> \<P>; card {Q,R,S} = 3;
                x \<in> Q\<inter>R\<inter>S; Q\<^sub>a \<in> Q; Q\<^sub>a \<noteq> x;
                unreach-via R on Q from Q\<^sub>a = unreach-via S on Q from Q\<^sub>a\<rbrakk>
                \<Longrightarrow> \<exists>\<theta>::'a\<Rightarrow>'a.                               \<^cancel>\<open>i) there is a map \<theta>:\<E>\<Rightarrow>\<E>\<close>
@@ -1410,7 +1443,7 @@ proof -
   moreover have "unreach-via S on Q from Q\<^sub>a = unreach-via S on Q from Q\<^sub>a to x"
     using unreach_via_for_crossing_paths QS by (simp add: Int_commute assms(1,3))
   ultimately show ?thesis
-    using Symmetry[OF assms(1-9)] assms(10) by simp
+    using Symmetry assms by simp
 qed
 
 end
