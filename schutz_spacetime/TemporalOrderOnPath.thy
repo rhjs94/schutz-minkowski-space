@@ -7334,25 +7334,26 @@ subsection \<open>Theorem 13 (Connectedness of the Unreachable Set)\<close>
 theorem (*13*) unreach_connected:
   assumes path_Q: "Q\<in>\<P>"
       and event_b: "b\<notin>Q" "b\<in>\<E>"
-      and unreach: "Q\<^sub>x \<in> unreach-on Q from b" "Q\<^sub>z \<in> unreach-on Q from b" "Q\<^sub>x \<noteq> Q\<^sub>z"
+      and unreach: "Q\<^sub>x \<in> unreach-on Q from b" "Q\<^sub>z \<in> unreach-on Q from b"
       and xyz: "[Q\<^sub>x; Q\<^sub>y; Q\<^sub>z]"
     shows "Q\<^sub>y \<in> unreach-on Q from b"
 proof -
+  have xz: "Q\<^sub>x \<noteq> Q\<^sub>z" using abc_ac_neq xyz by blast
 
   text \<open>First we obtain the chain from I6.\<close>
   have in_Q: "Q\<^sub>x\<in>Q \<and> Q\<^sub>y\<in>Q \<and> Q\<^sub>z\<in>Q"
-    using betw_b_in_path path_Q unreach(1,2,3) unreach_on_path xyz by blast
+    using betw_b_in_path path_Q unreach(1,2) xz unreach_on_path xyz by blast
   hence event_y: "Q\<^sub>y\<in>\<E>"
     using in_path_event path_Q by blast
   text\<open>legacy: I6_old instead of I6\<close>
   obtain X f where X_def: "ch_by_ord f X" "f 0 = Q\<^sub>x" "f (card X - 1) = Q\<^sub>z"
       "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> unreach-on Q from b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b))"
       "short_ch X \<longrightarrow> Q\<^sub>x \<in> X \<and> Q\<^sub>z \<in> X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> unreach-on Q from b)"
-    using I6_old [OF assms(1-6)] by blast
+    using I6_old [OF assms(1-5) xz] by blast
   hence fin_X: "finite X"
-    using unreach(3) not_less by fastforce
+    using xz not_less by fastforce
   obtain N where "N=card X" "N\<ge>2"
-    using X_def(2,3) unreach(3) by fastforce
+    using X_def(2,3) xz by fastforce
 
   text \<open>
   Then we have to manually show the bounds, defined via indices only, are in the obtained chain.
@@ -7364,7 +7365,7 @@ proof -
   {
     assume "card X = 2"
     hence "short_ch X" "?a \<in> X \<and> ?d \<in> X" "?a \<noteq> ?d"
-      using X_def \<open>card X = 2\<close> short_ch_card_2  unreach(3) by blast+
+      using X_def \<open>card X = 2\<close> short_ch_card_2 xz by blast+
   }
   hence "[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]"
     using chain_defs
@@ -7377,7 +7378,7 @@ proof -
   have y_int: "Q\<^sub>y\<in>interval Q\<^sub>x Q\<^sub>z"
     using interval_def seg_betw xyz by auto
   have X_in_Q: "X\<subseteq>Q"
-    using chain_on_path_I6 [where Q=Q and X=X] X_def event_b path_Q unreach \<open>[f\<leadsto>X|Q\<^sub>x .. Q\<^sub>z]\<close> by blast
+    using chain_on_path_I6 [where Q=Q and X=X] X_def event_b path_Q unreach xz \<open>[f\<leadsto>X|Q\<^sub>x .. Q\<^sub>z]\<close> by blast
 
   show ?thesis
   proof (cases)
