@@ -310,7 +310,7 @@ text \<open>
 
 inductive dep_path :: "'a set \<Rightarrow> ('a set) set \<Rightarrow> bool" where
   dep_3: "dep3 T A B \<Longrightarrow> dep_path T {A, B}"
-| dep_n: "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S''; S' \<noteq> S'';
+| dep_n: "\<lbrakk>dep3 T S1 S2; dep_path S1 S'; dep_path S2 S''; S \<subseteq> SPRAY x;
            S' \<subseteq> S; S'' \<subseteq> S; Suc (card S') = card S; Suc (card S'') = card S\<rbrakk> \<Longrightarrow> dep_path T S"
 (* S' \<noteq> S''; TODO is this one necessary? definitely easier...*)
 
@@ -318,8 +318,7 @@ lemma card_Suc_ex:
   assumes "card A = Suc (card B)" "B \<subseteq> A"
   shows "\<exists>b. A = insert b B \<and> b\<notin>B"
 proof -
-  have "card A \<ge> 1" using assms by simp
-  hence "finite A" using card_ge_0_finite card.infinite by fastforce
+  have "finite A" using assms(1) card_ge_0_finite card.infinite by fastforce
   obtain b where "b\<in>A-B"
     by (metis Diff_eq_empty_iff all_not_in_conv assms n_not_Suc_n subset_antisym)
   show "\<exists>b. A = insert b B \<and> b\<notin>B"
@@ -384,10 +383,32 @@ text \<open>
 definition dep_set :: "('a set) set \<Rightarrow> bool" where
   "dep_set S \<equiv> \<exists>S'\<subseteq>S. \<exists>P\<in>(S-S'). dep_path P S'"
 
+text \<open>
+  Notice that the relation between \<open>dep_set\<close> and \<open>dep_path\<close> becomes somewhat meaningless
+  in the case where we apply \<open>dep_path\<close> to an element of the set. This is because sets have no
+  duplicate members, and we do not mirror the idea that scalar multiples of vectors linearly depend
+  on those vectors: paths in a SPRAY are (in the $\mathbb{R}^4$ model) already equivalence classes
+  of vectors that are scalar multiples of each other.
+\<close>
+
+lemma dep_path_imp_dep_set:
+  assumes "dep_path P S" "P\<notin>S"
+  shows "dep_set (insert P S)"
+  using assms dep_set_def by auto
+
+lemma dep_path_for_set_members:
+  assumes "P\<in>S"
+  shows "dep_set S = dep_set (insert P S)"
+  by (simp add: assms(1) insert_absorb)
+
+(* also: *) thm insert_absorb
+lemma assumes "P\<in>S" shows "Pred2 S = Pred2 (insert P S)"
+  by (simp add: assms insert_absorb)
+
 lemma dependent_superset:
   assumes "dep_set A" and "A\<subseteq>B"
   shows "dep_set B"
-  using assms(1) assms(2) dep_set_def
+  using assms dep_set_def
   by (meson Diff_mono dual_order.trans in_mono order_refl)
 
 lemma path_in_dep_set:
@@ -421,58 +442,25 @@ proof
   show "?S'' \<subseteq> {P, Q, R}" by simp
   show "Suc (card ?S') = card {P, Q, R}" "Suc (card ?S'') = card {P, Q, R}"
     using all_neq card_insert_disjoint by auto
-  show "?S' \<noteq> ?S''" by (simp add: all_neq(3) doubleton_eq_iff)
+  (*show "?S' \<noteq> ?S''" by (simp add: all_neq(3) doubleton_eq_iff)*)
+  show "{P, Q, R} \<subseteq> SPRAY (SOME x. dep3_event P Q R x)"
+    using assms dep3_def dep3_event_def by (metis some_eq_ex)
 qed
-
-(*
-lemma path_in_dep_set2:
-  shows "dep_path P {P,Q,R}"
-  apply (intro dep_path.intros(2)[where T=P and S="{P,Q,R}"])
-proof
-  let ?S' = "{P,R}"
-  let ?S'' = "{P,Q}"
-  have all_neq: "P\<noteq>Q" "P\<noteq>R" "R\<noteq>Q" using assms dep3_def dep3_event_old by auto
-  show "dep3 P Q R" using assms dep3_event_def by (simp add: dep_3)
-  show "dep_path Q ?S'" using assms dep3_event_permute(2) dep_3 dep3_def by meson
-  show "dep_path R ?S''" using assms dep3_event_permute(4) dep_3 dep3_def by meson
-  show "?S' \<subseteq> {P, Q, R}" by simp
-  show "?S'' \<subseteq> {P, Q, R}" by simp
-  show "Suc (card ?S') = card {P, Q, R}" "Suc (card ?S'') = card {P, Q, R}"
-    using all_neq card_insert_disjoint by auto
-  show "?S' \<noteq> ?S''" by (simp add: all_neq(3) doubleton_eq_iff)
-qed
-*)
-
-(*
-thm dep_path.intros
-lemma path_dep_on_self:
-  assumes "P\<in>\<P>" "Ball S (\<lambda>P. P\<in>\<P>)" "card S \<ge> 2"
-  shows "dep_path P (insert P S)"
-proof (cases "card S = 2")
-  case True
-  then obtain S\<^sub>1 S\<^sub>2 where S: "S = {S\<^sub>1, S\<^sub>2}" "S\<^sub>1 \<noteq> S\<^sub>2"
-    by (meson card_2_iff)
-  have "dep_path P {P, S\<^sub>1, S\<^sub>2}"
-    using path_in_dep_set2
-  then obtain S\<^sub>1 where "S = {S\<^sub>1}" by blast
-  hence "dep3 P P S\<^sub>1"
-*)
 
 definition indep_set :: "('a set) set \<Rightarrow> bool" where
   "indep_set S \<equiv> \<not> dep_set S"
 
-lemma indep_set_has_no_dep_subsets: "indep_set S \<Longrightarrow> \<not>(\<exists>T \<subseteq> S. dep_set T)"
+lemma no_dep_in_indep: "indep_set S \<Longrightarrow> \<not>(\<exists>T \<subseteq> S. dep_set T)"
   using indep_set_def dependent_superset by blast
 
 lemma indep_set_alt_intro: "\<not>(\<exists>T \<subseteq> S. dep_set T) \<Longrightarrow> indep_set S"
   using indep_set_def by blast
 
-(*definition indep_set :: "('a set) set \<Rightarrow> bool" where
-  "indep_set S \<equiv> \<not>(\<exists>T \<subseteq> S. dep_set T)"*)
+lemma indep_set_alt: "indep_set S \<longleftrightarrow> \<not>(\<exists>S' \<subseteq> S. dep_set S')"
+  using no_dep_in_indep indep_set_alt_intro by blast
 
 lemma "dep_set S \<or> indep_set S"
   by (simp add: indep_set_def)
-
 
 section "Primitives: 3-SPRAY"
 
@@ -486,13 +474,12 @@ text \<open>
 definition n_SPRAY_basis :: "nat \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> bool"  where
   "n_SPRAY_basis p S x \<equiv> S\<subseteq>SPRAY x \<and> card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
 
-definition n_SPRAY :: "nat \<Rightarrow> 'a \<Rightarrow> bool" ("_-SPR _" [100,100]) where
+definition n_SPRAY ("_-SPR _" [100,100]) where
   "p-SPR x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
 
 (*definition three_SPRAY :: "'a \<Rightarrow> bool" where
   "three_SPRAY x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = 4 \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"*)
-abbreviation three_SPRAY :: "'a \<Rightarrow> bool" where
-  "three_SPRAY x \<equiv> 3-SPR x"
+abbreviation "three_SPRAY x \<equiv> 3-SPR x"
 
 lemma n_SPRAY_intro:
   assumes "S\<subseteq>SPRAY x" "card S = (Suc p)" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S"
