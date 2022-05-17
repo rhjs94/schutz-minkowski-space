@@ -1438,7 +1438,7 @@ end
 section "MinkowskiContinuity: Continuity"
 
 locale MinkowskiContinuity = MinkowskiSymmetry +
-  assumes Continuity: "bounded Q \<Longrightarrow> (\<exists>Q\<^sub>b. closest_bound Q\<^sub>b Q)"
+  assumes Continuity: "bounded Q \<Longrightarrow> \<exists>Q\<^sub>b. closest_bound Q\<^sub>b Q"
 
 
 
