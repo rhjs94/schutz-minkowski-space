@@ -472,18 +472,18 @@ text \<open>
 \<close>
 
 definition n_SPRAY_basis :: "nat \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> bool"  where
-  "n_SPRAY_basis p S x \<equiv> S\<subseteq>SPRAY x \<and> card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
+  "n_SPRAY_basis n S x \<equiv> S\<subseteq>SPRAY x \<and> card S = (Suc n) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
 
-definition n_SPRAY ("_-SPR _" [100,100]) where
-  "p-SPR x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc p) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
+definition n_SPRAY ("_-SPRAY _" [100,100]) where
+  "n-SPRAY x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = (Suc n) \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S)"
 
 (*definition three_SPRAY :: "'a \<Rightarrow> bool" where
   "three_SPRAY x \<equiv> \<exists>S\<subseteq>SPRAY x. card S = 4 \<and> indep_set S \<and> (\<forall>P\<in>SPRAY x. dep_path P S x)"*)
-abbreviation "three_SPRAY x \<equiv> 3-SPR x"
+abbreviation "three_SPRAY x \<equiv> 3-SPRAY x"
 
 lemma n_SPRAY_intro:
-  assumes "S\<subseteq>SPRAY x" "card S = (Suc p)" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S"
-  shows "p-SPR x"
+  assumes "S\<subseteq>SPRAY x" "card S = (Suc n)" "indep_set S" "\<forall>P\<in>SPRAY x. dep_path P S"
+  shows "n-SPRAY x"
   using assms n_SPRAY_def by blast
 
 (*lemma three_SPRAY_3: "three_SPRAY x \<longleftrightarrow> (3-SPR x)"
@@ -541,7 +541,7 @@ text \<open>
 \<close>
 
 definition is_three_SPRAY :: "('a set) set \<Rightarrow> bool" where
-  "is_three_SPRAY S \<equiv> \<exists> x. S = SPRAY x \<and> 3-SPR x"
+  "is_three_SPRAY S \<equiv> \<exists> x. S = SPRAY x \<and> 3-SPRAY x"
 
 lemma three_SPRAY_ge4:
   assumes "three_SPRAY x"
