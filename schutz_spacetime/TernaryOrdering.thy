@@ -342,7 +342,7 @@ text \<open>Definitions for Schutz-like chains, with local order only.\<close>
 definition local_ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool"
   where "local_ordering f ord X
     \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X) \<and>
-      (\<forall>x\<in>X. (\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x)) \<and>
+      (\<forall>x\<in>X. \<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x) \<and>
       (\<forall>n. (finite X \<longrightarrow> Suc (Suc n) < card X) \<longrightarrow> ord (f n) (f (Suc n)) (f (Suc (Suc n))))"
 
 lemma "Suc (Suc n) < card X \<longleftrightarrow> n < card X - 2" by force
