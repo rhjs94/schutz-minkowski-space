@@ -759,7 +759,7 @@ lemma short_ch_sym:
   using assms unfolding short_ch_by_ord_def by auto
 
 lemma
-  assumes "short_ch_by_ord f Q" and "short_ch_by_ord g Q"
+  assumes "short_ch_by_ord f Q" "short_ch_by_ord g Q"
   shows "f = g \<or> (\<lambda>n. if n=0 then f 1 else f 0) = g"
   apply (cases "f=g", simp+, rule ccontr)
   using assms short_ch_by_ord_def short_ch_sym oops
@@ -772,8 +772,8 @@ lemma short_ch_ord_in:
 
 text \<open>Does this restrict chains to lie on paths? Proven in \<open>TemporalOrderingOnPath\<close>'s Interlude!\<close>
 
-definition ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" ("[_\<leadsto>_]")  where
-  "ch_by_ord f X \<equiv> short_ch_by_ord f X \<or> local_long_ch_by_ord f X"
+definition ch_by_ord ("[_\<leadsto>_]") where
+  "[f\<leadsto>X] \<equiv> short_ch_by_ord f X \<or> local_long_ch_by_ord f X"
 
 definition ch :: "'a set \<Rightarrow> bool" where "ch X \<equiv> \<exists>f. [f\<leadsto>X]"
 
@@ -1446,7 +1446,7 @@ section "MinkowskiSpacetime: Dimension (I4)"
 
 locale MinkowskiSpacetime = MinkowskiContinuity +
   (* I4 *)
-  assumes ex_3SPRAY [simp]: "\<lbrakk>\<E> \<noteq> {}\<rbrakk> \<Longrightarrow> \<exists>x\<in>\<E>. three_SPRAY x"
+  assumes ex_3SPRAY [simp]: "\<lbrakk>\<E> \<noteq> {}\<rbrakk> \<Longrightarrow> \<exists>x\<in>\<E>. 3-SPRAY x"
 begin
 
 (* substitute for I1, if I1 is omitted *)
