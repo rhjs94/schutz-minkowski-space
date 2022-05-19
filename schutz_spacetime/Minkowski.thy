@@ -252,9 +252,12 @@ text \<open>The definition of \<open>SPRAY\<close> constrains $x, Q, R, S$ to be
 (*definition dep3_event :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
   "dep3_event Q R S x \<equiv> Q \<noteq> R \<and> Q \<noteq> S \<and> R \<noteq> S \<and> Q \<in> SPRAY x \<and> R \<in> SPRAY x \<and> S \<in> SPRAY x
                          \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"*)
+(*definition "dep3_event Q R S x
+  \<equiv> card {Q,R,S} = 3 \<and> {Q,R,S} \<subseteq> SPRAY x
+  \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"*)
 definition "dep3_event Q R S x
   \<equiv> card {Q,R,S} = 3 \<and> {Q,R,S} \<subseteq> SPRAY x
-  \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"
+  \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> Q\<inter>T\<noteq>{} \<and> R\<inter>T\<noteq>{} \<and> S\<inter>T\<noteq>{})"
 
 definition "dep3_spray Q R S SPR \<equiv> \<exists>x. SPRAY x = SPR \<and> dep3_event Q R S x"
 
@@ -285,7 +288,7 @@ using SPRAY_event dep3_event_def by auto
 lemma dep3_event_old:
   "dep3_event Q R S x \<longleftrightarrow> Q \<noteq> R \<and> Q \<noteq> S \<and> R \<noteq> S \<and> Q \<in> SPRAY x \<and> R \<in> SPRAY x \<and> S \<in> SPRAY x
                        \<and> (\<exists>T\<in>\<P>. T \<notin> SPRAY x \<and> (\<exists>y\<in>Q. y \<in> T) \<and> (\<exists>y\<in>R. y \<in> T) \<and> (\<exists>y\<in>S. y \<in> T))"
-  by (rule iffI; unfold dep3_event_def, (simp add: card_3_dist))
+  by (rule iffI; unfold dep3_event_def, (simp add: card_3_dist), blast)
 
 lemma dep3_event_permute [no_atp]:
   assumes "dep3_event Q R S x"
