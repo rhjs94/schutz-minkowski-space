@@ -2435,7 +2435,8 @@ lemma chain_bounds_unique:
 
 end (* context MinkowskiBetweenness *)
 
-section "Results for segments, rays and chains"
+section "Results for segments, rays and (sub)chains"
+
 
 context MinkowskiBetweenness begin
 
@@ -2679,6 +2680,19 @@ proof -
     apply cases
     using assms(1) chain_defs order_finite_chain2 apply force
     by simp+
+qed
+
+lemma f_img_is_subset:
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
+  shows "Y\<subseteq>X"
+proof
+  fix x assume "x\<in>Y"
+  then obtain n where "n\<in>{i..j}" "f n = x"
+    using assms(4) by blast
+  hence "f n \<in> X"
+    by (metis local_ordering_def assms(1) inf_chain_is_long local_long_ch_by_ord_def)
+  thus "x\<in>X"
+    using \<open>f n = x\<close> by blast
 qed
 
 
@@ -4695,28 +4709,6 @@ proof -
   thus "(a=x\<and>c=z) \<or> (c=x\<and>a=z)"
     by (meson assms(1-3) chain_bounds_unique)
 qed
-
-
-
-section "Subchains"
-context MinkowskiSpacetime begin
-
-
-lemma f_img_is_subset:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
-  shows "Y\<subseteq>X"
-proof
-  fix x assume "x\<in>Y"
-  then obtain n where "n\<in>{i..j}" "f n = x"
-    using assms(4) by blast
-  hence "f n \<in> X"
-    by (metis local_ordering_def assms(1) inf_chain_is_long local_long_ch_by_ord_def)
-  thus "x\<in>X"
-    using \<open>f n = x\<close> by blast
-qed
-
-
-end (*Context MinkowskiSpacetime*)
 
 
 
