@@ -187,16 +187,12 @@ proof -
   thus ?thesis by (metis inj_on_imp_bij_betw orderingX finiteX finite_ordering_inj_on)  
 qed
 
-(* I think there might be a way of proving this without ord_distinct (?) *)
 lemma inf_ordering_inj':
   assumes infX: "infinite X"
       and f_ord: "ordering f ord X"
       and ord_distinct: "\<forall>a b c. (ord a b c \<longrightarrow> a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c)"
       and f_eq: "f m = f n"
   shows "m = n"
-(* If m \<noteq> n and f m = f n then it wouldn't be an ordering, and this part:
-   \<forall>n n' n''. n < n' \<and> n' < n'' \<longrightarrow> [[f n f n' f n'']]
-   would fail because two of f n f n' f n'' would be equal, and that violates ord_distinct. *)
 proof (rule ccontr)
   assume m_not_n: "m \<noteq> n"
   have betw_3n: "\<forall>n n' n''. n < n' \<and> n' < n'' \<longrightarrow> ord (f n) (f n') (f n'')"
@@ -218,7 +214,6 @@ proof (rule ccontr)
   qed
 qed
 
-(* f is actually injective when X is infinite. *)
 lemma inf_ordering_inj:
   assumes "infinite X"
       and "ordering f ord X"
@@ -276,7 +271,7 @@ proof (rule ccontr)
       have k3: "n < k \<and> k < card X \<longrightarrow> ord (f m) (f n) (f k)" using m_less_n betw_3n by simp
       have "f m \<noteq> f n" using k1 k2 k3 k_pos ord_distinct by auto
       thus False using f_eq by simp
-    next (* Should work on making these two cases into one; this is quite boilerplatery. *)
+    next
       assume "\<not> m < n"
       then have n_less_m: "n < m" using m_not_n by simp
       then obtain k where k_pos: "k < n \<or> (n < k \<and> k < m) \<or> (m < k \<and> k < card X)"
@@ -347,13 +342,6 @@ definition local_ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightar
 
 lemma "Suc (Suc n) < card X \<longleftrightarrow> n < card X - 2" by force
 
-(*definition local_ordering :: "(nat \<Rightarrow> 'a) \<Rightarrow> ('a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool) \<Rightarrow> 'a set \<Rightarrow> bool"
-  where "local_ordering f ord X
-    \<equiv> (\<forall>n. (finite X \<longrightarrow> n < card X) \<longrightarrow> f n \<in> X) \<and>
-      (\<forall>x\<in>X. (\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x)) \<and>
-      (\<forall>n n' n''. (finite X \<longrightarrow> n'' < card X) \<and> Suc n = n' \<and> Suc n' = n''
-                 \<longrightarrow> ord (f n) (f n') (f n''))"*)
-
 lemma finite_local_ordering_intro:
   assumes "finite X"
     and "\<forall>n < card X. f n \<in> X"
@@ -366,10 +354,9 @@ lemma infinite_local_ordering_intro:
   assumes "infinite X"
     and "\<forall>n::nat. f n \<in> X"
     and "\<forall>x \<in> X. \<exists>n::nat. f n = x"
-    (*and "surj f"*)
     and "\<forall>n n' n''. Suc n = n' \<and> Suc n' = n'' \<longrightarrow> ord (f n) (f n') (f n'')"
   shows "local_ordering f ord X"
-  using assms unfolding local_ordering_def (*surj_def*) by metis
+  using assms unfolding local_ordering_def by metis
 
 lemma total_implies_local:
   "ordering f ord X \<Longrightarrow> local_ordering f ord X"
@@ -423,53 +410,6 @@ lemma card_le2_ordering_loc:
       and card_le2: "card X \<le> 2"
   shows "\<exists>f. local_ordering f ord X"
   using assms total_implies_local card_le2_ordering by metis
-
-(*
-lemma ordering_set_enum_loc:
-  fixes X :: "'a set" and f :: "nat \<Rightarrow> 'a"
-  assumes "local_ordering f ord X"
-  shows "X = {f n|n. (finite X \<longrightarrow> n < card X)}" (is "X = ?Y")
-proof
-  show "X \<subseteq> ?Y"
-  proof
-    fix x assume "x\<in>X"
-    hence "\<exists>n. (finite X \<longrightarrow> n < card X) \<and> f n = x" 
-      using assms local_ordering_def by metis
-    thus "x \<in> ?Y" by auto
-  qed
-next
-  show "?Y \<subseteq> X"
-  proof
-    fix x assume "x\<in>?Y"
-    then obtain n where "(finite X \<longrightarrow> n < card X)" and "x = f n" by blast
-    thus "x \<in> X" using assms local_ordering_def by metis
-  qed
-qed
-
-
-lemma ordering_2_set_enum_loc:
-  fixes X :: "'a set" and f :: "nat \<Rightarrow> 'a"
-  assumes "local_ordering f ord X" and "card X = 2"
-  shows "X = {f 0, f 1}"
-proof
-  have "finite X" 
-    using assms by (metis card.infinite fact_0 fact_2 zero_neq_one)
-  hence s2: "X = {f n|n. n < 2}" 
-    using assms ordering_set_enum_loc by (smt (verit, best) Collect_cong)
-  show "X \<subseteq> {f 0, f 1}"
-  proof
-    fix x assume "x \<in> X" 
-    then obtain n where "f n = x" and "n < 2" using s2 by auto
-    thus "x \<in> {f 0, f 1}" using less_2_cases_iff by auto
-  qed
-  show "{f 0, f 1} \<subseteq> X"
-  proof
-    fix x assume "x \<in> {f 0, f 1}"
-    then obtain n where "f n = x" and "n < 2" by auto
-    thus "x \<in> X" using s2 by auto
-  qed
-qed
-*)
 
 lemma ord_ordered_loc:
   assumes abc: "ord a b c"
