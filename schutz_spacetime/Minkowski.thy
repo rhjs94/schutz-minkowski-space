@@ -680,12 +680,6 @@ lemma short_ch_sym:
   shows "short_ch_by_ord (\<lambda>n. if n=0 then f 1 else f 0) Q"
   using assms unfolding short_ch_by_ord_def by auto
 
-lemma
-  assumes "short_ch_by_ord f Q" "short_ch_by_ord g Q"
-  shows "f = g \<or> (\<lambda>n. if n=0 then f 1 else f 0) = g"
-  apply (cases "f=g", simp+, rule ccontr)
-  using assms short_ch_by_ord_def short_ch_sym oops
-
 lemma short_ch_ord_in:
   assumes "short_ch_by_ord f Q"
   shows "f 0 \<in> Q" "f 1 \<in> Q"
@@ -735,8 +729,6 @@ declare infinite_chain_with_def [chain_defs]
 
 lemma "infinite_chain f Q \<longleftrightarrow> [f\<leadsto>Q|f 0..]"
   by (simp add: infinite_chain_with_def)
-
-text \<open>\<close>
 
 definition finite_chain :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
   "finite_chain f Q \<equiv> finite Q \<and> [f\<leadsto>Q]"
