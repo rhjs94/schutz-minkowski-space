@@ -2,3 +2,8 @@ schutz_spacetime/output
 !schutz_spacetime/output/document.pdf
 
 *.thy~
+.commit-message
+
+# tokei for line counting
+schutz_spacetime/line_count.txt
+schutz_spacetime/.tokeignore
