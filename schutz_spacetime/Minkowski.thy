@@ -858,33 +858,6 @@ lemma fin_chain_card_geq_2:
   using assms chain_defs not_less by fastforce
 
 
-subsection "Chains using betweenness"
-
-(* TODO remove all reference to these defs *)
-text \<open>Old definitions of chains. Shown equivalent to \<open>finite_long_chain_with_2\<close> in TemporalOrderOnPath.thy.\<close>
-
-(*definition chain_with :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|.. _ .. _ .. _ ..]") where
-  "chain_with X x y z \<equiv> [x;y;z] \<and> x \<in> X \<and> y \<in> X \<and> z \<in> X \<and> (\<exists>f. ordering f betw X)"
-definition finite_chain_with3 :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|_ .. _ .. _]") where
-  "finite_chain_with3 X x y z \<equiv> [\<leadsto>X|..x..y..z..] \<and> \<not>(\<exists>w\<in>X. [w;x;y] \<or> [y;z;w])"
-
-lemma long_chain_betw: "[\<leadsto>X|..a..b..c..] \<Longrightarrow> [a;b;c]"
-by (simp add: chain_with_def)
-
-lemma finite_chain3_betw: "[\<leadsto>X|a..b..c] \<Longrightarrow> [a;b;c]"
-by (simp add: chain_with_def finite_chain_with3_def)
-
-definition finite_chain_with2 :: "'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[\<leadsto>_|_ .. _]") where
-  "finite_chain_with2 X x z \<equiv> \<exists>y\<in>X. [\<leadsto>X|x..y..z]"
-
-lemma finite_chain2_betw: "[\<leadsto>X|a..c] \<Longrightarrow> \<exists>b. [a;b;c]"
-  using finite_chain_with2_def finite_chain3_betw by meson*)
-
-
-(*subsection \<open>Collections of (alternative) definitions as \<open>named_theorems\<close>\<close>*)
-
-
-
 
 section "Betweenness: Rays and Intervals"
 
@@ -1064,23 +1037,7 @@ section "MinkowskiChain: O6"
 
 text \<open>O6 supposedly serves the same purpose as Pasch's axiom.\<close>
 
-(*
-locale Minkowski_O6_old_equiv = MinkowskiBetweenness +
-  assumes O6_old: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
-                \<exists>d\<in>S. [b;c;d] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [c;e;a])\<rbrakk>
-               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"
-begin
-lemma O6_new: "\<lbrakk>{Q,R,S,T} \<subseteq> \<P>; card{Q,R,S} = 3; a \<in> Q\<inter>R; b \<in> Q\<inter>S; c \<in> R\<inter>S; d\<in>S\<inter>T; e\<in>R\<inter>T; [b;c;d]; [c;e;a]\<rbrakk>
-               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"
-  using O6_old[of Q R S T a b c] by (metis Int_iff card_3_dist insert_subset)
-end
-*)
-
-
 locale MinkowskiChain = MinkowskiBetweenness +
-  (*assumes O6_old: "\<lbrakk>Q \<in> \<P>; R \<in> \<P>; S \<in> \<P>; T \<in> \<P>; Q \<noteq> R; Q \<noteq> S; R \<noteq> S; a \<in> Q\<inter>R \<and> b \<in> Q\<inter>S \<and> c \<in> R\<inter>S;
-                \<exists>d\<in>S. [b;c;d] \<and> (\<exists>e\<in>R. d \<in> T \<and> e \<in> T \<and> [c;e;a])\<rbrakk>
-               \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"*)
   assumes O6: "\<lbrakk>{Q,R,S,T} \<subseteq> \<P>; card{Q,R,S} = 3; a \<in> Q\<inter>R; b \<in> Q\<inter>S; c \<in> R\<inter>S; d\<in>S\<inter>T; e\<in>R\<inter>T; [b;c;d]; [c;e;a]\<rbrakk>
                \<Longrightarrow> \<exists>f\<in>T\<inter>Q. \<exists>g X. [g\<leadsto>X|a..f..b]"
 begin
@@ -1143,7 +1100,6 @@ end (*MinkowskiChain*)
 section "MinkowskiUnreachable: I5-I7"
 
 locale MinkowskiUnreachable = MinkowskiChain +
-  (* I5 *)
   assumes I5: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>-Q\<rbrakk> \<Longrightarrow> \<exists>x y. {x,y} \<subseteq> unreach-on Q from b \<and> x \<noteq> y"
       and I6: "\<lbrakk>Q \<in> \<P>; b \<in> \<E>-Q; {Qx,Qz} \<subseteq> unreach-on Q from b; Qx\<noteq>Qz\<rbrakk>
       \<Longrightarrow> \<exists>X f. [f\<leadsto>X|Qx..Qz]
