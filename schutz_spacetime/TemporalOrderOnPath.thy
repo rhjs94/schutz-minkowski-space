@@ -4711,228 +4711,6 @@ proof -
 qed
 
 
-
-section "Extensions of results to infinite chains"
-context MinkowskiSpacetime begin
-
-(* TODO Doesn't work this way anymore because infinite chains are now local only, and thm 2 is finite chains only *)
-(*
-lemma i_neq_j_imp_events_neq_inf:
-  assumes "[f\<leadsto>X|(f 0)..]" "i\<noteq>j"
-  shows "f i \<noteq> f j"
-proof -
-  let ?P = "\<lambda> i j. i\<noteq>j \<longrightarrow> f i \<noteq> f j"
-  {
-    fix i j assume "(i::nat)\<le>j"
-    have "?P i j"
-    proof (cases)
-      assume "i<j"
-      then obtain k where "k>j" by blast
-      hence "[f i; f j; f k]"
-        using \<open>i < j\<close> assms(1) inf_chain_is_long local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
-      thus "?P i j"
-        using abc_abc_neq by blast
-    next
-      assume "\<not>i<j" hence "i=j" using \<open>i \<le> j\<close> by auto
-      show "?P i j" by (simp add: \<open>i = j\<close>)
-    qed
-  } moreover {
-    fix i j assume "?P j i"
-    hence "?P i j" by auto
-  }
-  ultimately show ?thesis
-    by (metis assms(2) leI less_imp_le_nat)
-qed
-
-
-lemma i_neq_j_imp_events_neq:
-  assumes "local_long_ch_by_ord f X" "i\<noteq>j" "finite X \<longrightarrow> (i<card X \<and> j<card X)"
-  shows "f i \<noteq> f j"
-  using i_neq_j_imp_events_neq_inf indices_neq_imp_events_neq
-  by (meson assms get_fin_long_ch_bounds infinite_chain_def)
-
-
-lemma inf_chain_origin_unique:
-  assumes "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|g 0..]"
-  shows "f 0 = g 0"
-proof (rule ccontr)
-  assume "f 0 \<noteq> g 0"
-  obtain P where "P\<in>\<P>" "X\<subseteq>P"
-    using assms(1) infinite_chain_on_path by blast
-  obtain x where "x = g 1" by simp
-  hence "x\<noteq>g 0"
-    using assms(2) i_neq_j_imp_events_neq_inf zero_neq_one by blast
-  have "x\<in>X"
-    by (metis local_ordering_def \<open>x = g 1\<close> assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-  have "x=f 0 \<or> x\<noteq>f 0" by auto
-  thus False
-  proof (rule disjE)
-    assume "x=f 0"
-    hence "[g 0; f 0; g 2]"
-      using \<open>x=g 1\<close> \<open>x=f 0\<close> assms(2) inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc
-      by fastforce
-    then obtain m n where "f m = g 0" "f n = g 2"
-      by (metis local_ordering_def assms(1) assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-    hence "[f m; f 0; f n]"
-      by (simp add: \<open>[g 0; f 0; g 2]\<close>)
-    hence "m\<noteq>n"
-      using abc_abc_neq by blast
-    have "m>0 \<and> n>0"
-      using \<open>[f m; f 0; f n]\<close> abc_abc_neq neq0_conv by blast
-    hence "(0<m \<and> m<n) \<or> (0<n \<and> n<m)"
-      using \<open>m \<noteq> n\<close> by auto
-    thus False
-      using `[f m; f 0; f n]` assms(1) index_order3 inf_chain_is_long by blast
-  next
-    assume "x\<noteq>f 0"
-
-    (*Help for Sledgehammer*)
-    have fn: "\<forall>n. f n \<in> X"
-      by (metis (no_types) local_ordering_def assms(1) inf_chain_is_long local_local_long_ch_by_ord_def)
-    have gn: "\<forall>n. g n \<in> X"
-      by (metis local_ordering_def assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-
-    have "[g 0; x; f 0]"
-    proof -
-      have "[f 0; g 0; x] \<or> [g 0; f 0; x] \<or> [g 0; x; f 0]"
-        using \<open>f 0 \<noteq> g 0\<close> \<open>x \<noteq> f 0\<close> \<open>x \<noteq> g 0\<close> all_aligned_on_infinite_chain
-        by (metis local_ordering_def \<open>x \<in> X\<close> assms inf_chain_is_long local_local_long_ch_by_ord_def)
-      moreover have "\<not>[f 0; g 0; x]"
-        using abc_only_cba(1,3) all_aligned_on_infinite_chain assms(2) fn
-        by (metis \<open>x\<in>X\<close> \<open>x\<noteq>f 0\<close> \<open>x\<noteq>g 0\<close>)
-      moreover have "\<not>[g 0; f 0; x]"
-        using fn gn \<open>x \<in> X\<close> \<open>x \<noteq> g 0\<close>
-        by (metis (no_types) abc_only_cba(1,2,4) all_aligned_on_infinite_chain assms(1))
-      ultimately show ?thesis by blast
-    qed
-
-    obtain m m' where "g m' = f 0" "m = Suc m'"
-      using local_ordering_def assms inf_chain_is_long local_local_long_ch_by_ord_def by metis
-    hence "[g 0; f 0; g m]"
-      by (metis Suc_le_eq \<open>f 0 \<noteq> g 0\<close> assms(2) inf_chain_is_long lessI linorder_neqE_nat
-          local_local_long_ch_by_ord_def not_le ordering_ord_ijk_loc zero_less_Suc)
-    then obtain n p where "f n = g 0" "f p = g m"
-      by (metis abc_abc_neq abc_only_cba(1,4) all_aligned_on_infinite_chain assms(1) gn)
-    hence "m<0 \<or> n<0"
-      using all_aligned_on_infinite_chain assms(1) \<open>[g 0; f 0; g m]\<close>
-      by (metis abc_abc_neq abc_only_cba(1,4) fn)
-    thus False by simp
-  qed
-qed
-
-
-lemma inf_chain_unique:
-  assumes "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|g 0..]"
-  shows "\<forall>i::nat. f i = g i"
-proof -
-  {
-    assume asm: "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|f 0..]"
-    have "\<forall>i::nat. f i = g i"
-    proof
-      fix i::nat
-      show "f i = g i"
-      proof (induct i)
-        show "f 0 = g 0"
-          using asm(2) inf_chain_is_long by fastforce
-        fix i assume "f i = g i"
-        show "f (Suc i) = g (Suc i)"
-        proof (rule ccontr)
-          assume "f (Suc i) \<noteq> g (Suc i)"
-          let ?i = "Suc i"
-          have "f 0\<in>X \<and> g?i\<in>X \<and> f?i\<in>X"
-            by (metis local_ordering_def assms(1) assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-          hence "[f 0; f ?i; g ?i] \<or> [f 0; g ?i; f ?i] \<or> [f ?i; f 0; g ?i]"
-            using all_aligned_on_infinite_chain assms(1,2) i_neq_j_imp_events_neq_inf
-            by (metis \<open>f?i \<noteq>g?i\<close> \<open>f 0 = g 0\<close>)
-          hence "[f 0; f ?i; g ?i] \<or> [f 0; g ?i; f ?i]"
-            using all_aligned_on_infinite_chain asm(2)
-            by (metis \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> abc_abc_neq)
-          have "([f 0; f i; f ?i] \<and> [f 0; g i; g ?i]) \<or> i=0"
-            using local_local_long_ch_by_ord_def ordering_ord_ijk_loc asm(1,2)
-            by (metis Suc_inject Suc_lessI Suc_less_eq inf_chain_is_long lessI zero_less_Suc)
-          thus False
-          proof (rule disjE)
-            assume "i=0"
-            have "[g 0; f 1; g 1]"
-            proof -
-              obtain x where "x = g 1" by simp
-              hence "x\<in>X"
-                using \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> \<open>i = 0\<close> by force
-              then obtain m where "f m = x"
-                by (metis local_ordering_def assms(1) inf_chain_is_long local_local_long_ch_by_ord_def)
-              hence "f m = g 1"
-                using \<open>x = g 1\<close> by blast
-              have "m>1"
-                using assms(2) i_neq_j_imp_events_neq_inf \<open>f?i \<noteq> g?i\<close>
-                by (metis One_nat_def Suc_lessI \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>i = 0\<close> \<open>x = g 1\<close> neq0_conv)
-              thus "[g 0; f 1; g 1]"
-                using \<open>[f 0; f?i; g?i] \<or> [f 0; g?i; f?i]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>i=0\<close> \<open>x = g 1\<close>
-                by (metis One_nat_def assms(1) gr_implies_not_zero index_order3 inf_chain_is_long order.asym)
-            qed
-            have "f 1 \<in> X"
-              using \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> \<open>i = 0\<close> by auto
-            then obtain m' where "g m' = f 1"
-              by (metis local_ordering_def assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-            hence "[g 0; g m'; g 1]"
-              using \<open>[g 0; f 1; g 1]\<close> by auto
-            have "[g 0; g 1; g m']"
-            proof -
-              have "m' \<noteq> 1 \<and> m' \<noteq> 0"
-                using `[g 0; g m'; g 1]` by (meson abc_abc_neq)
-              hence "m'>1" by auto
-              thus "[g 0; g 1; g m']"
-                using \<open>[g 0; g m'; g 1]\<close> assms(2) index_order3 inf_chain_is_long by blast
-            qed
-            thus False
-              using `[g 0; g m'; g 1]` abc_only_cba(2) by blast
-          next
-            assume "[f 0; f i; f ?i] \<and> [f 0; g i; g ?i]"
-            have "[g 0; f ?i; g ?i]"
-            proof -
-              obtain x where "x = g ?i" by simp
-              hence "x\<in>X"
-                by (simp add: \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close>)
-              then obtain m where "f m = x"
-                by (metis local_ordering_def assms(1) inf_chain_is_long local_local_long_ch_by_ord_def)
-              hence "f m = g ?i"
-                using \<open>x = g ?i\<close> by blast
-              have "m>?i"
-                using assms(2) i_neq_j_imp_events_neq_inf \<open>f?i \<noteq> g?i\<close>
-                by (metis Suc_lessI \<open>[f 0; f i; f ?i] \<and> [f 0; g i; g ?i]\<close> \<open>f i = g i\<close> \<open>f m = x\<close>
-                    \<open>x = g (Suc i)\<close> assms(1) index_order3 less_nat_zero_code infinite_chain_def)
-              thus "[g 0; f ?i; g ?i]"
-                using \<open>[f 0; f?i; g?i] \<or> [f 0; g?i; f?i]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>x = g ?i\<close>
-                by (metis assms(1) gr_implies_not_zero index_order3 inf_chain_is_long order.asym)
-            qed
-            obtain m where "g m = f ?i"
-              using \<open>(f 0)\<in>X \<and> g?i\<in>X \<and> f?i\<in>X\<close> assms(2)
-              by (metis local_ordering_def inf_chain_is_long local_local_long_ch_by_ord_def)
-            hence "[g i; g m; g ?i]"
-              using abc_acd_bcd \<open>[f 0;f i;f ?i] \<and> [f 0; g i; g ?i]\<close> \<open>[g 0; f ?i; g ?i]\<close>
-              by (metis \<open>f 0 = g 0\<close> \<open>f i = g i\<close>)
-            have "[g i; g ?i; g m]"
-            proof -
-              have "m>?i"
-                using \<open>[g i; g m; g ?i]\<close> assms(2) index_order3 inf_chain_is_long by fastforce
-              thus ?thesis
-                using assms(2) inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
-            qed
-            thus False
-              using \<open>[g i; g m; g ?i]\<close> abc_only_cba by blast
-          qed
-        qed
-      qed
-    qed
-  }
-  moreover have "f 0 = g 0" using inf_chain_origin_unique assms by blast
-  ultimately show ?thesis using assms by auto
-qed
-*)
-
-end (*context MinkowskiSpacetime*)
-
-
-
 section "Interlude: betw4 and WLOG"
 
 subsection "betw4 - strict and non-strict, basic lemmas"
@@ -5119,7 +4897,7 @@ proof -
   have endpoints_on_path: "a\<in>A" "b\<in>A" "c\<in>A" "d\<in>A"
     using Q_implies_path asm by blast+
   show "P I J"
-  proof (cases) (* have to split like this, because the full some_[is;too;large;for] Isabelle *)
+  proof (cases) (* have to split like this, because the full \<open>some_betw\<close> is too large for Isabelle *)
     assume "[b;a;c;d] \<or> [b;a;d;c] \<or> [b;c;a;d] \<or>
             [b;d;a;c] \<or> [c;a;b;d] \<or> [c;b;a;d]"
     then consider "[b;a;c;d]"|"[b;a;d;c]"|"[b;c;a;d]"|
@@ -5154,7 +4932,7 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct':
       and "\<And>I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>a b. Q J a b; P I J\<rbrakk> \<Longrightarrow> P J I"
       and "\<And>I J a b c d.
           \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b\<rbrakk> \<Longrightarrow> P I J"
-      and "Q I a b" (* Is it better style to have these assumptions first, or last like this? *)
+      and "Q I a b"
       and "Q J c d"
       and "I \<subseteq> A"
       and "J \<subseteq> A"
@@ -5181,7 +4959,6 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct:
           \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; [a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]\<rbrakk> \<Longrightarrow> P I J"
   shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
               a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
-  (*using wlog_endpoints_distinct4 assms by (smt some_betw4a)*) (* uses previous wlog, but slower *)
   by (smt (verit, ccfv_SIG) assms some_betw4b)
 
 
@@ -5274,7 +5051,6 @@ proof -
       using wlog_endpoints_degenerate1
         [where I=I and J=J and a=a and b=b and c=c and d=d and P=P and Q=Q]
       using asm1 asm2 symmetric_P last_case assms(5) symmetric_Q
-      (* by metis *) (* metis is proposed by solver "e", but is slow :-( *)
       by smt
   qed
 qed
@@ -5417,7 +5193,7 @@ proof -
 
   {
     fix I J a b c d
-    assume "I = interval a b" "J = interval c d" (* "a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d" *)
+    assume "I = interval a b" "J = interval c d"
     have "([a;b;c;d] \<longrightarrow> ?prop I J)"
          "([a;c;b;d] \<longrightarrow> ?prop I J)"
          "([a;c;d;b] \<longrightarrow> ?prop I J)"
@@ -5842,7 +5618,7 @@ proof -
       \<and> (([x;a;y] \<and> [a;y;z]) \<or> ([x;a;z] \<and> [a;z;y]))"
     if "x\<in>?L" "w\<in>?L" "y\<in>?R" "z\<in>?R" "w\<noteq>x" "y\<noteq>z" for x w y z
     using path_finsubset_chain order_finite_chain (* Schutz says: implied by thm 10 & 2 *)
-    by (smt abc_abd_bcdbdc abc_bcd_abd abc_sym abd_bcd_abc mem_Collect_eq that) (* impressive! *)
+    by (smt abc_abd_bcdbdc abc_bcd_abd abc_sym abd_bcd_abc mem_Collect_eq that) (* impressive, sledgehammer! *)
 
   obtain x y where "x\<in>?L" "y\<in>?R"
     by (metis (mono_tags) \<open>b \<in> Q\<close> \<open>b \<noteq> a\<close> abc_sym event_a mem_Collect_eq path_Q prolong_betw2)
@@ -5903,13 +5679,6 @@ proof -
       thus "is_ray ?L" by auto
     qed
   qed
-(*
- 1. Q \<in> \<P>
- 2. \<And>x. [a;x;b] \<Longrightarrow> x \<in> Q
- 3. \<And>x. [a;b;x] \<Longrightarrow> x \<in> Q
- 4. \<And>x. b \<in> Q
- 5. is_ray {y. [a;y;b] \<or> [[a b y\<rbrakk>}
-*)
   show "is_ray_on ?R Q"
   proof (unfold is_ray_on_def, safe)
     show "Q \<in> \<P>" 
@@ -6011,7 +5780,7 @@ definition closest_to :: "('a set) \<Rightarrow> 'a \<Rightarrow> ('a set) \<Rig
 
 lemma int_on_path:
   assumes "l\<in>L" "r\<in>R" "Q\<in>\<P>"
-      and partition: "L\<subseteq>Q" "L\<noteq>{}" "R\<subseteq>Q" "R\<noteq>{}" "L\<union>R=Q" (*disjoint?*)
+      and partition: "L\<subseteq>Q" "L\<noteq>{}" "R\<subseteq>Q" "R\<noteq>{}" "L\<union>R=Q"
     shows "interval l r \<subseteq> Q"
 proof
   fix x assume "x\<in>interval l r"
@@ -6135,14 +5904,6 @@ proof
 qed
 
 
-(*
-lemma ray_of_bounds:
-  assumes "[f\<leadsto>X|(f 0)..]" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
-  shows "all_bounds X = insert c (ray c b)"
-  using ray_of_bounds3 assms infinite_chain_on_path by blast
-*)
-
-
 lemma int_in_closed_ray:
   assumes "path ab a b"
   shows "interval a b \<subset> insert a (ray a b)"
@@ -6163,41 +5924,6 @@ proof
     using interval_def ray_def by auto
 qed
 
-
-(*
-lemma bound_any_f:
-  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "is_bound c X"
-  shows "is_bound_f c X f"
-proof -
-  obtain g where "is_bound_f c X g" "[g\<leadsto>X|g 0..]"
-    using assms(4) is_bound_def is_bound_f_def by blast
-  show ?thesis
-    unfolding is_bound_f_def
-  proof (safe)
-    fix i j::nat
-    show "[f\<leadsto>X|f 0 ..]" by (simp add: assms(2))
-    assume "i<j"
-    have "[g i; g j; c]"
-      using \<open>i < j\<close> \<open>is_bound_f c X g\<close> is_bound_f_def by blast
-    thus "[f i; f j; c]"
-      using inf_chain_unique \<open>[g\<leadsto>X|g 0 ..]\<close> assms(2) by force
-  qed
-qed
-
-
-lemma closest_bound_any_f:
-  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "closest_bound c X"
-  shows "closest_bound_f c X f"
-proof (unfold closest_bound_f_def, safe)
-  show "is_bound_f c X f"
-  using bound_any_f assms closest_bound_def is_bound_def by blast
-next
-  fix Q\<^sub>b'
-  assume "is_bound Q\<^sub>b' X" "Q\<^sub>b' \<noteq> c" 
-  then show "[f 0; c; Q\<^sub>b']"
-  by (metis (full_types) assms(2,4) closest_bound_def inf_chain_unique is_bound_f_def)
-qed
-*)
 
 end (* context MinkowskiSpacetime *)
 
@@ -6497,104 +6223,6 @@ proof -
   qed
 qed
 
-lemma (*for 14i*) union_of_bounded_sets_is_bounded_example:
-  assumes "\<forall>x\<in>A. [a;x;b]" "\<forall>x\<in>B. [c;x;d]" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
-    "card A > 1 \<or> infinite A" "card B > 1 \<or> infinite B"
-  shows "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>A\<union>B. [l;x;u]"
-  (*apply (rule wlog_intro[of Q])*)
-proof -
-  let ?P = "\<lambda> A B. \<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>A\<union>B. [l;x;u]"
-  let ?I = "\<lambda> A a b. (1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [a;x;b])"
-  let ?R = "\<lambda>A. \<exists>a b. ?I A a b"
-
-  show ?thesis
-    apply (rule wlog_intro[where A=Q and Q="?I" and P="?P"])
-    (*NOTE: this won't work if you don't provide instantiations yourself*)
-  proof -
-  
-    text \<open>Antecedents for the case we actually care about.\<close>
-    show "?I A a b" "?I B c d" using assms(1,2,6,7) by auto
-    show "A \<subseteq> Q" "B \<subseteq> Q" by (simp add: assms(3,4))+
-    show "Q\<in>\<P>" by (simp add: assms(5))
-  
-    text \<open>\<open>?I\<close> relates an event set to events on the same path as the set.\<close>
-    show on_path: "\<And>a b A. A \<subseteq> Q \<Longrightarrow> ?I A a b \<Longrightarrow> b \<in> Q \<and> a \<in> Q"
-    proof -
-      fix a b A assume "A\<subseteq>Q" "?I A a b"
-      show "b\<in>Q\<and>a\<in>Q"
-      proof (cases)
-        assume "card A \<le> 1 \<and> finite A"
-        thus ?thesis
-          using \<open>?I A a b\<close> by auto
-      next
-        assume "\<not> (card A \<le> 1 \<and> finite A)"
-        hence asmA: "card A > 1 \<or> infinite A"
-          by linarith
-        then obtain x y where "x\<in>A" "y\<in>A" "x\<noteq>y"
-        proof 
-          assume "1 < card A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
-          then show ?thesis 
-            by (metis One_nat_def Suc_le_eq card_le_Suc_iff insert_iff)
-        next
-          assume "infinite A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
-          then show ?thesis 
-          using infinite_imp_nonempty by (metis finite_insert finite_subset singletonI subsetI)
-      qed
-        have "x\<in>Q" "y\<in>Q"
-          using \<open>A \<subseteq> Q\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close> by auto
-        have "[a;x;b]" "[a;y;b]"
-          by (simp add: \<open>(1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [a;x;b])\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close>)+ 
-        hence "betw4 a x y b \<or> betw4 a y x b"
-          using \<open>x \<noteq> y\<close> abd_acd_abcdacbd by blast
-        hence "a\<in>Q \<and> b\<in>Q"
-          using \<open>Q\<in>\<P>\<close> \<open>x\<in>Q\<close> \<open>x\<noteq>y\<close> \<open>x\<in>Q\<close> \<open>y\<in>Q\<close> betw_a_in_path betw_c_in_path by blast
-        thus ?thesis by simp
-      qed
-    qed
-
-    text \<open>\<open>?I\<close> and \<open>?P\<close> satisfy the symmetry requirements.\<close>
-    show "\<And>a b I. ?I I a b \<Longrightarrow> ?I I b a" using abc_sym by blast
-    show "\<And>I J. ?R I \<Longrightarrow> ?R J \<Longrightarrow> ?P I J \<Longrightarrow> ?P J I" by (simp add: Un_commute)
-
-    text \<open>Finally, prove \<open>?P I J\<close> for all the essentially distinct cases.\<close> (*TODO name this goal in intro lemma?*)
-    show "\<And>I J a b c d. ?I I a b \<Longrightarrow> ?I J c d \<Longrightarrow> I \<subseteq> Q \<Longrightarrow> J \<subseteq> Q \<Longrightarrow>
-         (a = b \<and> b = c \<and> c = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a = b \<and> b \<noteq> c \<and> c = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a = b \<and> b = c \<and> c \<noteq> d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([a;b;c] \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([b;a;c] \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([a;b;c;d] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([a;c;b;d] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and> ([a;c;d;b] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u]))"
-    proof (intro conjI; intro impI)
-    { fix I J a b c d
-      assume asm1: "?I I a b" "?I J c d"  "I\<subseteq>Q" "J\<subseteq>Q"
-      {
-        assume "a = b \<and> b = c \<and> c = d" show "?P I J" sorry
-      } {
-        assume "a = b \<and> b \<noteq> c \<and> c = d" show "?P I J" sorry
-      } {
-        assume "a = b \<and> b = c \<and> c \<noteq> d" show "?P I J" sorry
-      } {
-        assume "a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d" show "?P I J" sorry
-      } {
-        assume "a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d" show "?P I J" sorry
-      } {
-        assume "[a;b;c] \<and> a = d" show "?P I J" sorry
-      } {
-        assume "[b;a;c] \<and> a = d" show "?P I J" sorry
-      } {
-        assume "[a;b;c;d]" show "?P I J" sorry
-      } {
-        assume "[a;c;b;d]" show "?P I J" sorry
-      } {
-        assume "[a;c;d;b]" show "?P I J" sorry
-      }
-    } qed
-  qed
-(*qed*) oops
-
 
 lemma (*for 14i*) union_of_bounded_sets_is_bounded2:
   assumes "\<forall>x\<in>A. [a;x;b]" "\<forall>x\<in>B. [c;x;d]" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
@@ -6616,7 +6244,7 @@ text \<open>
 theorem (*14i*) second_existence_thm_1:
   assumes path_Q: "Q\<in>\<P>"
       and events: "a\<notin>Q" "b\<notin>Q"
-      and reachable: "path_ex a q1" "path_ex b q2" "q1\<in>Q" "q2\<in>Q" (* "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" *)(*  "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q" *)
+      and reachable: "path_ex a q1" "path_ex b q2" "q1\<in>Q" "q2\<in>Q"
     shows "\<exists>y\<in>Q. \<exists>z\<in>Q. (\<forall>x\<in>unreach-on Q from a. [y;x;z]) \<and> (\<forall>x\<in>unreach-on Q from b. [y;x;z])"
 proof -
   text \<open>Slightly annoying: Schutz implicitly extends \<open>bounded\<close> to sets, so his statements are neater.\<close>
