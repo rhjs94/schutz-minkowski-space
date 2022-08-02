@@ -137,14 +137,6 @@ text \<open>
   each capturing one of the proofs by induction in Schutz' writing.
 \<close>
 
-(* Theorem 2 for total chains *)
-(*theorem order_finite_chain:
-  assumes chX: "local_long_ch_by_ord f X"
-      and finiteX: "finite X"
-      and ordered_nats: "0 \<le> (i::nat) \<and> i < j \<and> j < l \<and> l < card X"
-  shows "[f i; f j; f l]"
-  by (metis chX local_long_ch_by_ord_def ordered_nats ordering_ord_ijk_loc)*)
-
 lemma thm2_ind1:
   assumes chX: "local_long_ch_by_ord f X"
       and finiteX: "finite X"
@@ -300,7 +292,6 @@ proof -
 qed
 
 
-(*TODO: make index_neq_ results use this, much simpler!?*)
 theorem (*2ii*) index_injective:
   fixes i::nat and j::nat
   assumes chX: "local_long_ch_by_ord f X"
@@ -409,42 +400,7 @@ next
   qed
 qed
 
-subsection "Totally ordered chains with indexing, additional lemmas about chains"
-
-(*
-definition local_long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "local_long_ch_by_ord f X \<equiv> (infinite X \<or> card X \<ge> 3) \<and> local_ordering f betw X"
-(*definition local_long_ch_by_ord :: "(nat \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "local_long_ch_by_ord f X \<equiv> \<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> local_ordering f betw X"*)
-
-lemma local_long_ch_by_ord_alt:
-  "local_long_ch_by_ord f X =
-    (\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> local_ordering f betw X)"
-  (is "_ = ?ch f X")
-proof (standard)
-  assume asm: "local_long_ch_by_ord f X"
-  {
-    assume "card X \<ge> 3"
-    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
-      apply (simp add: eval_nat_numeral)
-      by (auto simp add: card_le_Suc_iff)
-  } moreover {
-    assume "infinite X"
-    then have "\<exists>x y z. x\<noteq>y \<and> y\<noteq>z \<and> x\<noteq>z \<and> {x,y,z}\<subseteq>X"
-      using inf_3_elms bot.extremum by fastforce
-  }
-  ultimately show "?ch f X" using asm unfolding local_long_ch_by_ord_def by auto
-next
-  assume asm: "?ch f X"
-  then obtain x y z where xyz: "{x,y,z}\<subseteq>X \<and> x \<noteq> y \<and> y \<noteq> z \<and> x \<noteq> z"
-    apply (simp add: eval_nat_numeral) by auto
-  hence "card X \<ge> 3 \<or> infinite X"
-    apply (simp add: eval_nat_numeral)
-    by (smt (z3) xyz card.empty card_insert_if card_subset finite.emptyI finite_insert insertE
-      insert_absorb insert_not_empty)
-  thus "local_long_ch_by_ord f X" unfolding local_long_ch_by_ord_def using asm by auto
-qed
-*)
+subsection "Additional lemmas about chains"
 
 lemma first_neq_last:
   assumes "[f\<leadsto>Q|x..z]"
@@ -515,17 +471,6 @@ lemma finite_long_chain_with_alt3:
   using assms finite_chain_alt finite_chain_with_def finite_long_chain_with_def by auto
 
 
-(*lemma fin_ch_betw:
-  assumes "[f\<leadsto>X|a..b..c]"
-  shows "[a;b;c]"
-proof -
-  obtain nb where n_def: "nb\<noteq>0" "nb<card X - 1" "f nb = b"
-    using assms index_middle_element by blast
-  have "[f 0; f nb; f (card X - 1)]"
-    using chain_defs assms n_def by metis
-  thus ?thesis using assms finite_long_chain_with_def n_def(3) by auto
-qed*)
-
 lemma chain_sym_obtain:
   assumes "[f\<leadsto>X|a..b..c]"
   obtains g where "[g\<leadsto>X|c..b..a]" and "g=(\<lambda>n. f (card X - 1 - n))"
@@ -550,7 +495,6 @@ proof -
       using short_ch_card(1) by auto
     hence ac: "f 0 = a" "f 1 = c"
       by (simp add: asm)+
-    (*hence fn_eq: "(\<lambda>n. if n = 0 then f 1 else f 0) = (\<lambda>n. f (card X - Suc n))" sorry*)
     have "n=1 \<or> n=0" if "n<card X" for n
       using cardX that by linarith
     hence fn_eq: "(\<lambda>n. if n = 0 then f 1 else f 0) = (\<lambda>n. f (card X - Suc n))" if "n<card X" for n
@@ -576,60 +520,6 @@ lemma chain_sym_obtain2:
 
 
 end (* context MinkowskiBetweenness *)
-
-
-section \<open>Finite chain equivalence: local \<open>\<leftrightarrow>\<close> global\<close>
-context MinkowskiBetweenness begin
-
-(*
-lemma ch_equiv1:
-  assumes "local_long_ch_by_ord f X" "finite X"
-  shows "local_local_long_ch_by_ord f X"
-  using assms
-  unfolding local_local_long_ch_by_ord_def local_local_local_long_ch_by_ord_def local_ordering_def local_ordering2_def
-  by (metis lessI)
-
-
-lemma ch_equiv2:
-  assumes "local_local_long_ch_by_ord f X" "finite X"
-  shows "local_long_ch_by_ord f X"
-  using order_finite_chain assms
-  unfolding local_local_long_ch_by_ord_def local_local_local_long_ch_by_ord_def local_ordering_def local_ordering2_def
-  apply safe by blast
-
-
-lemma ch_equiv:
-  assumes "finite X"
-  shows "local_long_ch_by_ord f X \<longleftrightarrow> local_local_long_ch_by_ord f X"
-  using ch_equiv1 ch_equiv2 assms by blast
-*)
-
-
-(*
-lemma ch_equiv1:
-  assumes "long_ch_by_ord f X" "finite X"
-  shows "local_long_ch_by_ord f X"
-  using assms
-  unfolding local_long_ch_by_ord_def local_long_ch_by_ord_def local_ordering_def local_ordering_def ordering_def
-  by (metis lessI)
-
-
-lemma ch_equiv2:
-  assumes "local_local_long_ch_by_ord f X" "finite X"
-  shows "local_long_ch_by_ord f X"
-  using order_finite_chain assms
-  unfolding local_local_long_ch_by_ord_def local_local_local_long_ch_by_ord_def local_ordering_def local_ordering2_def
-  apply safe by blast
-
-corollary ch_equiv:
-  assumes "finite X"
-  shows "local_long_ch_by_ord f X = local_local_long_ch_by_ord f X"
-  apply standard prefer 2 subgoal
-  using order_finite_chain[of f X] assms
-*)
-
-
-end (*context MinkowskiBetweenness*)
 
 
 section "Preliminary Results for Kinematic Triangles and Paths/Betweenness"
@@ -941,7 +831,6 @@ lemma ord_path_of:
   shows "a \<in> path_of b c" "b \<in> path_of a c" "c \<in> path_of a b"
     and "path_of a b = path_of a c" "path_of a b = path_of b c"
 proof -
-  (*TODO: these three are weirdly hard for sledgehammer/methods*)
   show "a \<in> path_of b c"
     using betw_a_in_path[of a b c "path_of b c"] path_of_ex abc_ex_path_unique abc_abc_neq assms
     by (smt (z3) betw_a_in_path the1_equality)
@@ -1488,8 +1377,7 @@ proof (induct "card X - 3" arbitrary: X)
       by (simp add: X_eq abc_neq(1))
   next
     assume "[c;a;b]"
-    thus ?thesis (* jep: sledgehammer had trouble with this case without explicitly telling it what
-      assumptions to use, for some reason, and even then only one prover figured out "by auto". *)
+    thus ?thesis
       using X_eq abc_neq(3) by blast
   qed
 next
@@ -2231,8 +2119,6 @@ lemma abc_abd_acdadc:
 proof -
   have cba: "[c;b;a]" using abc_sym abc by simp
   have dba: "[d;b;a]" using abc_sym abd by simp
-  (* This goes through so easily because the overlapping betweenness axiom is an intro rule.
-     Adding it here to more closely match Schutz. *)
   have dcb_over_cba: "[d;c;b] \<and> [c;b;a] \<Longrightarrow> [d;c;a]" by auto
   have cdb_over_dba: "[c;d;b] \<and> [d;b;a] \<Longrightarrow> [c;d;a]" by auto
 
@@ -2250,8 +2136,7 @@ lemma abc_acd_bcd:
 proof -
   have path_abc: "\<exists>Q\<in>\<P>. a \<in> Q \<and> b \<in> Q \<and> c \<in> Q" using abc by (simp add: abc_ex_path)
   have path_acd: "\<exists>Q\<in>\<P>. a \<in> Q \<and> c \<in> Q \<and> d \<in> Q" using acd by (simp add: abc_ex_path)
-  then have "\<exists>Q\<in>\<P>. b \<in> Q \<and> c \<in> Q \<and> d \<in> Q" using path_abc abc_abc_neq acd cross_once_notin by metis 
-  (* Schutz implicitly assumes this. *)
+  then have "\<exists>Q\<in>\<P>. b \<in> Q \<and> c \<in> Q \<and> d \<in> Q" using path_abc abc_abc_neq acd cross_once_notin by metis
   then have bcd3: "[b;c;d] \<or> [b;d;c] \<or> [c;b;d]" by (metis abc abc_only_cba(1,2) acd some_betw2)
   show ?thesis
   proof (rule ccontr)
@@ -2348,11 +2233,6 @@ proof -
   show ?thesis
     using abc_betw ch1 ch2 ch3 by (metis insert_commute)
 qed
-
-(*lemma
-  assumes "local_ordering f betw X" "card X > 2"
-  shows "local_long_ch_by_ord f X"
-  using assms by (simp add: eval_nat_numeral chain_defs)*)
 
 lemma overlap_chain: "\<lbrakk>[a;b;c]; [b;c;d]\<rbrakk> \<Longrightarrow> ch {a,b,c,d}"
 proof -
@@ -2467,8 +2347,6 @@ text \<open>
 
 context MinkowskiBetweenness begin
 
-(*subsection "Proofs for totally ordered index-chains"*)
-
 subsection "General results"
 
 lemma inf_chain_is_long:
@@ -2486,14 +2364,6 @@ lemma endpoint_in_semifin:
   assumes  "[f\<leadsto>X|x..]"
   shows "x\<in>X"
   using zero_into_ordering_loc by (metis assms empty_iff inf_chain_is_long local_long_ch_by_ord_alt)
-
-(*lemma three_in_long_chain:
-  assumes "local_long_ch_by_ord f X" and fin: "finite X"
-  obtains x y z where "x\<in>X" and "y\<in>X" and "z\<in>X" and "x\<noteq>y" and "x\<noteq>z" and "y\<noteq>z"
-  using three_in_long_chain
-  using assms(1) by blast*)
-
-(*subsection "Index-chains lie on paths"*)
 
 text \<open>
   Yet another corollary to Theorem 2, without indices, for arbitrary events on the chain.
@@ -2517,163 +2387,13 @@ proof -
     apply cases using 2 abc_sym ijk by presburger+
 qed
 
-(*lemma all_aligned_on_infinite_chain:
-  assumes "[f\<leadsto>X|x..]"
-  and a: "y\<in>X" and b:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
-  shows "[x;y;z] \<or> [x;z;y]"
-proof -
-  obtain n\<^sub>y n\<^sub>z where "f n\<^sub>y = y" and "f n\<^sub>z = z"
-    by (metis local_ordering_def assms(1-3) inf_chain_is_long local_long_ch_by_ord_def)
-  have "(0<n\<^sub>y \<and> n\<^sub>y<n\<^sub>z) \<or> (0<n\<^sub>z \<and> n\<^sub>z<n\<^sub>y)"
-    using \<open>f n\<^sub>y = y\<close> \<open>f n\<^sub>z = z\<close> assms less_linear infinite_chain_def xy xz yz
-    by (metis infinite_chain_with_def neq0_conv)
-  hence "[f 0; f n\<^sub>y; f n\<^sub>z] \<or> [f 0; f n\<^sub>z; f n\<^sub>y]"
-    using local_ordering_def assms(1) local_long_ch_by_ord_def infinite_chain_def
-    by (metis local_long_ch_by_ord_def)
-  thus "[x;y;z] \<or> [x;z;y]"
-    using \<open>f n\<^sub>y = y\<close> \<open>f n\<^sub>z = z\<close> assms infinite_chain_def by auto
-qed
-
-lemma infinite_chain_on_path:
-  assumes "[f\<leadsto>X|x..]"
-  shows "\<exists>!P\<in>\<P>. X\<subseteq>P"
-proof -
-  obtain y where "y\<in>X" and "y\<noteq>x"
-    using assms inf_chain_is_long
-    by (metis Diff_iff all_not_in_conv finite_Diff2 finite_insert infinite_imp_nonempty insert_iff)
-  have path_exists: "\<exists>P\<in>\<P>. path P x y"
-  proof -
-    obtain e where "e\<in>X" and "e\<noteq>x" and "e\<noteq>y" and "[x;y;e] \<or> [x;e;y]"
-      using all_aligned_on_infinite_chain inf_chain_is_long local_local_long_ch_by_ord_def assms
-            local_ordering_def lessI \<open>y \<in> X\<close> \<open>y \<noteq> x\<close> finite.emptyI finite_insert
-            finite_subset insert_iff subsetI
-      by smt
-    obtain P where "path P x y"
-      using \<open>[x;y;e] \<or> [x;e;y]\<close> abc_abc_neq abc_ex_path
-      by blast
-    show ?thesis
-      using \<open>path P x y\<close>
-      by blast
-  qed
-  obtain P where "path P x y"
-    using path_exists
-    by blast
-  have "X\<subseteq>P"
-  proof
-    fix e
-    assume "e\<in>X"
-    show "e\<in>P"
-    proof -
-      have "e=x \<or> e=y \<or> (e\<noteq>x \<and> e\<noteq>y)" by auto
-      moreover { assume "e\<noteq>x \<and> e\<noteq>y"
-        have "[x;y;e] \<or> [x;e;y]"
-          using all_aligned_on_infinite_chain assms
-                \<open>e \<in> X\<close> \<open>e \<noteq> x \<and> e \<noteq> y\<close> \<open>y \<in> X\<close> \<open>y \<noteq> x\<close>
-          by blast
-        hence ?thesis
-          using \<open>path P x y\<close> abc_ex_path path_unique
-          by blast
-      } moreover { assume "e=x"
-        have ?thesis
-          by (simp add: \<open>e = x\<close> \<open>path P x y\<close>)
-      } moreover { assume "e=y"
-        have "e\<in>P"
-          by (simp add: \<open>e = y\<close> \<open>path P x y\<close>)
-      }
-      ultimately show ?thesis by blast
-    qed
-  qed
-  hence "\<exists>P\<in>\<P>. X\<subseteq>P"
-    using \<open>path P x y\<close>
-    by blast
-  thus ?thesis
-    using path_unique
-    by (meson \<open>path P x y\<close> \<open>y \<in> X\<close> assms endpoint_in_semifin in_mono)
-qed
-*)
-
-
 lemma (in MinkowskiPrimitive) card2_either_elt1_or_elt2:
   assumes "card X = 2" and "x\<in>X" and "y\<in>X" and "x\<noteq>y"
     and "z\<in>X" and "z\<noteq>x"
   shows "z=y"
 by (metis assms card_2_iff')
 
-
-(*
-lemma all_aligned_on_long_chain:
-  assumes "local_long_ch_by_ord f X"
-  and a: "x\<in>X" and b: "y\<in>X" and c:"z\<in>X" and xy: "x\<noteq>y" and xz: "x\<noteq>z" and yz: "y\<noteq>z" 
-shows "[x;y;z] \<or> [x;z;y] \<or> [z;x;y]"
-  using all_aligned_on_infinite_chain abc_sym assms local_local_long_ch_by_ord_def local_ordering_def
-  by (smt (verit, ccfv_threshold) neqE)
-*)
-
-(*subsection "More general results"*)
-
-(*
-(* In fact, it is xor. *)
-lemma ch_some_betw: "\<lbrakk>x \<in> X; y \<in> X; z \<in> X; x \<noteq> y; x \<noteq> z; y \<noteq> z; ch X\<rbrakk>
-        \<Longrightarrow> [x;y;z] \<or> [y;x;z] \<or> [y;z;x]"
-proof -
-  assume asm: "x \<in> X" "y \<in> X" "z \<in> X" "x \<noteq> y" "x \<noteq> z" "y \<noteq> z" "ch X"
-  {
-    fix f assume f_def: "local_long_ch_by_ord f X"
-    assume evts: "x \<in> X" "y \<in> X" "z \<in> X" "x \<noteq> y" "x \<noteq> z" "y \<noteq> z"
-    assume ords: "\<not> [x;y;z]" "\<not> [y;z;x]"
-    obtain P where "X\<subseteq>P" "P\<in>\<P>"
-      using chain_on_path f_def ch_by_ord_def
-      by meson
-    have "[y;x;z]"
-    proof -
-      have f1: "\<forall>A Aa a. \<not> A \<subseteq> Aa \<or> (a::'a) \<notin> A \<or> a \<in> Aa"
-        by blast
-      have f2: "y \<in> P"
-        using \<open>X \<subseteq> P\<close> evts(2) by blast
-      have f3: "x \<in> P"
-        using f1 by (metis \<open>X \<subseteq> P\<close> evts(1))
-      have "z \<in> P"
-        using \<open>X \<subseteq> P\<close> evts(3) by blast
-      then show ?thesis
-        using f3 f2 by (metis some_betw_xor \<open>P \<in> \<P>\<close> abc_sym evts(4,5,6) ords)
-    qed
-  }
-  thus ?thesis
-    unfolding ch_def local_local_long_ch_by_ord_def ch_by_ord_def local_ordering_def short_ch_def
-    using asm ch_by_ord_def ch_def short_ch_def
-    by (metis \<open>\<And>f. \<lbrakk>local_long_ch_by_ord f X; x \<in> X; y \<in> X; z \<in> X; x \<noteq> y; x \<noteq> z; y \<noteq> z;
-      \<not> [x;y;z]; \<not> [y;z;x]\<rbrakk> \<Longrightarrow> [y;x;z]\<close>)
-qed
-
-
-lemma ch_all_betw_f:
-  assumes "[f\<leadsto>X|x..yy..z]" and "y\<in>X" and "y\<noteq>x" and "y\<noteq>z"
-  shows "[x;y;z]"
-  (*using assms(1) assms(2) assms(3) assms(4) fin_ch_betw finite_long_chain_with_def by auto*)
-proof (rule ccontr)
-  assume asm: "\<not> [x;y;z]"
-  obtain Q where "Q\<in>\<P>" and "x\<in>Q \<and> y\<in>Q \<and> z\<in>Q"
-    using fin_chain_on_path assms ch_by_ord_def asm fin_ch_betw finite_long_chain_with_def
-    by auto
-  hence "[x;y;z] \<or> [y;x;z] \<or> [y;z;x]"
-    using some_betw assms
-    by (metis abc_sym finite_long_chain_with_def)
-  hence "[y;x;z] \<or> [x;z;y]"
-    using asm abc_sym
-    by blast
-  thus False
-    using finite_long_chain_with_def local_local_long_ch_by_ord_def asm assms fin_ch_betw
-    by (metis (no_types))
-qed
-*)
-
-
-(*
-lemma "local_long_ch_by_ord f X \<and> finite X \<longleftrightarrow> [f\<leadsto>X] \<and> card X \<ge> 3"
-by (metis card.infinite ch_by_ord_def long_chain_card_geq not_numeral_le_zero numeral_le_iff semiring_norm(74,75) short_ch_card(1))
-*)
-
-(* potential misnomer: Schutz defines bounds only for infinite chains *)
+(* potential misnomer: Schutz defines bounds only for infinite chains. *)
 lemma get_fin_long_ch_bounds:
   assumes "local_long_ch_by_ord f X"
     and "finite X"
@@ -2712,372 +2432,11 @@ lemma chain_bounds_unique:
   using assms points_in_chain abc_abc_neq abc_bcd_acd abc_sym
   by (metis (full_types) fin_ch_betw2 )
 
-subsection "Chain Equivalences - old"
-(*
-subsubsection "Betweenness-chains and strong index-chains"
 
-lemma equiv_chain_1a:
-  assumes "[\<leadsto>X|..a..b..c..]"
-  shows "\<exists>f. ch_by_ord f X \<and> a\<in>X \<and> b\<in>X \<and> c\<in>X \<and> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
-proof -
-  have in_X: "a\<in>X \<and> b\<in>X \<and> c\<in>X"
-    using assms chain_with_def by auto
-  have all_neq: "a\<noteq>c \<and> a\<noteq>b \<and> b\<noteq>c"
-    using abc_abc_neq assms chain_with_def by auto
-  obtain f where "local_ordering f betw X"
-    using assms chain_with_def by auto
-  hence "local_long_ch_by_ord f X"
-    using in_X all_neq local_local_long_ch_by_ord_def by blast
-  hence "ch_by_ord f X"
-    by (simp add: ch_by_ord_def)
-  thus ?thesis
-    using all_neq in_X by blast
-qed
-
-
-lemma equiv_chain_1b:
-  assumes "ch_by_ord f X \<and> a\<in>X \<and> b\<in>X \<and> c\<in>X \<and> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> [a;b;c]"
-  shows "[\<leadsto>X|..a..b..c..]"
-  using assms chain_with_def ch_by_ord_def
-  by (metis local_local_long_ch_by_ord_def short_ch_def)
-
-
-lemma equiv_chain_1:
-  "[\<leadsto>X|..a..b..c..] \<longleftrightarrow> (\<exists>f. ch_by_ord f X \<and> a\<in>X \<and> b\<in>X \<and> c\<in>X \<and> a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> [a;b;c])"
-  using equiv_chain_1a equiv_chain_1b long_chain_betw
-  by meson
-
-
-lemma index_order:
-  assumes "[\<leadsto>X|..x..y..z..]"
-      and "ch_by_ord f X" and "f a = x" and "f b = y" and "f c = z"
-      and "finite X \<longrightarrow> a<card X" and "finite X \<longrightarrow> b<card X" and "finite X \<longrightarrow> c<card X"
-    shows "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
-proof (rule ccontr)
-  assume a1: "\<not> (a < b \<and> b < c \<or> c < b \<and> b < a)"
-  hence "(a\<ge>b \<or> b\<ge>c) \<and> (c\<ge>b \<or> b\<ge>a)"
-    by auto
-  have all_neq: "x\<noteq>y \<and> x\<noteq>z \<and> y\<noteq>z"
-    using assms(1) equiv_chain_1 by blast
-  hence is_long: "local_long_ch_by_ord f X"
-    by (metis assms(1) assms(2) ch_by_ord_def equiv_chain_1 short_ch_def)
-  have "a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c"
-    using assms(3) assms(4) assms(5) all_neq by blast
-  hence "(a>b \<or> b>c) \<and> (c>b \<or> b>a)"
-    using a1 linorder_neqE_nat by blast
-  hence "(a>b \<and> c>b) \<or> (b>c \<and> b>a)"
-    using not_less_iff_gr_or_eq by blast
-  have "a>c \<or> c>a"
-    using \<open>a \<noteq> b \<and> a \<noteq> c \<and> b \<noteq> c\<close> by auto
-  hence "(a>c \<and> c>b) \<or> (a>c \<and> b>a) \<or> (a>b \<and> c>a) \<or> (b>c \<and> c>a)"
-    using \<open>(b < a \<or> c < b) \<and> (b < c \<or> a < b)\<close> by blast
-  hence o1: "(b<c \<and> c<a) \<or> (c<a \<and> a<b) \<or> (b<a \<and> a<c) \<or> (a<c \<and> c<b)"
-    by blast
-  have "(b<c \<and> c<a) \<longrightarrow> [y;z;x]" "(c<a \<and> a<b) \<longrightarrow> [z;x;y]"
-       "(b<a \<and> a<c) \<longrightarrow> [y;x;z]" "(a<c \<and> c<b) \<longrightarrow> [x;z;y]"
-    by (metis assms(3-) ordering_ord_ijk_loc local_local_long_ch_by_ord_def is_long)+
-  then have "[y;z;x] \<or> [z;x;y] \<or> [y;x;z] \<or> [x;z;y]"
-    using assms local_local_long_ch_by_ord_def is_long o1
-    by metis
-  thus False
-    by (meson abc_only_cba assms(1) chain_with_def)
-qed
-
-
-lemma old_fin_chain_finite:
-  assumes "[\<leadsto>X|x..y..z]"
-  shows "finite X"
-proof (rule ccontr)
-  assume "infinite X"
-  have "x\<in>X" "y\<in>X" "z\<in>X"
-    using assms finite_chain_with3_def chain_with_def by simp+
-  obtain f where "ch_by_ord f X"
-    using assms equiv_chain_1 finite_chain_with3_def
-    by auto
-  obtain a where "f a = x"
-    using equiv_chain_1 local_ordering_def \<open>ch_by_ord f X\<close> assms
-    by (metis ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def)
-  obtain c where "f c = z" and "a\<noteq>c"
-    using equiv_chain_1 local_ordering_def \<open>ch_by_ord f X\<close> \<open>f a = x\<close> assms
-    using ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def
-    by metis
-  obtain b where "f b = y" and "a\<noteq>b" and "b\<noteq>c"
-    using equiv_chain_1 local_ordering_def \<open>ch_by_ord f X\<close> \<open>f a = x\<close> \<open>f c = z\<close> assms
-    using ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def
-    by metis
-  obtain n where "a<n" and "c<n"
-    using \<open>ch_by_ord f X\<close> \<open>f a = x\<close> \<open>f c = z\<close> assms equiv_chain_1 \<open>infinite X\<close>
-    using  ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def
-    by (metis less_Suc_eq_le not_le not_less_iff_gr_or_eq)
-  have "[x;y;z]"
-    using assms chain_with_def finite_chain_with3_def by auto
-  hence "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
-    using \<open>f a = x\<close> \<open>f b = y\<close> \<open>f c = z\<close> \<open>ch_by_ord f X\<close> \<open>x\<in>X\<close> \<open>y\<in>X\<close> \<open>z\<in>X\<close> index_order
-    using \<open>infinite X\<close> assms finite_chain_with3_def
-    by blast
-  hence "(a<b \<and> b<c \<and> c<n) \<or> (c<b \<and> b<a \<and> a<n)"
-    using \<open>a\<noteq>c\<close> \<open>a\<noteq>b\<close> \<open>b\<noteq>c\<close> \<open>a<n\<close> \<open>c<n\<close> less_linear
-    by blast
-  hence acn_can: "(b<c \<and> c<n) \<or> (b<a \<and> a<n)"
-    by blast
-  have "f n \<in> X"
-    by (metis local_ordering_def \<open>ch_by_ord f X\<close> \<open>infinite X\<close> assms ch_by_ord_def equiv_chain_1
-      finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def)
-  hence outside: "[y; z; f n] \<or> [f n; x; y]"
-    using acn_can \<open>ch_by_ord f X\<close> \<open>f a = x\<close> \<open>f c = z\<close> \<open>infinite X\<close> assms equiv_chain_1 abc_sym
-    using ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def ordering_ord_ijk_loc short_ch_def
-    by (metis \<open>f b = y\<close>)
-  thus False
-    using \<open>f n \<in> X\<close> assms finite_chain_with3_def
-    by blast
-qed
-
-
-lemma index_from_with3:
-  assumes "[\<leadsto>X|a..b..c]"
-  shows "\<exists>f. (f 0 = a \<or> f 0 = c) \<and> ch_by_ord f X"
-proof -
-  obtain f where "ch_by_ord f X"
-    using assms equiv_chain_1 finite_chain_with3_def
-    by auto
-  have no_elt: "\<not>(\<exists>w\<in>X. [w;a;b] \<or> [b;c;w])"
-    using assms finite_chain_with3_def
-    by blast
-  obtain n\<^sub>a n\<^sub>b where "f n\<^sub>a = a" and "n\<^sub>a < card X"
-      and "f n\<^sub>b = b" and "n\<^sub>b < card X"
-    using assms old_fin_chain_finite ch_by_ord_def local_ordering_def
-    using \<open>ch_by_ord f X\<close> equiv_chain_1 finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def
-    by metis
-  obtain n\<^sub>c where "f n\<^sub>c = c" and "n\<^sub>c < card X"
-    using assms old_fin_chain_finite ch_by_ord_def local_ordering_def
-    using \<open>ch_by_ord f X\<close> equiv_chain_1 finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def
-    by metis
-  have "a\<noteq>b \<and> b\<noteq>c \<and> a\<noteq>c"
-    using assms equiv_chain_1 finite_chain_with3_def by auto
-  have "a\<noteq>b \<longrightarrow> n\<^sub>a\<noteq>n\<^sub>b \<and> b\<noteq>c \<longrightarrow> n\<^sub>a\<noteq>n\<^sub>c \<and> a\<noteq>c \<longrightarrow> n\<^sub>b\<noteq>n\<^sub>c"
-    using \<open>f n\<^sub>a = a\<close> \<open>f n\<^sub>b = b\<close> \<open>f n\<^sub>c = c\<close> by blast
-  hence "n\<^sub>a\<noteq>n\<^sub>b \<and> n\<^sub>a\<noteq>n\<^sub>c \<and> n\<^sub>b\<noteq>n\<^sub>c"
-    using \<open>a \<noteq> b \<and> b \<noteq> c \<and> a \<noteq> c\<close> \<open>f n\<^sub>a = a\<close> \<open>f n\<^sub>b = b\<close> \<open>f n\<^sub>c = c\<close>
-    by auto
-  have "n\<^sub>a = 0 \<or> n\<^sub>c = 0"
-    proof (rule ccontr)
-      assume "\<not> (n\<^sub>a = 0 \<or> n\<^sub>c = 0)"
-      hence not_0: "n\<^sub>a \<noteq> 0 \<and> n\<^sub>c \<noteq> 0"
-        by linarith
-      then obtain p where "f 0 = p"
-        by simp
-      have "0<card X"
-        using \<open>n\<^sub>b < card X\<close> gr_implies_not_zero by blast
-      hence "p\<in>X"
-        using \<open>ch_by_ord f X\<close> \<open>f 0 = p\<close> equiv_chain_1 assms
-        by (metis local_ordering_def ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def short_ch_def)
-      have "n\<^sub>a<n\<^sub>c \<or> n\<^sub>c<n\<^sub>a"
-        using \<open>n\<^sub>a \<noteq> n\<^sub>b \<and> n\<^sub>a \<noteq> n\<^sub>c \<and> n\<^sub>b \<noteq> n\<^sub>c\<close> less_linear by blast
-      {
-        assume "n\<^sub>a < n\<^sub>c"
-        hence "n\<^sub>a < n\<^sub>b"
-          using index_order \<open>ch_by_ord f X\<close> \<open>f n\<^sub>a = a\<close> \<open>f n\<^sub>b = b\<close> \<open>f n\<^sub>c = c\<close> \<open>n\<^sub>c < card X\<close>
-          using finite_chain_with3_def assms
-          by fastforce
-        have "0<n\<^sub>a \<and> n\<^sub>a<n\<^sub>b"
-          using index_order \<open>n\<^sub>a < n\<^sub>b\<close> not_0
-          by blast
-        hence "[p;a;b]"
-          using \<open>ch_by_ord f X\<close> \<open>f 0=p\<close> \<open>f n\<^sub>a=a\<close> \<open>f n\<^sub>b=b\<close> \<open>n\<^sub>b<card X\<close> assms equiv_chain_1 short_ch_def
-          by (metis ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def ordering_ord_ijk_loc)
-        hence False
-          using finite_chain_with3_def \<open>p\<in>X\<close>
-          by (metis no_elt)
-      }
-      moreover {
-        assume "n\<^sub>c < n\<^sub>a"
-        hence "n\<^sub>c < n\<^sub>b"
-          using index_order \<open>ch_by_ord f X\<close> \<open>f n\<^sub>a = a\<close> \<open>f n\<^sub>b = b\<close> \<open>f n\<^sub>c = c\<close> \<open>n\<^sub>a < card X\<close>
-          using finite_chain_with3_def assms
-          by fastforce
-        have "0<n\<^sub>c \<and> n\<^sub>c<n\<^sub>b"
-          using index_order \<open>n\<^sub>c < n\<^sub>b\<close> not_0
-          by blast
-        hence "[p;c;b]"
-          using \<open>ch_by_ord f X\<close> \<open>f 0=p\<close> \<open>f n\<^sub>c=c\<close> \<open>f n\<^sub>b=b\<close> \<open>n\<^sub>b<card X\<close> assms equiv_chain_1 short_ch_def
-          using ch_by_ord_def finite_chain_with3_def local_local_long_ch_by_ord_def ordering_ord_ijk_loc
-          by metis
-        hence "[b;c;p]"
-          by (simp add: abc_sym)
-        hence False
-          using finite_chain_with3_def \<open>p\<in>X\<close>
-          by (metis no_elt)
-      }
-      ultimately show False
-        using \<open>n\<^sub>a < n\<^sub>c \<or> n\<^sub>c < n\<^sub>a\<close> by blast
-    qed
-  thus ?thesis
-    using \<open>ch_by_ord f X\<close> \<open>f n\<^sub>a = a\<close> \<open>f n\<^sub>c = c\<close>
-    by blast
-qed
-
-
-lemma (in MinkowskiSpacetime) with3_and_index_is_fin_chain:
-  assumes "f 0 = a" and "ch_by_ord f X" and "[\<leadsto>X|a..b..c]"
-  shows "[f\<leadsto>X|a..b..c]"
-proof -
-  have "finite X"
-    using local_ordering_def assms old_fin_chain_finite
-    by auto
-  moreover have "local_long_ch_by_ord f X"
-    using  assms(2) assms(3) ch_by_ord_def equiv_chain_1 finite_chain_with3_def short_ch_def
-    by metis
-  moreover have "a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> f 0 = a \<and> b\<in>X"
-    using assms(1) assms(3) equiv_chain_1 finite_chain_with3_def
-    by auto
-  moreover have "f (card X - 1) = c"
-    proof -
-      obtain n where "f n = c" and "n < card X"
-        using local_ordering_def equiv_chain_1 finite_chain_with3_def local_local_long_ch_by_ord_def
-        by (metis assms(3) calculation(1,2))
-      {
-        assume "n < card X - 1"
-        then obtain m where "n<m" and "m<card X" by simp
-        hence "[a; c; f m] \<and> (f m)\<in>X"
-          proof -
-            have f1: "TernaryOrdering.local_ordering f betw X"
-              using \<open>local_long_ch_by_ord f X\<close> local_local_long_ch_by_ord_def by blast
-            have f2: "\<forall>f A p na. ((p (f na::'a) (f n) (f m) \<or> \<not> m < card A) \<or> \<not> local_ordering f p A)
-                                      \<or> \<not> na < n"
-              by (metis local_ordering_def \<open>n < m\<close>)
-            have "f m \<in> X"
-              using f1 by (simp add: local_ordering_def \<open>m < card X\<close>)
-            then show ?thesis
-              using f2 f1 \<open>a\<noteq>b \<and> a\<noteq>c \<and> b\<noteq>c \<and> f 0 = a \<and> b\<in>X\<close> \<open>f n = c\<close> \<open>m < card X\<close>
-              using gr_implies_not0 linorder_neqE_nat
-              by (metis (no_types))
-          qed
-        hence "[b; c; f m]" using abc_acd_bcd
-          by (meson assms(3) chain_with_def finite_chain_with3_def)
-        hence False
-          using assms(3) \<open>[a; c; f m] \<and> f m \<in> X\<close>
-          by (metis finite_chain_with3_def)
-      }
-      hence "n = card X - 1"
-        using \<open>n < card X\<close> by fastforce
-      thus ?thesis
-        using \<open>f n = c\<close> by blast
-    qed
-  ultimately show ?thesis
-    by (simp add: finite_long_chain_with_def)
-qed
-
-
-lemma (in MinkowskiSpacetime) g_from_with3:
-  assumes "finite_chain_with3 X a b c"
-  obtains g where "[g\<leadsto>X|a..b..c] \<or> [g\<leadsto>X|c..b..a]"
-proof -
-  have old_chain_sym: "finite_chain_with3 X c b a"
-    by (metis abc_sym assms chain_with_def finite_chain_with3_def)
-  obtain f where f_def: "(f 0 = a \<or> f 0 = c) \<and> ch_by_ord f X"
-    using index_from_with3 assms
-    by blast
-  hence "f 0 = a \<longrightarrow> [f\<leadsto>X|a..b..c]"
-    using with3_and_index_is_fin_chain f_def assms
-    by simp
-  moreover have "f 0 = c \<longrightarrow> [f\<leadsto>X|c..b..a]"
-    using with3_and_index_is_fin_chain f_def assms old_chain_sym
-    by simp
-  ultimately show ?thesis
-    using f_def that
-    by auto
-qed
-
-
-lemma (in MinkowskiSpacetime) equiv_chain_2a:
-  assumes "finite_chain_with3 X a b c"
-  obtains f where "[f\<leadsto>X|a..b..c]"
-proof -
-  obtain g where "[g\<leadsto>X|a..b..c] \<or> [g\<leadsto>X|c..b..a]"
-    using assms g_from_with3 by blast
-  thus ?thesis
-  proof (* in two cases *)
-    assume "[g\<leadsto>X|a..b..c]"
-    show ?thesis
-      using \<open>[g\<leadsto>X|a .. b .. c]\<close> that
-      by blast
-  next
-    assume "[g\<leadsto>X|c..b..a]"
-    show ?thesis
-      using \<open>[g\<leadsto>X|c .. b .. a]\<close> chain_sym that
-      by blast
-  qed
-qed
-
-
-lemma equiv_chain_2b:
-  assumes "[f\<leadsto>X|a..b..c]"
-  shows "finite_chain_with3 X a b c"
-proof -
-  have aligned: "[a;b;c]"
-    using assms fin_ch_betw
-    by auto
-  hence some_chain: "[\<leadsto>X|..a..b..c..]"
-    using assms ch_by_ord_def equiv_chain_1b finite_long_chain_with_def points_in_chain
-    by metis
-  have "\<not>(\<exists>w\<in>X. [w;a;b] \<or> [b;c;w])"
-  proof (safe)
-    fix w assume "w\<in>X"
-    {
-      assume case1: "[w;a;b]"
-      then obtain n where "f n = w" and "n<card X"
-        using \<open>w\<in>X\<close> abc_bcd_abd abc_only_cba aligned assms fin_ch_betw finite_long_chain_with_def
-        by (metis (no_types))
-      have "f 0 = a"
-        using assms finite_long_chain_with_def
-        by blast
-      hence "n < 0"
-        proof -
-          have f1: "f (card X - 1) = c"
-            by (meson MinkowskiBetweenness.finite_long_chain_with_def MinkowskiBetweenness_axioms assms)
-          have "\<not> [a;w;c]"
-            by (meson abc_bcd_abd abc_only_cba assms case1 fin_ch_betw)
-          thus ?thesis
-            using f1 finite_long_chain_with_def \<open>w \<in> X\<close> abc_only_cba assms case1 fin_ch_betw
-            by (metis (no_types))
-        qed
-      thus False
-        by simp
-    }
-    moreover {
-        assume case2: "[b;c;w]"
-      then obtain n where "f n = w" and "n<card X"
-        using \<open>w\<in>X\<close> local_ordering_def abc_bcd_abd abc_only_cba aligned assms fin_ch_betw
-        using finite_long_chain_with_def local_local_long_ch_by_ord_def
-        by metis
-      have "f (card X - 1) = c"
-        using assms finite_long_chain_with_def
-        by blast
-      have "\<not> [a;w;c]"
-        using abc_bcd_abd abc_only_cba assms case2 fin_ch_betw abc_bcd_acd
-        by meson
-      hence "n > card X - 1"
-        using \<open>\<not> [a;w;c]\<close> \<open>w \<in> X\<close> abc_only_cba assms case2 fin_ch_betw
-        unfolding finite_long_chain_with_def
-        by (metis (no_types))
-      thus False
-        using \<open>n < card X\<close>
-        by linarith
-    }
-  qed
-  thus ?thesis
-    by (simp add: finite_chain_with3_def some_chain)
-qed
-
-
-lemma (in MinkowskiSpacetime) equiv_chain_2:
-  "\<exists>f. [f\<leadsto>X|a..b..c] \<longleftrightarrow> [\<leadsto>X|a..b..c]"
-  using equiv_chain_2a equiv_chain_2b
-  by meson
-*)
 end (* context MinkowskiBetweenness *)
 
-section "Results for segments, rays and chains"
+section "Results for segments, rays and (sub)chains"
+
 
 context MinkowskiBetweenness begin
 
@@ -3099,7 +2458,7 @@ lemma (in MinkowskiBetweenness) order_finite_chain_indices:
 
 
 lemma order_finite_chain_indices2:
-  assumes "[f\<leadsto>X|a..c]" (*"local_long_ch_by_ord f X" "finite X"*)
+  assumes "[f\<leadsto>X|a..c]"
     and "f j = b" "j<card X"
   obtains "0<j \<and> j<(card X - 1)"|"j=(card X - 1) \<and> b=c"|"j=0 \<and> b=a"
 proof -
@@ -3137,9 +2496,7 @@ qed
 
 lemma index_bij_betw_subset:
   assumes chX: "[f\<leadsto>X|a..b..c]" "f i = b" "card X > i"
-  (*shows "bij_betw f {0..i} {e\<in>X. [a;e;b]\<or>a=e\<or>b=e}"*)
-  shows "bij_betw f {0<..<i} {e\<in>X. [a;e;b]}" (*using index_bij_betw order_finite_chain assms*)
-  (*using assms index_bij_betw unfolding finite_long_chain_with_def finite_chain_with_def finite_chain_def*)
+  shows "bij_betw f {0<..<i} {e\<in>X. [a;e;b]}"
 proof (unfold bij_betw_def, intro conjI)
   have chX2: "local_long_ch_by_ord f X" "finite X"
     using assms unfolding chain_defs apply (metis chX(1)
@@ -3218,8 +2575,6 @@ proof -
     by (metis (no_types, lifting) chX(1) finite_long_chain_with_def insert_iff)
 qed
 
-
-lemma disjCI2: assumes "\<not> Q \<Longrightarrow> P" shows "Q\<or>P" using assms by auto (*TODO what is this called?*)
 
 lemma chain_shortening:
   assumes "[f\<leadsto>X|a..b..c]"
@@ -3327,126 +2682,19 @@ proof -
     by simp+
 qed
 
-(*
-lemma finite_long_chain_cong:
-  assumes "finite X" "local_long_ch_by_ord f X" "\<forall>n. n<card Y \<longrightarrow> g n = f n"
-  shows "local_long_ch_by_ord g X" sorry
-
-lemma short_chain_cong:
-  assumes "short_ch_by_ord f X" "\<forall>n. n<card Y \<longrightarrow> g n = f n"
-  shows "short_ch_by_ord g X" sorry
-
-
-lemma chain_shortening2:
-  assumes "[f\<leadsto>X|a..f i..c]" "i < card X"
-  fixes Y defines Y: "Y \<equiv> {e\<in>X. [f i;e;c] \<or> e=f i \<or> e=c}"
-  fixes g defines g: "g \<equiv> \<lambda>n. f (i+n)"
-  shows "[g \<leadsto> Y |f i..c]"
-proof -
-  have finX: "finite X" "Y\<subseteq>X"
-    using assms chain_defs apply meson
-    using Y by simp
-  hence finY: "finite Y" using rev_finite_subset by auto
-
-  text \<open>The events \<open>c\<close> and \<open>f i\<close> are different by assumption.\<close>
-  have "i < card X - 1"
-    using assms chain_defs by (metis order_finite_chain_indices2)
-  hence "c\<in>Y" "f i \<in> Y" "f i \<noteq> c"
-    using Y assms finite_long_chain_with_def points_in_long_chain[OF assms(1)] by auto
-  hence cardY: "card Y > 1"
-    using finY apply (simp add: eval_nat_numeral)
-    by (metis Suc_lessI card_1_singleton_iff card_gt_0_iff equals0D singletonD)
-
-  text \<open>Use the symmetry of chains!\<close>
-  let ?Y' = "{e \<in> X. [c;e;f i] \<or> e = c \<or> e = f i}"
-  let ?Z = "{e \<in> X. [a;e;f i] \<or> e = a}"
-  have eqY: "Y = ?Y'" using abc_sym Y by blast
-  obtain g' where g': "g' = (\<lambda>n. f (card X - 1 - n))" by simp
-  hence g'X: "[g'\<leadsto>X|c..f i..a]" using Y assms(1) chain_sym by simp
-  hence g'Y': "[g'\<leadsto>?Y'|c .. f i]" using chain_shortening by simp
-  obtain f' where f': "f' = (\<lambda>n. g' (card  ?Y' - 1 - n))" by simp
-  hence f'Y': "[f'\<leadsto>?Y'|f i .. c]"
-    using chain_sym2 g'Y' by fastforce
-
-  text \<open>Bijections between index sets and event sets. This is needed to compute \<open>f'\<close>.\<close>
-  have card_iYX: "i + card Y = card X"
-  proof -
-    (*TODO tidy/shorten*)
-    have "{0..<i} \<union> {i..<card X} = {0..<card X}"
-      by (simp add: assms(2) ivl_disj_un_two(3) less_or_eq_imp_le)
-    hence fUn: "f`{0..<i} \<union> f`{i..<card X} = f`{0..<card X}" by blast
-    have bbfX: "bij_betw f {0..<card X} X"
-      using index_bij_betw[of f X] assms(1) chain_defs by auto
-    have im_X: "f`{0..<card X} = X"
-      using bbfX bij_betw_imp_surj_on[of f _ X] by meson
-    have "f`{i..<card X} \<subseteq> X" using assms chain_defs
-      by (metis Un_upper2 im_X fUn)
-    have im_Y: "f`{i..<card X} = Y"
-      unfolding Y apply auto using \<open>f ` {i..<card X} \<subseteq> X\<close> apply auto[1] apply (simp_all add: assms(2))
-    proof -
-      fix j assume asm: "\<not> [f i;f j;c]" "f j \<noteq> c" "i \<le> j" "j < card X"
-      have "[f i;f j;c] \<or> f j = c \<or> f j = f i"
-        using ord_fin_ch_right[OF assms(1) asm(3,4)] finite_chain_with_def g' g'Y' by auto
-      thus "f j = f i" using asm by simp
-    next
-      fix x assume asm: "x\<in>X" "[f i;x;c]"
-      then obtain j where j: "j<card X" "f j = x"
-        using obtain_index_fin_chain[of f X x] assms chain_defs by metis
-      hence "i<j"
-        using order_finite_chain_indices[of f X "f i" x c i j "card X - 1"] assms asm chain_defs
-        by (smt (verit, best) add_cancel_left_right add_diff_cancel_left' add_diff_inverse_nat (*TODO*)
-          card_Diff1_less card_Diff_singleton_if finite_chain_with_cases gr_implies_not0 less_diff_conv
-          less_diff_conv2 less_one nat_1_add_1 nat_less_le not_gr_zero short_ch_card(1) zero_less_diff)
-      thus "x \<in> f ` {i..<card X}" using j asm
-        by (metis atLeastLessThan_iff image_iff less_imp_le_nat)
-    next
-      assume "c\<in>X"
-      have "f (card X - 1) = c" using assms chain_defs by meson
-      thus "c \<in> f ` {i..<card X}" using \<open>i < card X - 1\<close> by fastforce
-    qed
-    hence bbfY: "bij_betw f {i..<card X} Y"
-      using bij_betw_subset[OF bbfX] by simp
-    thus ?thesis
-      by (metis assms(2) bbfY bij_betw_same_card card_atLeastLessThan less_numeral_extra(3)
-        linordered_semidom_class.add_diff_inverse nat_diff_split zero_less_diff)
-  qed
-
-  text \<open>On the domain of interest, \<open>f'\<close> and \<open>g\<close> are the same.\<close>
-  have "card X - 1 - (card Y - 1 - n) = i + n" if "n<card Y" for n::nat
-    using card_iYX that by auto
-  hence g_eq_f': "\<forall>n. n<card Y \<longrightarrow> g n = f' n"
-    unfolding g f' g' using eqY by metis
-
-  show ?thesis
-    using finite_long_chain_cong short_chain_cong g_eq_f' card_iYX chain_defs assms(2) eqY f'Y' \<open>c\<in>Y\<close>
-    by (metis (no_types, lifting) card_Diff1_less card_Diff_singleton diff_add_inverse zero_less_diff)
+lemma f_img_is_subset:
+  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
+  shows "Y\<subseteq>X"
+proof
+  fix x assume "x\<in>Y"
+  then obtain n where "n\<in>{i..j}" "f n = x"
+    using assms(4) by blast
+  hence "f n \<in> X"
+    by (metis local_ordering_def assms(1) inf_chain_is_long local_long_ch_by_ord_def)
+  thus "x\<in>X"
+    using \<open>f n = x\<close> by blast
 qed
-  
 
-thm finite_long_chain_with_alt chain_sym
-lemma some_betw2:
-  assumes "[f\<leadsto>X|a..b..c]"
-      and "j<card X" "j>0" "f j \<noteq> b"
-    shows "[a; b; f j] \<or> [a; f j; b]" using fin_ch_betw2[of f X a b "f j"] assms
-
-
-proof -
-  obtain ab where ab_def: "path ab a b" "X\<subseteq>ab"
-    by (metis finite_long_chain_with_def long_chain_on_path assms(1) points_in_chain subsetD)
-  have bound_indices: "f 0 = a \<and> f (card X - 1) = c"
-    using assms(1) finite_long_chain_with_def by auto
-  have "f j \<noteq> a"
-    using inside_not_bound(1) assms(1) assms(2) assms(3)
-    by blast
-  have "\<not>[f j; a; b]"
-    using abc_bcd_abd abc_only_cba assms(1,2) fin_ch_betw finite_long_chain_with_def
-    by (metis local_ordering_def ch_all_betw_f local_local_long_ch_by_ord_def)
-  thus " [a; b; f j] \<or> [a; f j; b]"
-    using some_betw [where Q=ab and a=a and b=b and c="f j"]
-    using ab_def assms(4) \<open>f j \<noteq> a\<close>
-    by (metis local_ordering_def abc_sym assms(1,2) finite_long_chain_with_def local_local_long_ch_by_ord_def subsetD)
-qed
-*)
 
 lemma i_le_j_events_neq:
   assumes "[f\<leadsto>X|a..b..c]"
@@ -3460,22 +2708,6 @@ lemma indices_neq_imp_events_neq:
     shows "f i \<noteq> f j"
   by (metis assms i_le_j_events_neq less_linear)
 
-(*
-lemma index_order2:
-  assumes "[f\<leadsto>X|x..y..z]" and "f a = x" and "f b = y" and "f c = z"
-      and "finite X \<longrightarrow> a < card X" and "finite X \<longrightarrow> b < card X" and "finite X \<longrightarrow> c < card X"
-    shows "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
-  using index_order [where x=x and y=y and z=z and a=a and b=b and c=c and f=f and X=X]
-  by (metis assms ch_by_ord_def equiv_chain_2b finite_long_chain_with_def finite_chain_with3_def)
-
-lemma index_order3:
-  assumes "[x;y;z]" and "f a = x" and "f b = y" and "f c = z" and "local_long_ch_by_ord f X"
-      and "finite X \<longrightarrow> a < card X" and "finite X \<longrightarrow> b < card X" and "finite X \<longrightarrow> c < card X"
-    shows "(a<b \<and> b<c) \<or> (c<b \<and> b<a)"
-  using index_order2 [where x=x and y=y and z=z and a=a and b=b and c=c and f=f and X=X]
-  using assms local_local_long_ch_by_ord_def ordering_ord_ijk_loc
-  by (smt abc_abc_neq abc_only_cba(1-3) linorder_neqE_nat)
-*)
 end (* context MinkowskiChain *)
 
 context MinkowskiSpacetime begin
@@ -3648,17 +2880,11 @@ proof -
     } moreover {
       fix n assume "(finite ?X \<longrightarrow> Suc(Suc n) < card ?X)"
       hence "[g n; g (Suc n); g (Suc(Suc n))]"
-        apply (cases "n\<ge>1") (*TODO fix ugly long calls*)
+        apply (cases "n\<ge>1")
         using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def ordering_ord_ijk_loc[OF ord_fY] fin_Y
         apply (metis Suc_diff_le card_insert_disjoint diff_Suc_1 finite_insert le_Suc_eq not_less_eq)
         by (metis One_nat_def Suc_leI \<open>[b;a\<^sub>1;f 1]\<close> bound_indices diff_Suc_1 g_def
           not_less_less_Suc_eq zero_less_Suc)
-        (*using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def long_ch_Y ordering_ord_ijk_loc chain_defs
-        using One_nat_def card.insert diff_Suc_Suc diff_diff_cancel diff_is_0_eq
-            finite_insert nat_less_le not_less not_less_eq_eq*)
-        (*by (smt (verit, ccfv_threshold) chain_defs
-            One_nat_def card.insert diff_Suc_Suc diff_diff_cancel diff_is_0_eq
-            finite_insert nat_less_le not_less not_less_eq_eq)*)
     } moreover {
       fix x assume "x\<in>?X" "x=b"
       have "(finite ?X \<longrightarrow> 0 < card ?X) \<and> g 0 = x"
@@ -3677,18 +2903,14 @@ proof -
     }
     ultimately show ?thesis
       unfolding local_ordering_def
-      by smt (* sledgehammer proposes both meson and auto, neither of which work... *)
+      by smt
   qed
   hence "local_long_ch_by_ord g ?X"
     unfolding local_long_ch_by_ord_def
     using fin_Y \<open>b\<notin>Y\<close>
     by (meson card_insert_le finite_insert le_trans)
   show ?thesis
-    (*unfolding finite_long_chain_with_alt*)
   proof (intro finite_long_chain_with_alt2)
-    (*have "4 \<le> card ?X"
-      using fin_Y \<open>b\<notin>Y\<close> card_insert_disjoint[of Y b] eval_nat_numeral
-      by (metis card.infinite not_less_eq_eq not_numeral_le_zero semiring_norm(26,27))*)
     show "local_long_ch_by_ord g ?X" using \<open>local_long_ch_by_ord g ?X\<close> by simp
     show "[b;a\<^sub>1;a\<^sub>n] \<and> a\<^sub>1 \<in> ?X" using bY long_ch_Y points_in_long_chain(1) by auto
     show "g 0 = b" using g_def by simp
@@ -3831,7 +3053,7 @@ proof -
   text \<open>We consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>, and find the maximal one.\<close>
   let ?S = "{k::nat. [a\<^sub>1; f k; b] \<and> k < card Y}"
   obtain S where S_def: "S=?S"
-    by simp (* just to check this Isabelle-exists *)
+    by simp
   have "S\<subseteq>{0..card Y}"
     using S_def by auto
   hence "finite S"
@@ -3847,7 +3069,6 @@ proof -
         show "(0::nat)<1" by simp
         show "1 < card Y"
           using Yb abc_ac_neq bound_indices not_le by fastforce
-          (* using card_Y by linarith *)
         show "\<not> (\<exists>k'::nat. k' < 1 \<and> [a\<^sub>1; b; f k'])"
           using abc_abc_neq bound_indices
           by blast
@@ -3855,7 +3076,6 @@ proof -
         proof -
           have "f 1 \<in> Y"
             using long_ch_Y chain_defs local_ordering_def by (metis \<open>1 < card Y\<close> short_ch_ord_in(2))
-          (* have "[[a\<^sub>1 b f 1]] \<or> [[a\<^sub>1 f 1 b]]" *)
           hence "[a\<^sub>1; f 1; a\<^sub>n]"
             using bound_indices long_ch_Y chain_defs local_ordering_def card_Y
             by (smt (z3) Nat.lessE One_nat_def Suc_le_lessD Suc_lessD diff_Suc_1 diff_Suc_less
@@ -3864,8 +3084,6 @@ proof -
             using abc_ex_path_unique some_betw abc_sym
             by (smt Y_def Yb \<open>f 1 \<in> Y\<close> abc_abc_neq cross_once_notin)
           thus "[a\<^sub>1; b; f 1]"
-            (* by (smt S_def Yb \<open>S = {}\<close> \<open>[[a\<^sub>1 f 1 a\<^sub>n]]\<close> abc_bcd_abd abc_sym abd_bcd_abc bound_indices
-                diff_is_0_eq' empty_iff mem_Collect_eq nat_le_linear nat_less_le) *)
           proof -
             have "\<forall>n. \<not> ([a\<^sub>1; f n; b] \<and> n < card Y)"
               using S_def \<open>S = {}\<close>
@@ -3971,7 +3189,6 @@ lemma greatest_k_ex:
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
     shows "\<exists>k. [f k; b; a\<^sub>n] \<and> k < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>k \<and> [f k'; b; a\<^sub>n])"
 proof -
-(* the usual suspects first, they'll come in useful I'm sure *)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
     using chain_defs long_ch_Y by simp
   have fin_Y: "finite Y"
@@ -3984,7 +3201,7 @@ proof -
   text \<open>Again we consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>.\<close>
   let ?S = "{k::nat. [a\<^sub>n; f k; b] \<and> k < card Y}"
   obtain S where S_def: "S=?S"
-    by simp (* just to check this Isabelle-exists *)
+    by simp
   have "S\<subseteq>{0..card Y}"
     using S_def by auto
   hence "finite S"
@@ -4104,7 +3321,7 @@ proof -
               add_diff_inverse_nat bound_indices chY2 diff_add_zero diff_is_0_eq fin_Y k'_def(1,3)
               less_add_one less_diff_conv2 less_nat_zero_code mem_Collect_eq nat_diff_split order_finite_chain)
             apply (simp add: \<open>S \<noteq> {}\<close>, simp, simp)
-            using k'_def S_def (* interesting: this result should involve symmetry, but is found by sledgehammer/smt *)
+            using k'_def S_def
             by (smt (verit, ccfv_SIG) \<open>k \<in> S\<close> abc_acd_abd abc_only_cba(4) add_diff_cancel_right'
               add_diff_inverse_nat bound_indices chY2 fin_Y le_eq_less_or_eq less_nat_zero_code
               mem_Collect_eq nat_diff_split nat_neq_iff order_finite_chain zero_less_diff zero_less_one)
@@ -4198,12 +3415,9 @@ proof -
         using x_def(1) nc_def(3) chY2 unfolding chain_defs local_ordering_def
         by (metis One_nat_def Suc_pred less_Suc_eq nc_def(4) not_less_eq)
       hence "[a\<^sub>0; f (n\<^sub>c-1); x]"
-        using long_ch_Y nc_def c_def chain_defs (*some_betw
-        by (smt (verit, ccfv_SIG) \<open>[b;x;c]\<close> \<open>[f n\<^sub>b;f (n\<^sub>c - 1);f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0;x;f (n\<^sub>c - 1)]\<close> abc_bcd_abd abc_sym abd_acd_abcacb abd_bcd_abc b_def(1) b_def(2) fin_ch_betw2)*)
-        by (metis \<open>[f n\<^sub>b;f (n\<^sub>c - 1);f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0;x;f (n\<^sub>c - 1)]\<close> abc_ac_neq abc_acd_abd abc_bcd_acd abd_acd_abcacb abd_bcd_abc b_def(1) b_def(2) fin_ch_betw2 nb_def(2))
-        (*using some_betw P_def(1,2) abc_abc_neq abc_acd_bcd abc_bcd_acd abc_sym b_def(1,2)
-              c_def(1,2) in_mono long_ch_Y nc_def(2) betw_b_in_path
-        by (smt \<open>[f n\<^sub>b; f (n\<^sub>c - 1); f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0; x; f (n\<^sub>c-1)]\<close> \<open>x \<in> P\<close> \<open>f(n\<^sub>c-1)\<noteq>a\<^sub>0 \<and> a\<^sub>0\<noteq>x\<close>)*)
+        using long_ch_Y nc_def c_def chain_defs
+        by (metis \<open>[f n\<^sub>b;f (n\<^sub>c - 1);f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0;x;f (n\<^sub>c - 1)]\<close> abc_ac_neq abc_acd_abd abc_bcd_acd
+          abd_acd_abcacb abd_bcd_abc b_def(1) b_def(2) fin_ch_betw2 nb_def(2))
       hence "[(f(n\<^sub>c-1)); x; a\<^sub>n]"
         using abc_acd_bcd x_def(2) by blast
       thus False using nb_def(1)
@@ -4261,25 +3475,6 @@ proof -
       have ch_with_b: "ch {a\<^sub>1, (f (k-1)), b, (f k)}" using chain4
         using k_def(1) abc_ex_path_unique between_chain cross_once_notin
         by (smt \<open>[a\<^sub>1; f (k-1); f k]\<close> abc_abc_neq insert_absorb2)
-(*TODO: the proof below needs extra assumptions, but we should still try to get rid of smt above. *)
-      (* proof -
-        have "a\<^sub>1\<in>Q \<and> a\<^sub>n\<in>Q \<and> b\<in>Q"
-          using Y_def long_ch_Y events_X points_in_chain by auto
-        have f1: "a\<^sub>1 \<noteq> b \<and> a\<^sub>1 \<noteq> f k \<and> b \<noteq> f k"
-          using abc_abc_neq k_def(1) by presburger
-        then have f2: "f k \<in> Q"
-          using betw_c_in_path k_def(1) path_Q
-            \<open>a\<^sub>1 \<in> Q \<and> a\<^sub>n \<in> Q \<and> b \<in> Q\<close>
-          by blast
-        then have "f (k - 1) \<in> Q"
-          using betw_b_in_path path_Q
-            f1 \<open>[[a\<^sub>1 f (k - 1) f k]]\<close> \<open>a\<^sub>1 \<in> Q \<and> a\<^sub>n \<in> Q \<and> b \<in> Q\<close>
-          by presburger
-        then show ?thesis
-          using abc_abc_neq between_chain chain4 k_def(1) path_Q
-          by (metis (no_types) f2 \<open>[[a\<^sub>1 f (k - 1) f k]]\<close> \<open>a\<^sub>1 \<in> Q \<and> a\<^sub>n \<in> Q \<and> b \<in> Q\<close>
-              insertI1 insert_absorb)
-      qed *)
       have "f (k-1) \<noteq> b \<and> (f k) \<noteq> (f (k-1)) \<and> b \<noteq> (f k)"
         using abc_abc_neq f_def k_def(2) Y_def
         by (metis local_ordering_def \<open>[a\<^sub>1; f (k-1); f k]\<close> less_imp_diff_less local_long_ch_by_ord_def)
@@ -4341,7 +3536,6 @@ proof -
         assume "k + 1 \<le> n"
         show "g n = b"
         proof -
-          (* assume asm: "Suc k \<le> n" "?X = insert b Y" "b \<notin> Y" "g n \<notin> Y" *)
           have "f n \<in> Y \<or> \<not>(n < card Y)" for n
             using chain_defs by (metis local_ordering_def f_def)
           then show "g n = b"
@@ -4470,7 +3664,7 @@ proof -
       by simp
 qed
 
-(* jep *)
+
 lemma card4_eq:
   assumes "card X = 4"
   shows "\<exists>a b c d. a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d \<and> X = {a, b, c, d}"
@@ -4489,7 +3683,7 @@ proof -
     using \<open>X = insert a X'\<close> \<open>X' = insert b X''\<close> \<open>a \<notin> X'\<close> \<open>b \<notin> X''\<close> by blast
 qed
 
-(* jep *)
+
 theorem (*10*) path_finsubset_chain:
   assumes "Q \<in> \<P>"
       and "X \<subseteq> Q"
@@ -4565,7 +3759,7 @@ proof -
         thus "ch X" using chain_defs by (meson ch_def)
       next
         (* case (iii) *)
-        assume "[a\<^sub>n; b; a\<^sub>1]" (* jep: I have it this way so it matches some_betw, then switching it so it matches your old proof -- messy but easy to rectify, I'm just too tired to think too hard! *)
+        assume "[a\<^sub>n; b; a\<^sub>1]"
         then have "[a\<^sub>1; b; a\<^sub>n]"
           by (simp add: abc_sym)
         obtain k where
@@ -5036,7 +4230,7 @@ proof (rule conjI)
           assume "n<m"
           have "[f n; f m; (f(m+1))]"
             using \<open>n < m\<close> assms(3) fQ chain_defs order_finite_chain rs_def(5) by (metis assms(2) thm2_ind1)
-          have "n+1<m" (* NOTICE: this is astounding. in principle, r and s could be adjacent? must be the False in the assumptions. *)
+          have "n+1<m"
             using \<open>[f n; f m; f(m + 1)]\<close> \<open>n < m\<close> abc_only_cba(2) abd_bcd_abc y_betw
             by (metis Suc_eq_plus1 Suc_leI le_eq_less_or_eq)
           hence "[f n; (f(n+1)); f m]"
@@ -5101,89 +4295,6 @@ proof -
   qed
   then show ?thesis by auto
 qed
-
-(*
-text \<open>
-  We define \<open>disjoint\<close> to be the same as in HOL-Library.DisjointSets.
-  This saves importing a lot of baggage we don't need.
-  The two lemmas below are just for safety.
-\<close>
-
-abbreviation disjoint
-  where "disjoint A \<equiv> \<forall>a\<in>A. \<forall>b\<in>A. a \<noteq> b \<longrightarrow> a \<inter> b = {}"
-*)
-
-lemma
-  fixes S:: "('a set) set" and P1:: "'a set" and P2:: "'a set"
-  assumes "\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={}))" "P1\<inter>P2={}"
-  shows "disjoint (S\<union>{P1,P2})"
-  by (smt (z3) Un_iff assms(1,2) disjointI inf_sup_aci(1) insertE sup_bot_right)
-(*proof (unfold disjoint_def, rule ballI)
-  let ?U = "S\<union>{P1,P2}"
-  fix a assume "a\<in>?U"
-  then consider (aS)"a\<in>S"|(a1)"a=P1"|(a2)"a=P2"
-    by fastforce
-  thus "\<forall>b\<in>?U. a \<noteq> b \<longrightarrow> a \<inter> b = {}"
-  proof cases
-    case aS
-    { fix b assume "b\<in>?U" "a\<noteq>b"
-      then consider "b\<in>S"|"b=P1"|"b=P2"
-        by fastforce
-      hence "a\<inter>b={}"
-        apply cases
-        apply (simp add: \<open>a \<in> S\<close> \<open>a \<noteq> b\<close> assms)
-        apply (meson \<open>a \<in> S\<close> assms)
-        by (simp add: \<open>a \<in> S\<close> assms)
-    }
-    thus ?thesis
-      by meson
-  next
-    case a1
-    { fix b assume "b\<in>?U" "a\<noteq>b"
-      then consider "b\<in>S"|"b=P2"
-        using a1 by fastforce
-      hence "a\<inter>b={}"
-        apply cases
-        apply (metis a1 assms(1) inf_commute)
-        by (simp add: a1 assms(2))
-    }
-    thus ?thesis
-      by meson
-  next
-    case a2
-    { fix b assume "b\<in>?U" "a\<noteq>b"
-      then consider "b\<in>S"|"b=P1"
-        using a2 by fastforce
-      hence "a\<inter>b={}"
-        apply cases
-        apply (metis a2 assms(1) inf_commute)
-        by (simp add: a2 assms(2) inf_commute)
-    }
-    thus ?thesis
-      by meson
-  qed
-qed*)
-lemma
-  fixes S:: "('a set) set" and P1:: "'a set" and P2:: "'a set"
-  assumes "disjoint (S\<union>{P1,P2})" "P1\<notin>S" "P2\<notin>S" "P1\<noteq>P2"
-  shows "\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={}))" "P1\<inter>P2={}"
-  apply (smt (z3) IntD2 Un_insert_right assms(1,2,3) disjoint_def inf_sup_absorb insert_iff)
-  by (metis Un_insert_right assms(1,4) disjoint_def insertCI)
-(*proof (rule ballI)
-  show "P1\<inter>P2={}"
-    using assms(1,4) disjoint_def by (metis disjoint_unionD2 insertI1 insert_commute)
-  fix x assume "x\<in>S"
-  show "x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})"
-  proof (rule conjI, rule_tac[2] conjI, rule_tac[3] ballI, rule_tac[3] impI)
-    show "x\<inter>P1={}"
-      using \<open>x \<in> S\<close> assms(1,2) disjoint_def by (metis inf_sup_ord(3,4) insertCI subsetD)
-    show "x\<inter>P2={}"
-      using \<open>x \<in> S\<close> assms(1,3) disjoint_def by (metis Un_insert_right insertCI sup_bot.right_neutral)
-    fix y assume "y\<in>S" "x\<noteq>y"
-    thus "x\<inter>y={}"
-      by (simp add: \<open>x \<in> S\<close> assms(1))
-  qed
-qed*)
 
 
 text \<open>Some unfolding of the definition for a finite chain that happens to be short.\<close>
@@ -5395,12 +4506,7 @@ proof (induct "card X - 3" arbitrary: X a c x z)
       have "X = {a,b,c}"
         using f_ch unfolding finite_long_chain_with_alt
         using \<open>card X = 3\<close> points_in_long_chain[OF f_ch] abc_abc_neq[of a b c]
-        apply (simp add:eval_nat_numeral)
-        by (smt (verit, ccfv_SIG) Zero_not_Suc \<open>\<And>thesis. (\<And>y. [g\<leadsto>X|x..y..z] \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close>
-          \<open>a \<in> X\<close> \<open>b \<in> X\<close> \<open>c \<in> X\<close> \<open>i = 1\<close> card.infinite card_1_singleton_iff card_insert_disjoint
-          card_subset_eq empty_iff empty_subsetI finite_insert gr0_implies_Suc insert_absorb
-          insert_commute insert_iff insert_subset lessI less_one not0_implies_Suc old.nat.inject
-          points_in_long_chain(2) rev_finite_subset) (*TODO why is this so long? find name of needed lemma*)
+        by (simp add: card_3_eq'(2))
       hence "(g i = a \<or> g i = c)"
         using \<open>g i \<noteq> b\<close> \<open>g i \<in> X\<close> by blast
       hence "\<not> [a; g i; c]"
@@ -5511,10 +4617,8 @@ next
       have "card X - 1 > card X - 2"
         using \<open>j < card X - 1\<close> by linarith
       thus ?thesis
-        (*using order_finite_chain[OF lch_gX \<open>finite X\<close>] apply (simp add: \<open>d = g (card X - 2)\<close>)
-        using \<open>j < card Y - 1\<close> \<open>card Y = card X - 1\<close> \<open>d = g (card X - 2)\<close> \<open>g j = p\<close>*)
         using lch_gX \<open>j < card Y - 1\<close> \<open>card Y = card X - 1\<close> \<open>d = g (card X - 2)\<close> \<open>g j = p\<close>
-          order_finite_chain[OF lch_gX] chain_defs local_ordering_def (*TODO?*)
+          order_finite_chain[OF lch_gX] chain_defs local_ordering_def
           by (smt (z3) IH.prems(3-5) asm_false chain_bounds_unique chain_remove_at_right_edge p_def
             \<open>\<And>thesis. (\<And>Y. \<lbrakk>X = insert c Y; c \<notin> Y\<rbrakk> \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close>)
     qed
@@ -5605,456 +4709,6 @@ proof -
   thus "(a=x\<and>c=z) \<or> (c=x\<and>a=z)"
     by (meson assms(1-3) chain_bounds_unique)
 qed
-
-
-
-section "Subchains"
-context MinkowskiSpacetime begin
-
-
-lemma f_img_is_subset:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
-  shows "Y\<subseteq>X"
-proof
-  fix x assume "x\<in>Y"
-  then obtain n where "n\<in>{i..j}" "f n = x"
-    using assms(4) by blast
-  hence "f n \<in> X"
-    by (metis local_ordering_def assms(1) inf_chain_is_long local_long_ch_by_ord_def)
-  thus "x\<in>X"
-    using \<open>f n = x\<close> by blast
-qed
-
-
-(*
-lemma f_inj_on_index_subset:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
-  shows "inj_on f {i..j}"
-  unfolding inj_on_def
-proof (safe)
-  fix x y assume "x\<in>{i..j}" "y\<in>{i..j}" "f x = f y"
-  show "x=y"
-  proof (rule ccontr)
-    assume "x\<noteq>y"
-    let ?P = "\<lambda>r s. f r \<noteq> f s"
-    {
-      assume "x\<le>y"
-      hence "x<y"
-        using \<open>x \<noteq> y\<close> le_imp_less_or_eq by blast
-      obtain n where "n>y" "n<card X"
-      hence "[f x; f y; f n]"
-        using assms(1) \<open>x<y\<close> (*inf_chain_is_long ordering_ord_ijk_loc*) order_finite_chain2[of f X x y n] chain_defs
-oops
-      hence "?P x y"
-        using abc_abc_neq by blast
-    } moreover { (* TODO: use a wlog theorem for sets instead? *)
-      assume "x>y"
-      obtain n where "n>x" by blast
-      hence "[f y; f x; f n]"
-        using assms(1) \<open>x>y\<close> inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
-      hence "?P y x"
-        using abc_abc_neq by blast
-    }
-    ultimately show False
-      using not_le_imp_less \<open>f x = f y\<close> by auto
-  qed
-qed
-
-
-lemma f_bij_on_index_subset:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
-  shows "bij_betw f {i..j} Y"
-  using f_inj_on_index_subset
-  by (metis assms inj_on_imp_bij_betw)
-
-
-lemma only_one_index:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}" "f n \<in> Y"
-  shows "n\<in>{i..j}"
-proof -
-  obtain m where "m\<in>{i..j}" "f m = f n"
-    using assms(4) assms(5) by auto
-  have "inj_on f {i..j}"
-    using assms(1,3) f_inj_on_index_subset by blast
-  have "m = n"
-  proof (rule ccontr)
-    assume "m\<noteq>n"
-    obtain l where "f l \<in> X" "l\<noteq>m" "l\<noteq>n"
-      using assms(1) inf_chain_is_long
-      by (metis local_ordering_def le_eq_less_or_eq lessI local_local_long_ch_by_ord_def not_less_eq_eq)
-    hence "[f l; f m; f n] \<or> [f m; f l; f n] \<or> [f l; f n; f m]"
-      using \<open>f m = f n\<close> \<open>m\<noteq>n\<close> 
-      using abc_abc_neq assms(1) inf_chain_is_long inf_local_ordering_inj' local_local_long_ch_by_ord_def
-      by blast
-    thus False
-      using \<open>f m = f n\<close> abc_abc_neq by auto
-  qed
-  thus ?thesis
-    using \<open>m \<in> {i..j}\<close> by blast
-qed
-
-
-lemma f_one_to_one_on_index_subset:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}" "y\<in>Y"
-  shows "\<exists>!k\<in>{i..j}. f k = y" "f k = y \<longrightarrow> k\<in>{i..j}"
-  using f_inj_on_index_subset only_one_index assms image_iff inj_on_eq_iff apply metis
-  using assms(1,3,4,5) only_one_index by blast
-
-
-lemma card_of_subchain:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i" "Y=f`{i..j}"
-  shows "card Y = card {i..j}" "card Y = j-i+1"
-proof -
-  show "card Y = card {i..j}"
-    by (metis assms bij_betw_same_card f_bij_on_index_subset)
-  thus "card Y = j-i+1"
-    using card_Collect_nat
-    by (simp add: assms(3))
-qed
-*)
-
-
-lemma fin_long_subchain_of_semifin:
-  assumes "[f\<leadsto>X|(f 0) ..]" "i\<ge>0" "j>i+1"
-    "g = (\<lambda>n. f(n+i))"
-  shows "[g\<leadsto>f`{i..j}|(f i)..(f j)]" (* "j=i+1 \<longrightarrow> short_ch Y" "j>i+1 \<longrightarrow> fin_local_long_ch_by_ord g Y" *)
-  using chain_shortening[of f X] assms index_bij_betw2[of f X] oops
-(*
-proof -
-  obtain k where "k=i+1" by simp
-  hence ind_ord: "i<k \<and> k<j" using assms(3) by simp
-  have "[g\<leadsto>Y|(f i) .. (f k) .. (f j)]"
-  proof -
-    have "f i \<noteq> f k \<and> f i \<noteq> f j \<and> f k \<noteq> f j"
-    proof -
-      have "[f i; f k; f j]"
-        using assms(1) ind_ord local_local_long_ch_by_ord_def ordering_ord_ijk_loc infinite_chain_def
-        by fastforce
-      thus ?thesis
-        using abc_abc_neq by blast
-    qed
-    moreover have "finite Y"
-    proof -
-      have "inj f"
-        using inf_local_ordering_inj [where ord="betw"] abc_abc_neq
-        using assms(1) local_local_long_ch_by_ord_def infinite_chain_def by auto
-      hence "card Y \<le> card {i..j}"
-        using assms(4) inf_local_ordering_inj
-        using card_image_le by blast
-      have "finite {i..j}"
-        by simp
-      thus "finite Y"
-        by (simp add: assms(4)) 
-    qed
-    moreover have "local_long_ch_by_ord g Y"
-    proof -
-      obtain x y z where "x=f i" "y=f k" "z=f j"
-        by auto
-      have "x\<in>Y \<and> y\<in>Y \<and> z\<in>Y \<and> x \<noteq> y \<and> y \<noteq> z \<and> x \<noteq> z"
-        using \<open>x = f i\<close> \<open>y = f k\<close> \<open>z = f j\<close> assms(4) calculation(1) ind_ord by auto
-      moreover have "local_ordering g betw Y"
-        unfolding local_ordering_def
-      proof (rule conjI3)
-        show "\<forall>n. (finite Y \<longrightarrow> n < card Y) \<longrightarrow> g n \<in> Y"
-          apply (safe) apply (auto simp add: \<open>finite Y\<close>)
-        proof -
-          fix n assume "n<card Y"
-          then obtain n' where "n+i = n'" "n'\<in>{i..j}"
-          proof -
-            assume asm: "\<And>n'. \<lbrakk>n + i = n'; n' \<in> {i..j}\<rbrakk> \<Longrightarrow> thesis"
-            have "n < card {i..j}"
-              by (metis \<open>n < card Y\<close> assms(4) card_image_le finite_atLeastAtMost less_le_trans)
-            thus ?thesis
-              using asm by simp
-          qed
-          show "g n \<in> Y"
-            using \<open>n + i = n'\<close> \<open>n' \<in> {i..j}\<close> assms(4,5) by blast
-        qed
-        show "\<forall>x\<in>Y. \<exists>n. (finite Y \<longrightarrow> n < card Y) \<and> g n = x"
-        proof (rule ballI)
-          fix x assume "x\<in>Y"
-          hence "x\<in>X"
-            using f_img_is_subset assms(1,4)
-            by (metis local_ordering_def imageE inf_chain_is_long local_local_long_ch_by_ord_def)
-          then obtain n where "f n = x"
-            using \<open>x \<in> Y\<close> assms(4) by blast
-          have "n\<in>{i..j}" using only_one_index
-            by (metis \<open>f n = x\<close> \<open>x \<in> Y\<close> assms(1,2,4) ind_ord less_trans)
-          show "\<exists>n. (finite Y \<longrightarrow> n < card Y) \<and> g n = x"
-          proof (rule exI, rule conjI)
-            have "n-i\<ge>0"
-              by blast
-            have "g (n-i) = f (n-i+i)"
-              using assms(5) by blast
-            show "g (n-i) = x"
-            proof (cases)
-              assume "n-i>0"
-              thus ?thesis
-                by (simp add: \<open>f n = x\<close> \<open>g (n - i) = f (n - i + i)\<close>)
-            next assume "\<not>n-i>0"
-              hence "n-i=0" by blast
-              thus ?thesis
-                using \<open>n\<in>{i..j}\<close> \<open>f n = x\<close> \<open>g (n - i) = f (n - i + i)\<close> by auto
-            qed
-            show "finite Y \<longrightarrow> (n-i) < card Y"
-            proof
-              assume "finite Y"
-              show "n-i<card Y"
-                using card_of_subchain
-                using \<open>n \<in> {i..j}\<close> assms(1,4) ind_ord by auto
-            qed
-          qed
-        qed
-        show "\<forall>n n' n''. (finite Y \<longrightarrow> n'' < card Y) \<and> n<n' \<and> n'<n'' \<longrightarrow> [g n; g n'; g n'']"
-          apply (safe) using \<open>finite Y\<close> apply blast
-        proof -
-          fix l m n
-          assume "l<m" "m<n" "n<card Y"
-          hence "l+i<m+i" "m+i<n+i"
-            apply simp by (simp add: \<open>m < n\<close>)
-          hence "[f(l+i); f(m+i); f(n+i)]"
-            using assms(1) inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
-          thus "[g l; g m; g n]"
-            using assms(5) by blast
-        qed
-      qed
-      ultimately show ?thesis
-        using local_local_long_ch_by_ord_def by auto
-    qed
-    moreover have "g 0 = f i \<and> f k \<in> Y \<and> g (card Y - 1) = f j"
-      using card_of_subchain assms(1,4,5) ind_ord less_imp_le_nat 
-      by force
-    ultimately show ?thesis
-      using finite_long_chain_with_def by blast
-  qed
-  thus ?thesis
-    using fin_long_ch_imp_fin_ch by blast
-qed
-*)
-
-end (*Context MinkowskiSpacetime*)
-
-
-
-section "Extensions of results to infinite chains"
-context MinkowskiSpacetime begin
-
-(* TODO Doesn't work this way anymore because infinite chains are now local only, and thm 2 is finite chains only *)
-(*
-lemma i_neq_j_imp_events_neq_inf:
-  assumes "[f\<leadsto>X|(f 0)..]" "i\<noteq>j"
-  shows "f i \<noteq> f j"
-proof -
-  let ?P = "\<lambda> i j. i\<noteq>j \<longrightarrow> f i \<noteq> f j"
-  {
-    fix i j assume "(i::nat)\<le>j"
-    have "?P i j"
-    proof (cases)
-      assume "i<j"
-      then obtain k where "k>j" by blast
-      hence "[f i; f j; f k]"
-        using \<open>i < j\<close> assms(1) inf_chain_is_long local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
-      thus "?P i j"
-        using abc_abc_neq by blast
-    next
-      assume "\<not>i<j" hence "i=j" using \<open>i \<le> j\<close> by auto
-      show "?P i j" by (simp add: \<open>i = j\<close>)
-    qed
-  } moreover {
-    fix i j assume "?P j i"
-    hence "?P i j" by auto
-  }
-  ultimately show ?thesis
-    by (metis assms(2) leI less_imp_le_nat)
-qed
-
-
-lemma i_neq_j_imp_events_neq:
-  assumes "local_long_ch_by_ord f X" "i\<noteq>j" "finite X \<longrightarrow> (i<card X \<and> j<card X)"
-  shows "f i \<noteq> f j"
-  using i_neq_j_imp_events_neq_inf indices_neq_imp_events_neq
-  by (meson assms get_fin_long_ch_bounds infinite_chain_def)
-
-
-lemma inf_chain_origin_unique:
-  assumes "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|g 0..]"
-  shows "f 0 = g 0"
-proof (rule ccontr)
-  assume "f 0 \<noteq> g 0"
-  obtain P where "P\<in>\<P>" "X\<subseteq>P"
-    using assms(1) infinite_chain_on_path by blast
-  obtain x where "x = g 1" by simp
-  hence "x\<noteq>g 0"
-    using assms(2) i_neq_j_imp_events_neq_inf zero_neq_one by blast
-  have "x\<in>X"
-    by (metis local_ordering_def \<open>x = g 1\<close> assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-  have "x=f 0 \<or> x\<noteq>f 0" by auto
-  thus False
-  proof (rule disjE)
-    assume "x=f 0"
-    hence "[g 0; f 0; g 2]"
-      using \<open>x=g 1\<close> \<open>x=f 0\<close> assms(2) inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc
-      by fastforce
-    then obtain m n where "f m = g 0" "f n = g 2"
-      by (metis local_ordering_def assms(1) assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-    hence "[f m; f 0; f n]"
-      by (simp add: \<open>[g 0; f 0; g 2]\<close>)
-    hence "m\<noteq>n"
-      using abc_abc_neq by blast
-    have "m>0 \<and> n>0"
-      using \<open>[f m; f 0; f n]\<close> abc_abc_neq neq0_conv by blast
-    hence "(0<m \<and> m<n) \<or> (0<n \<and> n<m)"
-      using \<open>m \<noteq> n\<close> by auto
-    thus False
-      using `[f m; f 0; f n]` assms(1) index_order3 inf_chain_is_long by blast
-  next
-    assume "x\<noteq>f 0"
-
-    (*Help for Sledgehammer*)
-    have fn: "\<forall>n. f n \<in> X"
-      by (metis (no_types) local_ordering_def assms(1) inf_chain_is_long local_local_long_ch_by_ord_def)
-    have gn: "\<forall>n. g n \<in> X"
-      by (metis local_ordering_def assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-
-    have "[g 0; x; f 0]"
-    proof -
-      have "[f 0; g 0; x] \<or> [g 0; f 0; x] \<or> [g 0; x; f 0]"
-        using \<open>f 0 \<noteq> g 0\<close> \<open>x \<noteq> f 0\<close> \<open>x \<noteq> g 0\<close> all_aligned_on_infinite_chain
-        by (metis local_ordering_def \<open>x \<in> X\<close> assms inf_chain_is_long local_local_long_ch_by_ord_def)
-      moreover have "\<not>[f 0; g 0; x]"
-        using abc_only_cba(1,3) all_aligned_on_infinite_chain assms(2) fn
-        by (metis \<open>x\<in>X\<close> \<open>x\<noteq>f 0\<close> \<open>x\<noteq>g 0\<close>)
-      moreover have "\<not>[g 0; f 0; x]"
-        using fn gn \<open>x \<in> X\<close> \<open>x \<noteq> g 0\<close>
-        by (metis (no_types) abc_only_cba(1,2,4) all_aligned_on_infinite_chain assms(1))
-      ultimately show ?thesis by blast
-    qed
-
-    obtain m m' where "g m' = f 0" "m = Suc m'"
-      using local_ordering_def assms inf_chain_is_long local_local_long_ch_by_ord_def by metis
-    hence "[g 0; f 0; g m]"
-      by (metis Suc_le_eq \<open>f 0 \<noteq> g 0\<close> assms(2) inf_chain_is_long lessI linorder_neqE_nat
-          local_local_long_ch_by_ord_def not_le ordering_ord_ijk_loc zero_less_Suc)
-    then obtain n p where "f n = g 0" "f p = g m"
-      by (metis abc_abc_neq abc_only_cba(1,4) all_aligned_on_infinite_chain assms(1) gn)
-    hence "m<0 \<or> n<0"
-      using all_aligned_on_infinite_chain assms(1) \<open>[g 0; f 0; g m]\<close>
-      by (metis abc_abc_neq abc_only_cba(1,4) fn)
-    thus False by simp
-  qed
-qed
-
-
-lemma inf_chain_unique:
-  assumes "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|g 0..]"
-  shows "\<forall>i::nat. f i = g i"
-proof -
-  {
-    assume asm: "[f\<leadsto>X|f 0..]" "[g\<leadsto>X|f 0..]"
-    have "\<forall>i::nat. f i = g i"
-    proof
-      fix i::nat
-      show "f i = g i"
-      proof (induct i)
-        show "f 0 = g 0"
-          using asm(2) inf_chain_is_long by fastforce
-        fix i assume "f i = g i"
-        show "f (Suc i) = g (Suc i)"
-        proof (rule ccontr)
-          assume "f (Suc i) \<noteq> g (Suc i)"
-          let ?i = "Suc i"
-          have "f 0\<in>X \<and> g?i\<in>X \<and> f?i\<in>X"
-            by (metis local_ordering_def assms(1) assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-          hence "[f 0; f ?i; g ?i] \<or> [f 0; g ?i; f ?i] \<or> [f ?i; f 0; g ?i]"
-            using all_aligned_on_infinite_chain assms(1,2) i_neq_j_imp_events_neq_inf
-            by (metis \<open>f?i \<noteq>g?i\<close> \<open>f 0 = g 0\<close>)
-          hence "[f 0; f ?i; g ?i] \<or> [f 0; g ?i; f ?i]"
-            using all_aligned_on_infinite_chain asm(2)
-            by (metis \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> abc_abc_neq)
-          have "([f 0; f i; f ?i] \<and> [f 0; g i; g ?i]) \<or> i=0"
-            using local_local_long_ch_by_ord_def ordering_ord_ijk_loc asm(1,2)
-            by (metis Suc_inject Suc_lessI Suc_less_eq inf_chain_is_long lessI zero_less_Suc)
-          thus False
-          proof (rule disjE)
-            assume "i=0"
-            have "[g 0; f 1; g 1]"
-            proof -
-              obtain x where "x = g 1" by simp
-              hence "x\<in>X"
-                using \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> \<open>i = 0\<close> by force
-              then obtain m where "f m = x"
-                by (metis local_ordering_def assms(1) inf_chain_is_long local_local_long_ch_by_ord_def)
-              hence "f m = g 1"
-                using \<open>x = g 1\<close> by blast
-              have "m>1"
-                using assms(2) i_neq_j_imp_events_neq_inf \<open>f?i \<noteq> g?i\<close>
-                by (metis One_nat_def Suc_lessI \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>i = 0\<close> \<open>x = g 1\<close> neq0_conv)
-              thus "[g 0; f 1; g 1]"
-                using \<open>[f 0; f?i; g?i] \<or> [f 0; g?i; f?i]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>i=0\<close> \<open>x = g 1\<close>
-                by (metis One_nat_def assms(1) gr_implies_not_zero index_order3 inf_chain_is_long order.asym)
-            qed
-            have "f 1 \<in> X"
-              using \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close> \<open>i = 0\<close> by auto
-            then obtain m' where "g m' = f 1"
-              by (metis local_ordering_def assms(2) inf_chain_is_long local_local_long_ch_by_ord_def)
-            hence "[g 0; g m'; g 1]"
-              using \<open>[g 0; f 1; g 1]\<close> by auto
-            have "[g 0; g 1; g m']"
-            proof -
-              have "m' \<noteq> 1 \<and> m' \<noteq> 0"
-                using `[g 0; g m'; g 1]` by (meson abc_abc_neq)
-              hence "m'>1" by auto
-              thus "[g 0; g 1; g m']"
-                using \<open>[g 0; g m'; g 1]\<close> assms(2) index_order3 inf_chain_is_long by blast
-            qed
-            thus False
-              using `[g 0; g m'; g 1]` abc_only_cba(2) by blast
-          next
-            assume "[f 0; f i; f ?i] \<and> [f 0; g i; g ?i]"
-            have "[g 0; f ?i; g ?i]"
-            proof -
-              obtain x where "x = g ?i" by simp
-              hence "x\<in>X"
-                by (simp add: \<open>f 0 \<in> X \<and> g (Suc i) \<in> X \<and> f (Suc i) \<in> X\<close>)
-              then obtain m where "f m = x"
-                by (metis local_ordering_def assms(1) inf_chain_is_long local_local_long_ch_by_ord_def)
-              hence "f m = g ?i"
-                using \<open>x = g ?i\<close> by blast
-              have "m>?i"
-                using assms(2) i_neq_j_imp_events_neq_inf \<open>f?i \<noteq> g?i\<close>
-                by (metis Suc_lessI \<open>[f 0; f i; f ?i] \<and> [f 0; g i; g ?i]\<close> \<open>f i = g i\<close> \<open>f m = x\<close>
-                    \<open>x = g (Suc i)\<close> assms(1) index_order3 less_nat_zero_code infinite_chain_def)
-              thus "[g 0; f ?i; g ?i]"
-                using \<open>[f 0; f?i; g?i] \<or> [f 0; g?i; f?i]\<close> \<open>f 0 = g 0\<close> \<open>f m = x\<close> \<open>x = g ?i\<close>
-                by (metis assms(1) gr_implies_not_zero index_order3 inf_chain_is_long order.asym)
-            qed
-            obtain m where "g m = f ?i"
-              using \<open>(f 0)\<in>X \<and> g?i\<in>X \<and> f?i\<in>X\<close> assms(2)
-              by (metis local_ordering_def inf_chain_is_long local_local_long_ch_by_ord_def)
-            hence "[g i; g m; g ?i]"
-              using abc_acd_bcd \<open>[f 0;f i;f ?i] \<and> [f 0; g i; g ?i]\<close> \<open>[g 0; f ?i; g ?i]\<close>
-              by (metis \<open>f 0 = g 0\<close> \<open>f i = g i\<close>)
-            have "[g i; g ?i; g m]"
-            proof -
-              have "m>?i"
-                using \<open>[g i; g m; g ?i]\<close> assms(2) index_order3 inf_chain_is_long by fastforce
-              thus ?thesis
-                using assms(2) inf_chain_is_long local_local_long_ch_by_ord_def ordering_ord_ijk_loc by fastforce
-            qed
-            thus False
-              using \<open>[g i; g m; g ?i]\<close> abc_only_cba by blast
-          qed
-        qed
-      qed
-    qed
-  }
-  moreover have "f 0 = g 0" using inf_chain_origin_unique assms by blast
-  ultimately show ?thesis using assms by auto
-qed
-*)
-
-end (*context MinkowskiSpacetime*)
-
 
 
 section "Interlude: betw4 and WLOG"
@@ -6243,7 +4897,7 @@ proof -
   have endpoints_on_path: "a\<in>A" "b\<in>A" "c\<in>A" "d\<in>A"
     using Q_implies_path asm by blast+
   show "P I J"
-  proof (cases) (* have to split like this, because the full some_[is;too;large;for] Isabelle *)
+  proof (cases) (* have to split like this, because the full \<open>some_betw\<close> is too large for Isabelle *)
     assume "[b;a;c;d] \<or> [b;a;d;c] \<or> [b;c;a;d] \<or>
             [b;d;a;c] \<or> [c;a;b;d] \<or> [c;b;a;d]"
     then consider "[b;a;c;d]"|"[b;a;d;c]"|"[b;c;a;d]"|
@@ -6278,7 +4932,7 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct':
       and "\<And>I J. \<lbrakk>\<exists>a b. Q I a b; \<exists>a b. Q J a b; P I J\<rbrakk> \<Longrightarrow> P J I"
       and "\<And>I J a b c d.
           \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; betw4 a b c d \<or> betw4 a c b d \<or> betw4 a c d b\<rbrakk> \<Longrightarrow> P I J"
-      and "Q I a b" (* Is it better style to have these assumptions first, or last like this? *)
+      and "Q I a b"
       and "Q J c d"
       and "I \<subseteq> A"
       and "J \<subseteq> A"
@@ -6305,7 +4959,6 @@ lemma (in MinkowskiSpacetime) wlog_endpoints_distinct:
           \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A; [a;b;c;d] \<or> [a;c;b;d] \<or> [a;c;d;b]\<rbrakk> \<Longrightarrow> P I J"
   shows "\<And>I J a b c d. \<lbrakk>Q I a b; Q J c d; I\<subseteq>A; J\<subseteq>A;
               a\<noteq>b \<and> a\<noteq>c \<and> a\<noteq>d \<and> b\<noteq>c \<and> b\<noteq>d \<and> c\<noteq>d\<rbrakk> \<Longrightarrow> P I J"
-  (*using wlog_endpoints_distinct4 assms by (smt some_betw4a)*) (* uses previous wlog, but slower *)
   by (smt (verit, ccfv_SIG) assms some_betw4b)
 
 
@@ -6398,7 +5051,6 @@ proof -
       using wlog_endpoints_degenerate1
         [where I=I and J=J and a=a and b=b and c=c and d=d and P=P and Q=Q]
       using asm1 asm2 symmetric_P last_case assms(5) symmetric_Q
-      (* by metis *) (* metis is proposed by solver "e", but is slow :-( *)
       by smt
   qed
 qed
@@ -6541,7 +5193,7 @@ proof -
 
   {
     fix I J a b c d
-    assume "I = interval a b" "J = interval c d" (* "a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d" *)
+    assume "I = interval a b" "J = interval c d"
     have "([a;b;c;d] \<longrightarrow> ?prop I J)"
          "([a;c;b;d] \<longrightarrow> ?prop I J)"
          "([a;c;d;b] \<longrightarrow> ?prop I J)"
@@ -6966,7 +5618,7 @@ proof -
       \<and> (([x;a;y] \<and> [a;y;z]) \<or> ([x;a;z] \<and> [a;z;y]))"
     if "x\<in>?L" "w\<in>?L" "y\<in>?R" "z\<in>?R" "w\<noteq>x" "y\<noteq>z" for x w y z
     using path_finsubset_chain order_finite_chain (* Schutz says: implied by thm 10 & 2 *)
-    by (smt abc_abd_bcdbdc abc_bcd_abd abc_sym abd_bcd_abc mem_Collect_eq that) (* impressive! *)
+    by (smt abc_abd_bcdbdc abc_bcd_abd abc_sym abd_bcd_abc mem_Collect_eq that) (* impressive, sledgehammer! *)
 
   obtain x y where "x\<in>?L" "y\<in>?R"
     by (metis (mono_tags) \<open>b \<in> Q\<close> \<open>b \<noteq> a\<close> abc_sym event_a mem_Collect_eq path_Q prolong_betw2)
@@ -7027,13 +5679,6 @@ proof -
       thus "is_ray ?L" by auto
     qed
   qed
-(*
- 1. Q \<in> \<P>
- 2. \<And>x. [a;x;b] \<Longrightarrow> x \<in> Q
- 3. \<And>x. [a;b;x] \<Longrightarrow> x \<in> Q
- 4. \<And>x. b \<in> Q
- 5. is_ray {y. [a;y;b] \<or> [[a b y\<rbrakk>}
-*)
   show "is_ray_on ?R Q"
   proof (unfold is_ray_on_def, safe)
     show "Q \<in> \<P>" 
@@ -7135,7 +5780,7 @@ definition closest_to :: "('a set) \<Rightarrow> 'a \<Rightarrow> ('a set) \<Rig
 
 lemma int_on_path:
   assumes "l\<in>L" "r\<in>R" "Q\<in>\<P>"
-      and partition: "L\<subseteq>Q" "L\<noteq>{}" "R\<subseteq>Q" "R\<noteq>{}" "L\<union>R=Q" (*disjoint?*)
+      and partition: "L\<subseteq>Q" "L\<noteq>{}" "R\<subseteq>Q" "R\<noteq>{}" "L\<union>R=Q"
     shows "interval l r \<subseteq> Q"
 proof
   fix x assume "x\<in>interval l r"
@@ -7259,14 +5904,6 @@ proof
 qed
 
 
-(*
-lemma ray_of_bounds:
-  assumes "[f\<leadsto>X|(f 0)..]" "closest_bound_f c X f" "is_bound_f b X f" "b\<noteq>c"
-  shows "all_bounds X = insert c (ray c b)"
-  using ray_of_bounds3 assms infinite_chain_on_path by blast
-*)
-
-
 lemma int_in_closed_ray:
   assumes "path ab a b"
   shows "interval a b \<subset> insert a (ray a b)"
@@ -7287,41 +5924,6 @@ proof
     using interval_def ray_def by auto
 qed
 
-
-(*
-lemma bound_any_f:
-  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "is_bound c X"
-  shows "is_bound_f c X f"
-proof -
-  obtain g where "is_bound_f c X g" "[g\<leadsto>X|g 0..]"
-    using assms(4) is_bound_def is_bound_f_def by blast
-  show ?thesis
-    unfolding is_bound_f_def
-  proof (safe)
-    fix i j::nat
-    show "[f\<leadsto>X|f 0 ..]" by (simp add: assms(2))
-    assume "i<j"
-    have "[g i; g j; c]"
-      using \<open>i < j\<close> \<open>is_bound_f c X g\<close> is_bound_f_def by blast
-    thus "[f i; f j; c]"
-      using inf_chain_unique \<open>[g\<leadsto>X|g 0 ..]\<close> assms(2) by force
-  qed
-qed
-
-
-lemma closest_bound_any_f:
-  assumes "Q\<in>\<P>" "[f\<leadsto>X|(f 0)..]" "X\<subseteq>Q" "closest_bound c X"
-  shows "closest_bound_f c X f"
-proof (unfold closest_bound_f_def, safe)
-  show "is_bound_f c X f"
-  using bound_any_f assms closest_bound_def is_bound_def by blast
-next
-  fix Q\<^sub>b'
-  assume "is_bound Q\<^sub>b' X" "Q\<^sub>b' \<noteq> c" 
-  then show "[f 0; c; Q\<^sub>b']"
-  by (metis (full_types) assms(2,4) closest_bound_def inf_chain_unique is_bound_f_def)
-qed
-*)
 
 end (* context MinkowskiSpacetime *)
 
@@ -7621,104 +6223,6 @@ proof -
   qed
 qed
 
-lemma (*for 14i*) union_of_bounded_sets_is_bounded_example:
-  assumes "\<forall>x\<in>A. [a;x;b]" "\<forall>x\<in>B. [c;x;d]" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
-    "card A > 1 \<or> infinite A" "card B > 1 \<or> infinite B"
-  shows "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>A\<union>B. [l;x;u]"
-  (*apply (rule wlog_intro[of Q])*)
-proof -
-  let ?P = "\<lambda> A B. \<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>A\<union>B. [l;x;u]"
-  let ?I = "\<lambda> A a b. (1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [a;x;b])"
-  let ?R = "\<lambda>A. \<exists>a b. ?I A a b"
-
-  show ?thesis
-    apply (rule wlog_intro[where A=Q and Q="?I" and P="?P"])
-    (*NOTE: this won't work if you don't provide instantiations yourself*)
-  proof -
-  
-    text \<open>Antecedents for the case we actually care about.\<close>
-    show "?I A a b" "?I B c d" using assms(1,2,6,7) by auto
-    show "A \<subseteq> Q" "B \<subseteq> Q" by (simp add: assms(3,4))+
-    show "Q\<in>\<P>" by (simp add: assms(5))
-  
-    text \<open>\<open>?I\<close> relates an event set to events on the same path as the set.\<close>
-    show on_path: "\<And>a b A. A \<subseteq> Q \<Longrightarrow> ?I A a b \<Longrightarrow> b \<in> Q \<and> a \<in> Q"
-    proof -
-      fix a b A assume "A\<subseteq>Q" "?I A a b"
-      show "b\<in>Q\<and>a\<in>Q"
-      proof (cases)
-        assume "card A \<le> 1 \<and> finite A"
-        thus ?thesis
-          using \<open>?I A a b\<close> by auto
-      next
-        assume "\<not> (card A \<le> 1 \<and> finite A)"
-        hence asmA: "card A > 1 \<or> infinite A"
-          by linarith
-        then obtain x y where "x\<in>A" "y\<in>A" "x\<noteq>y"
-        proof 
-          assume "1 < card A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
-          then show ?thesis 
-            by (metis One_nat_def Suc_le_eq card_le_Suc_iff insert_iff)
-        next
-          assume "infinite A" "\<And>x y. \<lbrakk>x \<in> A; y \<in> A; x \<noteq> y\<rbrakk> \<Longrightarrow> thesis"
-          then show ?thesis 
-          using infinite_imp_nonempty by (metis finite_insert finite_subset singletonI subsetI)
-      qed
-        have "x\<in>Q" "y\<in>Q"
-          using \<open>A \<subseteq> Q\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close> by auto
-        have "[a;x;b]" "[a;y;b]"
-          by (simp add: \<open>(1 < card A \<or> infinite A) \<and> (\<forall>x\<in>A. [a;x;b])\<close> \<open>x \<in> A\<close> \<open>y \<in> A\<close>)+ 
-        hence "betw4 a x y b \<or> betw4 a y x b"
-          using \<open>x \<noteq> y\<close> abd_acd_abcdacbd by blast
-        hence "a\<in>Q \<and> b\<in>Q"
-          using \<open>Q\<in>\<P>\<close> \<open>x\<in>Q\<close> \<open>x\<noteq>y\<close> \<open>x\<in>Q\<close> \<open>y\<in>Q\<close> betw_a_in_path betw_c_in_path by blast
-        thus ?thesis by simp
-      qed
-    qed
-
-    text \<open>\<open>?I\<close> and \<open>?P\<close> satisfy the symmetry requirements.\<close>
-    show "\<And>a b I. ?I I a b \<Longrightarrow> ?I I b a" using abc_sym by blast
-    show "\<And>I J. ?R I \<Longrightarrow> ?R J \<Longrightarrow> ?P I J \<Longrightarrow> ?P J I" by (simp add: Un_commute)
-
-    text \<open>Finally, prove \<open>?P I J\<close> for all the essentially distinct cases.\<close> (*TODO name this goal in intro lemma?*)
-    show "\<And>I J a b c d. ?I I a b \<Longrightarrow> ?I J c d \<Longrightarrow> I \<subseteq> Q \<Longrightarrow> J \<subseteq> Q \<Longrightarrow>
-         (a = b \<and> b = c \<and> c = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a = b \<and> b \<noteq> c \<and> c = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a = b \<and> b = c \<and> c \<noteq> d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         (a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([a;b;c] \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([b;a;c] \<and> a = d \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([a;b;c;d] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and>
-         ([a;c;b;d] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u])) \<and> ([a;c;d;b] \<longrightarrow> (\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u]))"
-    proof (intro conjI; intro impI)
-    { fix I J a b c d
-      assume asm1: "?I I a b" "?I J c d"  "I\<subseteq>Q" "J\<subseteq>Q"
-      {
-        assume "a = b \<and> b = c \<and> c = d" show "?P I J" sorry
-      } {
-        assume "a = b \<and> b \<noteq> c \<and> c = d" show "?P I J" sorry
-      } {
-        assume "a = b \<and> b = c \<and> c \<noteq> d" show "?P I J" sorry
-      } {
-        assume "a = b \<and> b \<noteq> c \<and> c \<noteq> d \<and> a \<noteq> d" show "?P I J" sorry
-      } {
-        assume "a \<noteq> b \<and> b = c \<and> c \<noteq> d \<and> a = d" show "?P I J" sorry
-      } {
-        assume "[a;b;c] \<and> a = d" show "?P I J" sorry
-      } {
-        assume "[b;a;c] \<and> a = d" show "?P I J" sorry
-      } {
-        assume "[a;b;c;d]" show "?P I J" sorry
-      } {
-        assume "[a;c;b;d]" show "?P I J" sorry
-      } {
-        assume "[a;c;d;b]" show "?P I J" sorry
-      }
-    } qed
-  qed
-(*qed*) oops
-
 
 lemma (*for 14i*) union_of_bounded_sets_is_bounded2:
   assumes "\<forall>x\<in>A. [a;x;b]" "\<forall>x\<in>B. [c;x;d]" "A\<subseteq>Q" "B\<subseteq>Q" "Q\<in>\<P>"
@@ -7740,7 +6244,7 @@ text \<open>
 theorem (*14i*) second_existence_thm_1:
   assumes path_Q: "Q\<in>\<P>"
       and events: "a\<notin>Q" "b\<notin>Q"
-      and reachable: "path_ex a q1" "path_ex b q2" "q1\<in>Q" "q2\<in>Q" (* "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P a q" *)(*  "\<exists>P\<in>\<P>. \<exists>q\<in>Q. path P b q" *)
+      and reachable: "path_ex a q1" "path_ex b q2" "q1\<in>Q" "q2\<in>Q"
     shows "\<exists>y\<in>Q. \<exists>z\<in>Q. (\<forall>x\<in>unreach-on Q from a. [y;x;z]) \<and> (\<forall>x\<in>unreach-on Q from b. [y;x;z])"
 proof -
   text \<open>Slightly annoying: Schutz implicitly extends \<open>bounded\<close> to sets, so his statements are neater.\<close>

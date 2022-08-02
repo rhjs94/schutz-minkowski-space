@@ -5,9 +5,9 @@
 theory Util
 imports Main
 
-(* Some "utility" proofs -- little proofs that come in handy every now and then. *)
-
 begin
+
+text \<open>Some "utility" proofs -- little proofs that come in handy every now and then.\<close>
 
 text \<open>For multiple uses of \<open>conjI\<close> (goal splitting).\<close>
 
@@ -37,16 +37,16 @@ using assms by presburger
 text \<open>Helpful proofs on sets.\<close>
 
 lemma set_le_two [simp]: "card {a, b} \<le> 2"
-by (simp add: card_insert_if)
+  by (simp add: card_insert_if)
 
 lemma set_le_three [simp]: "card {a, b, c} \<le> 3"
-by (simp add: card_insert_if)
+  by (simp add: card_insert_if)
 
 lemma card_subset: "\<lbrakk>card Y = n; Y \<subseteq> X\<rbrakk> \<Longrightarrow> card X \<ge> n \<or> infinite X"
-using card_mono by blast
+  using card_mono by blast
 
 lemma card_subset_finite: "\<lbrakk>finite X; card Y = n; Y \<subseteq> X\<rbrakk> \<Longrightarrow> card X \<ge> n"
-using card_subset by auto
+  using card_subset by auto
 
 lemma three_subset: "\<lbrakk>x \<noteq> y; x \<noteq> z; y \<noteq> z; {x,y,z} \<subseteq> X\<rbrakk> \<Longrightarrow> card X \<ge> 3 \<or> infinite X"
   apply (case_tac "finite X")
@@ -87,14 +87,6 @@ proof
   then obtain x y z where "x \<noteq> y \<and> y \<noteq> z \<and> x \<noteq> z" "{x,y,z} \<subseteq> X"
     apply (simp add: eval_nat_numeral)
     by (auto simp add: card_le_Suc_iff)
-  (*then obtain h where h: "bij_betw h {0..<card X} X"
-    using ex_bij_betw_nat_finite[of X] using card.infinite by force
-  have "h 0 \<in> X" "h 1 \<in> X" "h 2 \<in> X" "h 0 \<noteq> h 1" "h 2 \<noteq> h 1" "h 2 \<noteq> h 0"
-    using h bij_betw_apply asm apply fastforce+
-    using h asm unfolding bij_betw_def inj_on_def apply (auto simp: eval_nat_numeral)
-    by (metis atLeast0_lessThan_Suc insertCI nat.distinct(1) n_not_Suc_n)+
-  hence "X={h 0,h 1,h 2}" using asm
-  hence "\<exists>x\<in>X. \<exists>y\<in>X. \<exists>z\<in>X. x \<noteq> y \<and> y \<noteq> z \<and> x \<noteq> z" by blast*)
   thus "?card3 X"
     using Finite_Set.card_subset_eq \<open>card X = 3\<close>
     apply (simp add: eval_nat_numeral)
@@ -104,6 +96,17 @@ next
   show "?card3 X \<Longrightarrow> card X = 3"
     by (smt (z3) card.empty card.insert eval_nat_numeral(2) finite.intros(1) finite_insert insertE
       insert_absorb insert_not_empty numeral_3_eq_3 semiring_norm(26,27))
+qed
+
+
+lemma card_3_eq':
+    "\<lbrakk>card X = 3; card {a,b,c} = 3; {a,b,c} \<subseteq>X\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+    "\<lbrakk>card X = 3; a \<in> X; b \<in> X; c \<in> X; a \<noteq> b; a \<noteq> c; b \<noteq> c\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+proof -
+  show "\<lbrakk>card X = 3; card {a,b,c} = 3; {a,b,c} \<subseteq>X\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+    by (metis card.infinite card_subset_eq zero_neq_numeral)
+  thus "\<lbrakk>card X = 3; a \<in> X; b \<in> X; c \<in> X; a \<noteq> b; a \<noteq> c; b \<noteq> c\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+    by (meson card_3_dist empty_subsetI insert_subset)
 qed
 
 lemma card_4_eq:
@@ -134,6 +137,6 @@ qed
 text \<open>These lemmas make life easier with some of the ordering proofs.\<close>
 
 lemma less_3_cases: "n < 3 \<Longrightarrow> n = 0 \<or> n = Suc 0 \<or> n = Suc (Suc 0)"
-by auto
+  by auto
 
 end
