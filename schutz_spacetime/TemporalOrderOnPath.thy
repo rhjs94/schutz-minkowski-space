@@ -4492,12 +4492,7 @@ proof (induct "card X - 3" arbitrary: X a c x z)
       have "X = {a,b,c}"
         using f_ch unfolding finite_long_chain_with_alt
         using \<open>card X = 3\<close> points_in_long_chain[OF f_ch] abc_abc_neq[of a b c]
-        apply (simp add:eval_nat_numeral)
-        by (smt (verit, ccfv_SIG) Zero_not_Suc \<open>\<And>thesis. (\<And>y. [g\<leadsto>X|x..y..z] \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close>
-          \<open>a \<in> X\<close> \<open>b \<in> X\<close> \<open>c \<in> X\<close> \<open>i = 1\<close> card.infinite card_1_singleton_iff card_insert_disjoint
-          card_subset_eq empty_iff empty_subsetI finite_insert gr0_implies_Suc insert_absorb
-          insert_commute insert_iff insert_subset lessI less_one not0_implies_Suc old.nat.inject
-          points_in_long_chain(2) rev_finite_subset) (*TODO why is this so long? find name of needed lemma*)
+        by (simp add: card_3_eq'(2))
       hence "(g i = a \<or> g i = c)"
         using \<open>g i \<noteq> b\<close> \<open>g i \<in> X\<close> by blast
       hence "\<not> [a; g i; c]"

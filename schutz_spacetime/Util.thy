@@ -37,16 +37,16 @@ using assms by presburger
 text \<open>Helpful proofs on sets.\<close>
 
 lemma set_le_two [simp]: "card {a, b} \<le> 2"
-by (simp add: card_insert_if)
+  by (simp add: card_insert_if)
 
 lemma set_le_three [simp]: "card {a, b, c} \<le> 3"
-by (simp add: card_insert_if)
+  by (simp add: card_insert_if)
 
 lemma card_subset: "\<lbrakk>card Y = n; Y \<subseteq> X\<rbrakk> \<Longrightarrow> card X \<ge> n \<or> infinite X"
-using card_mono by blast
+  using card_mono by blast
 
 lemma card_subset_finite: "\<lbrakk>finite X; card Y = n; Y \<subseteq> X\<rbrakk> \<Longrightarrow> card X \<ge> n"
-using card_subset by auto
+  using card_subset by auto
 
 lemma three_subset: "\<lbrakk>x \<noteq> y; x \<noteq> z; y \<noteq> z; {x,y,z} \<subseteq> X\<rbrakk> \<Longrightarrow> card X \<ge> 3 \<or> infinite X"
   apply (case_tac "finite X")
@@ -98,6 +98,17 @@ next
       insert_absorb insert_not_empty numeral_3_eq_3 semiring_norm(26,27))
 qed
 
+
+lemma card_3_eq':
+    "\<lbrakk>card X = 3; card {a,b,c} = 3; {a,b,c} \<subseteq>X\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+    "\<lbrakk>card X = 3; a \<in> X; b \<in> X; c \<in> X; a \<noteq> b; a \<noteq> c; b \<noteq> c\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+proof -
+  show "\<lbrakk>card X = 3; card {a,b,c} = 3; {a,b,c} \<subseteq>X\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+    by (metis card.infinite card_subset_eq zero_neq_numeral)
+  thus "\<lbrakk>card X = 3; a \<in> X; b \<in> X; c \<in> X; a \<noteq> b; a \<noteq> c; b \<noteq> c\<rbrakk> \<Longrightarrow> X = {a,b,c}"
+    by (meson card_3_dist empty_subsetI insert_subset)
+qed
+
 lemma card_4_eq:
   "card X = 4 \<longleftrightarrow> (\<exists>S\<^sub>1. \<exists>S\<^sub>2. \<exists>S\<^sub>3. \<exists>S\<^sub>4. X = {S\<^sub>1, S\<^sub>2, S\<^sub>3, S\<^sub>4} \<and>
     S\<^sub>1 \<noteq> S\<^sub>2 \<and> S\<^sub>1 \<noteq> S\<^sub>3 \<and> S\<^sub>1 \<noteq> S\<^sub>4 \<and> S\<^sub>2 \<noteq> S\<^sub>3 \<and> S\<^sub>2 \<noteq> S\<^sub>4 \<and> S\<^sub>3 \<noteq> S\<^sub>4)"
@@ -126,6 +137,6 @@ qed
 text \<open>These lemmas make life easier with some of the ordering proofs.\<close>
 
 lemma less_3_cases: "n < 3 \<Longrightarrow> n = 0 \<or> n = Suc 0 \<or> n = Suc (Suc 0)"
-by auto
+  by auto
 
 end
