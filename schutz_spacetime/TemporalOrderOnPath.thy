@@ -2866,17 +2866,11 @@ proof -
     } moreover {
       fix n assume "(finite ?X \<longrightarrow> Suc(Suc n) < card ?X)"
       hence "[g n; g (Suc n); g (Suc(Suc n))]"
-        apply (cases "n\<ge>1") (*TODO fix ugly long calls*)
+        apply (cases "n\<ge>1")
         using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def ordering_ord_ijk_loc[OF ord_fY] fin_Y
         apply (metis Suc_diff_le card_insert_disjoint diff_Suc_1 finite_insert le_Suc_eq not_less_eq)
         by (metis One_nat_def Suc_leI \<open>[b;a\<^sub>1;f 1]\<close> bound_indices diff_Suc_1 g_def
           not_less_less_Suc_eq zero_less_Suc)
-        (*using \<open>b\<notin>Y\<close> \<open>[b; a\<^sub>1; f 1]\<close> g_def long_ch_Y ordering_ord_ijk_loc chain_defs
-        using One_nat_def card.insert diff_Suc_Suc diff_diff_cancel diff_is_0_eq
-            finite_insert nat_less_le not_less not_less_eq_eq*)
-        (*by (smt (verit, ccfv_threshold) chain_defs
-            One_nat_def card.insert diff_Suc_Suc diff_diff_cancel diff_is_0_eq
-            finite_insert nat_less_le not_less not_less_eq_eq)*)
     } moreover {
       fix x assume "x\<in>?X" "x=b"
       have "(finite ?X \<longrightarrow> 0 < card ?X) \<and> g 0 = x"
@@ -2895,18 +2889,14 @@ proof -
     }
     ultimately show ?thesis
       unfolding local_ordering_def
-      by smt (* sledgehammer proposes both meson and auto, neither of which work... *)
+      by smt
   qed
   hence "local_long_ch_by_ord g ?X"
     unfolding local_long_ch_by_ord_def
     using fin_Y \<open>b\<notin>Y\<close>
     by (meson card_insert_le finite_insert le_trans)
   show ?thesis
-    (*unfolding finite_long_chain_with_alt*)
   proof (intro finite_long_chain_with_alt2)
-    (*have "4 \<le> card ?X"
-      using fin_Y \<open>b\<notin>Y\<close> card_insert_disjoint[of Y b] eval_nat_numeral
-      by (metis card.infinite not_less_eq_eq not_numeral_le_zero semiring_norm(26,27))*)
     show "local_long_ch_by_ord g ?X" using \<open>local_long_ch_by_ord g ?X\<close> by simp
     show "[b;a\<^sub>1;a\<^sub>n] \<and> a\<^sub>1 \<in> ?X" using bY long_ch_Y points_in_long_chain(1) by auto
     show "g 0 = b" using g_def by simp
@@ -3049,7 +3039,7 @@ proof -
   text \<open>We consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>, and find the maximal one.\<close>
   let ?S = "{k::nat. [a\<^sub>1; f k; b] \<and> k < card Y}"
   obtain S where S_def: "S=?S"
-    by simp (* just to check this Isabelle-exists *)
+    by simp
   have "S\<subseteq>{0..card Y}"
     using S_def by auto
   hence "finite S"
@@ -3065,7 +3055,6 @@ proof -
         show "(0::nat)<1" by simp
         show "1 < card Y"
           using Yb abc_ac_neq bound_indices not_le by fastforce
-          (* using card_Y by linarith *)
         show "\<not> (\<exists>k'::nat. k' < 1 \<and> [a\<^sub>1; b; f k'])"
           using abc_abc_neq bound_indices
           by blast
@@ -3073,7 +3062,6 @@ proof -
         proof -
           have "f 1 \<in> Y"
             using long_ch_Y chain_defs local_ordering_def by (metis \<open>1 < card Y\<close> short_ch_ord_in(2))
-          (* have "[[a\<^sub>1 b f 1]] \<or> [[a\<^sub>1 f 1 b]]" *)
           hence "[a\<^sub>1; f 1; a\<^sub>n]"
             using bound_indices long_ch_Y chain_defs local_ordering_def card_Y
             by (smt (z3) Nat.lessE One_nat_def Suc_le_lessD Suc_lessD diff_Suc_1 diff_Suc_less
@@ -3082,8 +3070,6 @@ proof -
             using abc_ex_path_unique some_betw abc_sym
             by (smt Y_def Yb \<open>f 1 \<in> Y\<close> abc_abc_neq cross_once_notin)
           thus "[a\<^sub>1; b; f 1]"
-            (* by (smt S_def Yb \<open>S = {}\<close> \<open>[[a\<^sub>1 f 1 a\<^sub>n]]\<close> abc_bcd_abd abc_sym abd_bcd_abc bound_indices
-                diff_is_0_eq' empty_iff mem_Collect_eq nat_le_linear nat_less_le) *)
           proof -
             have "\<forall>n. \<not> ([a\<^sub>1; f n; b] \<and> n < card Y)"
               using S_def \<open>S = {}\<close>
@@ -3189,7 +3175,6 @@ lemma greatest_k_ex:
       and Yb: "[a\<^sub>1; b; a\<^sub>n]"
     shows "\<exists>k. [f k; b; a\<^sub>n] \<and> k < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>k \<and> [f k'; b; a\<^sub>n])"
 proof -
-(* the usual suspects first, they'll come in useful I'm sure *)
   have bound_indices: "f 0 = a\<^sub>1 \<and> f (card Y - 1) = a\<^sub>n"
     using chain_defs long_ch_Y by simp
   have fin_Y: "finite Y"
@@ -3202,7 +3187,7 @@ proof -
   text \<open>Again we consider all indices of chain elements between \<open>a\<^sub>1\<close> and \<open>b\<close>.\<close>
   let ?S = "{k::nat. [a\<^sub>n; f k; b] \<and> k < card Y}"
   obtain S where S_def: "S=?S"
-    by simp (* just to check this Isabelle-exists *)
+    by simp
   have "S\<subseteq>{0..card Y}"
     using S_def by auto
   hence "finite S"
@@ -3322,7 +3307,7 @@ proof -
               add_diff_inverse_nat bound_indices chY2 diff_add_zero diff_is_0_eq fin_Y k'_def(1,3)
               less_add_one less_diff_conv2 less_nat_zero_code mem_Collect_eq nat_diff_split order_finite_chain)
             apply (simp add: \<open>S \<noteq> {}\<close>, simp, simp)
-            using k'_def S_def (* interesting: this result should involve symmetry, but is found by sledgehammer/smt *)
+            using k'_def S_def
             by (smt (verit, ccfv_SIG) \<open>k \<in> S\<close> abc_acd_abd abc_only_cba(4) add_diff_cancel_right'
               add_diff_inverse_nat bound_indices chY2 fin_Y le_eq_less_or_eq less_nat_zero_code
               mem_Collect_eq nat_diff_split nat_neq_iff order_finite_chain zero_less_diff zero_less_one)
@@ -3416,12 +3401,9 @@ proof -
         using x_def(1) nc_def(3) chY2 unfolding chain_defs local_ordering_def
         by (metis One_nat_def Suc_pred less_Suc_eq nc_def(4) not_less_eq)
       hence "[a\<^sub>0; f (n\<^sub>c-1); x]"
-        using long_ch_Y nc_def c_def chain_defs (*some_betw
-        by (smt (verit, ccfv_SIG) \<open>[b;x;c]\<close> \<open>[f n\<^sub>b;f (n\<^sub>c - 1);f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0;x;f (n\<^sub>c - 1)]\<close> abc_bcd_abd abc_sym abd_acd_abcacb abd_bcd_abc b_def(1) b_def(2) fin_ch_betw2)*)
-        by (metis \<open>[f n\<^sub>b;f (n\<^sub>c - 1);f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0;x;f (n\<^sub>c - 1)]\<close> abc_ac_neq abc_acd_abd abc_bcd_acd abd_acd_abcacb abd_bcd_abc b_def(1) b_def(2) fin_ch_betw2 nb_def(2))
-        (*using some_betw P_def(1,2) abc_abc_neq abc_acd_bcd abc_bcd_acd abc_sym b_def(1,2)
-              c_def(1,2) in_mono long_ch_Y nc_def(2) betw_b_in_path
-        by (smt \<open>[f n\<^sub>b; f (n\<^sub>c - 1); f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0; x; f (n\<^sub>c-1)]\<close> \<open>x \<in> P\<close> \<open>f(n\<^sub>c-1)\<noteq>a\<^sub>0 \<and> a\<^sub>0\<noteq>x\<close>)*)
+        using long_ch_Y nc_def c_def chain_defs
+        by (metis \<open>[f n\<^sub>b;f (n\<^sub>c - 1);f n\<^sub>c]\<close> \<open>\<not> [a\<^sub>0;x;f (n\<^sub>c - 1)]\<close> abc_ac_neq abc_acd_abd abc_bcd_acd
+          abd_acd_abcacb abd_bcd_abc b_def(1) b_def(2) fin_ch_betw2 nb_def(2))
       hence "[(f(n\<^sub>c-1)); x; a\<^sub>n]"
         using abc_acd_bcd x_def(2) by blast
       thus False using nb_def(1)
@@ -3479,25 +3461,6 @@ proof -
       have ch_with_b: "ch {a\<^sub>1, (f (k-1)), b, (f k)}" using chain4
         using k_def(1) abc_ex_path_unique between_chain cross_once_notin
         by (smt \<open>[a\<^sub>1; f (k-1); f k]\<close> abc_abc_neq insert_absorb2)
-(*TODO: the proof below needs extra assumptions, but we should still try to get rid of smt above. *)
-      (* proof -
-        have "a\<^sub>1\<in>Q \<and> a\<^sub>n\<in>Q \<and> b\<in>Q"
-          using Y_def long_ch_Y events_X points_in_chain by auto
-        have f1: "a\<^sub>1 \<noteq> b \<and> a\<^sub>1 \<noteq> f k \<and> b \<noteq> f k"
-          using abc_abc_neq k_def(1) by presburger
-        then have f2: "f k \<in> Q"
-          using betw_c_in_path k_def(1) path_Q
-            \<open>a\<^sub>1 \<in> Q \<and> a\<^sub>n \<in> Q \<and> b \<in> Q\<close>
-          by blast
-        then have "f (k - 1) \<in> Q"
-          using betw_b_in_path path_Q
-            f1 \<open>[[a\<^sub>1 f (k - 1) f k]]\<close> \<open>a\<^sub>1 \<in> Q \<and> a\<^sub>n \<in> Q \<and> b \<in> Q\<close>
-          by presburger
-        then show ?thesis
-          using abc_abc_neq between_chain chain4 k_def(1) path_Q
-          by (metis (no_types) f2 \<open>[[a\<^sub>1 f (k - 1) f k]]\<close> \<open>a\<^sub>1 \<in> Q \<and> a\<^sub>n \<in> Q \<and> b \<in> Q\<close>
-              insertI1 insert_absorb)
-      qed *)
       have "f (k-1) \<noteq> b \<and> (f k) \<noteq> (f (k-1)) \<and> b \<noteq> (f k)"
         using abc_abc_neq f_def k_def(2) Y_def
         by (metis local_ordering_def \<open>[a\<^sub>1; f (k-1); f k]\<close> less_imp_diff_less local_long_ch_by_ord_def)
@@ -3559,7 +3522,6 @@ proof -
         assume "k + 1 \<le> n"
         show "g n = b"
         proof -
-          (* assume asm: "Suc k \<le> n" "?X = insert b Y" "b \<notin> Y" "g n \<notin> Y" *)
           have "f n \<in> Y \<or> \<not>(n < card Y)" for n
             using chain_defs by (metis local_ordering_def f_def)
           then show "g n = b"
@@ -3688,7 +3650,7 @@ proof -
       by simp
 qed
 
-(* jep *)
+
 lemma card4_eq:
   assumes "card X = 4"
   shows "\<exists>a b c d. a \<noteq> b \<and> a \<noteq> c \<and> a \<noteq> d \<and> b \<noteq> c \<and> b \<noteq> d \<and> c \<noteq> d \<and> X = {a, b, c, d}"
@@ -3707,7 +3669,7 @@ proof -
     using \<open>X = insert a X'\<close> \<open>X' = insert b X''\<close> \<open>a \<notin> X'\<close> \<open>b \<notin> X''\<close> by blast
 qed
 
-(* jep *)
+
 theorem (*10*) path_finsubset_chain:
   assumes "Q \<in> \<P>"
       and "X \<subseteq> Q"
@@ -3783,7 +3745,7 @@ proof -
         thus "ch X" using chain_defs by (meson ch_def)
       next
         (* case (iii) *)
-        assume "[a\<^sub>n; b; a\<^sub>1]" (* jep: I have it this way so it matches some_betw, then switching it so it matches your old proof -- messy but easy to rectify, I'm just too tired to think too hard! *)
+        assume "[a\<^sub>n; b; a\<^sub>1]"
         then have "[a\<^sub>1; b; a\<^sub>n]"
           by (simp add: abc_sym)
         obtain k where
@@ -4254,7 +4216,7 @@ proof (rule conjI)
           assume "n<m"
           have "[f n; f m; (f(m+1))]"
             using \<open>n < m\<close> assms(3) fQ chain_defs order_finite_chain rs_def(5) by (metis assms(2) thm2_ind1)
-          have "n+1<m" (* NOTICE: this is astounding. in principle, r and s could be adjacent? must be the False in the assumptions. *)
+          have "n+1<m"
             using \<open>[f n; f m; f(m + 1)]\<close> \<open>n < m\<close> abc_only_cba(2) abd_bcd_abc y_betw
             by (metis Suc_eq_plus1 Suc_leI le_eq_less_or_eq)
           hence "[f n; (f(n+1)); f m]"
@@ -4320,16 +4282,6 @@ proof -
   then show ?thesis by auto
 qed
 
-(*
-text \<open>
-  We define \<open>disjoint\<close> to be the same as in HOL-Library.DisjointSets.
-  This saves importing a lot of baggage we don't need.
-  The two lemmas below are just for safety.
-\<close>
-
-abbreviation disjoint
-  where "disjoint A \<equiv> \<forall>a\<in>A. \<forall>b\<in>A. a \<noteq> b \<longrightarrow> a \<inter> b = {}"
-*)
 
 lemma
   fixes S:: "('a set) set" and P1:: "'a set" and P2:: "'a set"
