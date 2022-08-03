@@ -3,7 +3,7 @@
                 University of Edinburgh, 2021          
 *)
 theory TernaryOrdering
-imports Main Util
+imports Util
 
 begin
 

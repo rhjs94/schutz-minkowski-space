@@ -3,7 +3,7 @@
                 University of Edinburgh, 2021          
 *)
 theory TemporalOrderOnPath
-imports Main Minkowski TernaryOrdering "HOL-Library.Disjoint_Sets"
+imports Minkowski "HOL-Library.Disjoint_Sets"
 begin
 
 text \<open>
@@ -6292,7 +6292,6 @@ proof -
             using \<open>Qy \<in> unreach-on Q from a\<close> \<open>la \<in> Q - unreach-on Q from a\<close> \<open>x \<in> unreach-on Q from a\<close> \<open>x \<noteq> Qy\<close> \<open>x \<noteq> la\<close> by force
         qed
         hence "[la;x;ua]"
-          (* by (smt DiffD1 DiffD2 \<open>Qy \<in> unreach-on Q from a\<close> \<open>[la;Qy;ua]\<close> \<open>ua \<in> Q - unreach-on Q from a\<close> \<open>x \<in> unreach-on Q from a\<close> \<open>x \<noteq> la\<close> abc_abd_acdadc abc_acd_abd abc_only_cba abc_sym in_path_event path_Q some_betw that(1) that(2) unreach_connected unreach_on_path) *)
         proof
           assume "[Qy;x;la]"
           thus ?thesis using \<open>[la;Qy;ua]\<close> abc_acd_abd abc_sym by blast
@@ -6580,7 +6579,9 @@ proof -
           using add_mono_thms_linordered_field(3) asm(1,2) assms \<open>?N\<ge>3\<close> by auto
         hence "f i \<in> Q \<and> f j \<in> Q \<and> f (i+1) \<in> Q"
           using f_def unfolding chain_defs local_ordering_def
-          by (metis One_nat_def Suc_diff_le Suc_eq_plus1 \<open>3 \<le> card Q\<close> add_Suc card_1_singleton_iff card_gt_0_iff card_insert_if diff_Suc_1 diff_Suc_Suc less_natE less_numeral_extra(1) nat.discI numeral_3_eq_3)
+          by (metis One_nat_def Suc_diff_le Suc_eq_plus1 \<open>3 \<le> card Q\<close> add_Suc card_1_singleton_iff
+            card_gt_0_iff card_insert_if diff_Suc_1 diff_Suc_Suc less_natE less_numeral_extra(1)
+            nat.discI numeral_3_eq_3)
         hence "f i \<in> P \<and> f j \<in> P \<and> f (i+1) \<in> P"
           using path_is_union assms
           by (simp add: subset_iff)
@@ -6646,7 +6647,6 @@ theorem (*11*) segmentation_card:
           "card S = (card Q-1) \<and> (\<forall>x\<in>S. is_segment x)"
         (* There are N-1 segments. *)
         (* There are two prolongations. *)
-            (* "P1\<inter>P2={} \<and> (\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))" *)
           "disjoint (S\<union>{P1,P2})" "P1\<noteq>P2" "P1\<notin>S" "P2\<notin>S"
         (* The prolongations and all the segments are disjoint. *)
 proof -

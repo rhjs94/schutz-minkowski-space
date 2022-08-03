@@ -3,7 +3,7 @@
                 University of Edinburgh, 2021          
 *)
 theory Minkowski
-imports Main TernaryOrdering
+imports TernaryOrdering
 begin
 
 (* It is best to avoid `distinct` because it makes proof more difficult. *)
