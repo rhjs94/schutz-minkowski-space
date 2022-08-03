@@ -4199,7 +4199,7 @@ proof (rule conjI)
   proof (rule ballI)
     fix s assume "s\<in>S"
     show "s \<inter> P1 = {} \<and> s \<inter> P2 = {} \<and> (\<forall>y\<in>S. s \<noteq> y \<longrightarrow> s \<inter> y = {})"
-    proof (intro conjI, rule_tac[3] ballI, rule_tac[3] impI)
+    proof (intro conjI ballI impI)
       show "s\<inter>P1={}"
       proof (safe)
         fix x assume "x\<in>s" "x\<in>P1"
@@ -6173,7 +6173,7 @@ proof -
           ([a;b;c] \<and> a = d \<longrightarrow> ?P I J) \<and> ([b;a;c] \<and> a = d \<longrightarrow> ?P I J)"
       if "?I I a b" "?I J c d" "I \<subseteq> Q" "J \<subseteq> Q"
       for I J a b c d
-      proof (intro conjI, rule_tac[1-7] impI)
+      proof (intro conjI impI)
         assume "a = b \<and> b = c \<and> c = d"
         show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u]"
           using \<open>a = b \<and> b = c \<and> c = d\<close> abc_ac_neq assms(5) ex_crossing_path that(1,2)
