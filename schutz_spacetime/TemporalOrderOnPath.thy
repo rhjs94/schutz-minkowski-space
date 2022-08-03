@@ -4275,26 +4275,16 @@ lemma (*for 11*) segmentation_ex_Nge3:
     shows "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q) \<and>
            (\<forall>x\<in>S. is_segment x) \<and>
            P1\<inter>P2={} \<and> (\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))"
-proof -
-  have "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q) \<and>
-          (\<forall>x\<in>S. is_segment x) \<and> P1\<inter>P2={} \<and>
-          (\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))"
-  proof (intro conjI)
-    show "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)"
-      using path_is_union assms
-      by blast
-    show "\<forall>x\<in>S. is_segment x"
-    proof
-      fix s assume "s\<in>S"
-      thus "is_segment s" using S_def by auto
-    qed
-    show "P1\<inter>P2={}" "\<forall>x\<in>S. x \<inter> P1 = {} \<and> x \<inter> P2 = {} \<and> (\<forall>y\<in>S. x \<noteq> y \<longrightarrow> x \<inter> y = {})"
-      using assms disjoint_segmentation
-        [where P=P and Q=Q and N=N and a=a and b=b and c=c and f=f and S=S]
-      by presburger+
+proof (intro disjoint_segmentation conjI)
+  show "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)"
+    using path_is_union assms
+    by blast
+  show "\<forall>x\<in>S. is_segment x"
+  proof
+    fix s assume "s\<in>S"
+    thus "is_segment s" using S_def by auto
   qed
-  then show ?thesis by auto
-qed
+qed (use assms disjoint_segmentation in auto)
 
 
 text \<open>Some unfolding of the definition for a finite chain that happens to be short.\<close>
