@@ -3214,7 +3214,7 @@ proof -
     proof
       let ?n = "card Y - 2"
       show "[f ?n; b; a\<^sub>n] \<and> ?n < card Y - 1 \<and> \<not>(\<exists>k'<card Y. k'>?n \<and> [f k'; b; a\<^sub>n])"
-      proof (rule conjI3)
+      proof (intro conjI)
         show "?n < card Y - 1"
           using Yb abc_ac_neq bound_indices not_le by fastforce
       next show "\<not>(\<exists>k'<card Y. k'>?n \<and> [f k'; b; a\<^sub>n])"
@@ -3259,7 +3259,7 @@ proof -
     proof
       let ?k = "k-1"
       show "[f ?k; b; a\<^sub>n] \<and> ?k < card Y - 1 \<and> \<not> (\<exists>k'<card Y. ?k < k' \<and> [f k'; b; a\<^sub>n])"
-      proof (rule conjI3)
+      proof (intro conjI)
         show "?k < card Y - 1"
           using S_def \<open>k \<in> S\<close> less_imp_diff_less card_Y
           by (metis (no_types, lifting) One_nat_def diff_is_0_eq' diff_less_mono lessI less_le_trans
@@ -4199,7 +4199,7 @@ proof (rule conjI)
   proof (rule ballI)
     fix s assume "s\<in>S"
     show "s \<inter> P1 = {} \<and> s \<inter> P2 = {} \<and> (\<forall>y\<in>S. s \<noteq> y \<longrightarrow> s \<inter> y = {})"
-    proof (rule conjI3, rule_tac[3] ballI, rule_tac[3] impI)
+    proof (intro conjI, rule_tac[3] ballI, rule_tac[3] impI)
       show "s\<inter>P1={}"
       proof (safe)
         fix x assume "x\<in>s" "x\<in>P1"
@@ -4279,7 +4279,7 @@ proof -
   have "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q) \<and>
           (\<forall>x\<in>S. is_segment x) \<and> P1\<inter>P2={} \<and>
           (\<forall>x\<in>S. (x\<inter>P1={} \<and> x\<inter>P2={} \<and> (\<forall>y\<in>S. x\<noteq>y \<longrightarrow> x\<inter>y={})))"
-  proof (rule conjI3)
+  proof (intro conjI)
     show "P = ((\<Union>S) \<union> P1 \<union> P2 \<union> Q)"
       using path_is_union assms
       by blast
@@ -4288,10 +4288,10 @@ proof -
       fix s assume "s\<in>S"
       thus "is_segment s" using S_def by auto
     qed
-    show "P1\<inter>P2={} \<and> (\<forall>x\<in>S. x \<inter> P1 = {} \<and> x \<inter> P2 = {} \<and> (\<forall>y\<in>S. x \<noteq> y \<longrightarrow> x \<inter> y = {}))"
+    show "P1\<inter>P2={}" "\<forall>x\<in>S. x \<inter> P1 = {} \<and> x \<inter> P2 = {} \<and> (\<forall>y\<in>S. x \<noteq> y \<longrightarrow> x \<inter> y = {})"
       using assms disjoint_segmentation
         [where P=P and Q=Q and N=N and a=a and b=b and c=c and f=f and S=S]
-      by presburger
+      by presburger+
   qed
   then show ?thesis by auto
 qed
@@ -5348,7 +5348,7 @@ proof -
               \<and> ((a=b \<and> b=c \<and> c\<noteq>d) \<longrightarrow> ?p I J) \<and> ((a=b \<and> b\<noteq>c \<and> c\<noteq>d \<and> a\<noteq>d) \<longrightarrow> ?p I J)
               \<and> ((a\<noteq>b \<and> b=c \<and> c\<noteq>d \<and> a=d) \<longrightarrow> ?p I J)
               \<and> (([a;b;c] \<and> a=d) \<longrightarrow> ?p I J) \<and> (([b;a;c] \<and> a=d) \<longrightarrow> ?p I J)"
-    proof (intro conjI7 impI)
+    proof (intro conjI impI)
       assume "a = b \<and> b = c \<and> c = d" thus "?p I J"
         using \<open>I = interval a b\<close> \<open>J = interval c d\<close> by auto
     next
@@ -5633,7 +5633,7 @@ proof -
           (\<forall>r\<in>?R. \<forall>l\<in>?L. [l;a;r]) \<and>
           (\<forall>x\<in>?R. \<forall>y\<in>?R. \<not> [x;a;y]) \<and>
           (\<forall>x\<in>?L. \<forall>y\<in>?L. \<not> [x;a;y])"
-  proof (rule conjI6)
+  proof (intro conjI)
     show "is_ray_on ?L Q"
     proof (unfold is_ray_on_def, safe)
       show "Q \<in> \<P>" 
@@ -6173,7 +6173,7 @@ proof -
           ([a;b;c] \<and> a = d \<longrightarrow> ?P I J) \<and> ([b;a;c] \<and> a = d \<longrightarrow> ?P I J)"
       if "?I I a b" "?I J c d" "I \<subseteq> Q" "J \<subseteq> Q"
       for I J a b c d
-      proof (rule conjI7, rule_tac[1-7] impI)
+      proof (intro conjI, rule_tac[1-7] impI)
         assume "a = b \<and> b = c \<and> c = d"
         show "\<exists>l\<in>Q. \<exists>u\<in>Q. \<forall>x\<in>I \<union> J. [l;x;u]"
           using \<open>a = b \<and> b = c \<and> c = d\<close> abc_ac_neq assms(5) ex_crossing_path that(1,2)
