@@ -2980,7 +2980,7 @@ proof -
       assume "n \<le> card ?X - 2"
       show "?lhs=?rhs"
         using \<open>n \<le> card ?X - 2\<close> finite_long_chain_with_def long_ch_Y sYX \<open>Suc (card Y) = card ?X\<close>
-        by (metis (mono_tags, hide_lams) Suc_1 Suc_leD diff_Suc_Suc diff_commute diff_diff_cancel
+        by (metis (mono_tags, opaque_lifting) Suc_1 Suc_leD diff_Suc_Suc diff_commute diff_diff_cancel
           diff_le_mono2 fin_chain_card_geq_2)
     next
       assume "\<not> n \<le> card ?X - 2"
