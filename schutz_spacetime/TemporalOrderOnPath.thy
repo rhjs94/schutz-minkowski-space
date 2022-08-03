@@ -3065,7 +3065,7 @@ proof -
     show ?thesis
     proof
       show "(0::nat)<1 \<and> [a\<^sub>1; b; f 1] \<and> 1 < card Y \<and> \<not> (\<exists>k'::nat. k' < 1 \<and> [a\<^sub>1; b; f k'])"
-      proof (rule conjI4)
+      proof (intro conjI)
         show "(0::nat)<1" by simp
         show "1 < card Y"
           using Yb abc_ac_neq bound_indices not_le by fastforce
@@ -3119,7 +3119,7 @@ proof -
     proof
       let ?k = "k+1"
       show "0<?k \<and> [a\<^sub>1; b; f ?k] \<and> ?k < card Y \<and> \<not> (\<exists>k'::nat. k' < ?k \<and> [a\<^sub>1; b; f k'])"
-      proof (rule conjI4)
+      proof (intro conjI)
         show "(0::nat)<?k" by simp
         show "?k < card Y"
           by (metis (no_types, lifting) S_def Yb \<open>k \<in> S\<close> abc_only_cba(2) add.commute

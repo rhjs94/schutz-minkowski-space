@@ -9,19 +9,6 @@ begin
 
 text \<open>Some "utility" proofs -- little proofs that come in handy every now and then.\<close>
 
-text \<open>For multiple uses of \<open>conjI\<close> (goal splitting).\<close>
-
-lemma conjI3: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P1\<and>P2\<and>P3"
-  by auto
-lemma conjI4: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P4 \<Longrightarrow> P1\<and>P2\<and>P3\<and>P4"
-  by auto
-lemma conjI5: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P4 \<Longrightarrow> P5 \<Longrightarrow> P1\<and>P2\<and>P3\<and>P4\<and>P5"
-  by auto
-lemma conjI6: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P4 \<Longrightarrow> P5 \<Longrightarrow> P6 \<Longrightarrow> P1\<and>P2\<and>P3\<and>P4\<and>P5\<and>P6"
-  by auto
-lemma conjI7: "P1 \<Longrightarrow> P2 \<Longrightarrow> P3 \<Longrightarrow> P4 \<Longrightarrow> P5 \<Longrightarrow> P6 \<Longrightarrow> P7 \<Longrightarrow> P1\<and>P2\<and>P3\<and>P4\<and>P5\<and>P6\<and>P7"
-  by auto
-
 text \<open>
   We need this in order to obtain a natural number which can be passed to the ordering function,
   distinct from two others, in the case of a finite set of events with cardinality a least 3.
