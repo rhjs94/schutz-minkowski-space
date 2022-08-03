@@ -8,7 +8,7 @@ begin
 
 (* It is best to avoid `distinct` because it makes proof more difficult. *)
 (* If it has to be used, the lemma: distinct_length_2_or_more is essential. *)
-(* For proofs involving the cardinality of concrete, finite sets see `card_insert_if`. *)
+(* For proofs involving the cardinality of concrete, finite sets see \<open>card_insert_if\<close>. *)
 
 text \<open>
   Primitives and axioms as given in \cite[pp.~9-17]{schutz1997}.
