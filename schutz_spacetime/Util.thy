@@ -1,4 +1,4 @@
-(*  Title:      schutz_spacetime/Util.thy
+(*  Title:      Schutz_Spacetime/Util.thy
     Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
                 University of Edinburgh, 2021          
 *)

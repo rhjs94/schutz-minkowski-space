@@ -1,3 +1,7 @@
+(*  Title:      Schutz_Spacetime/TemporalOrderExtra.thy
+    Authors:    Richard Schmoetten, Jake Palmer and Jacques D. Fleuriot
+                University of Edinburgh, 2021          
+*)
 theory TemporalOrderExtra
   imports Main Minkowski TernaryOrdering TemporalOrderOnPath "HOL-Algebra.Order"
 begin
