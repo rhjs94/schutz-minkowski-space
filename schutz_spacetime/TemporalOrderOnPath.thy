@@ -5926,12 +5926,12 @@ theorem (*13*) unreach_connected:
 proof -
   have xz: "Q\<^sub>x \<noteq> Q\<^sub>z" using abc_ac_neq xyz by blast
 
-  text \<open>First we obtain the chain from I6.\<close>
+  text \<open>First we obtain the chain from @{thm I6}.\<close>
   have in_Q: "Q\<^sub>x\<in>Q \<and> Q\<^sub>y\<in>Q \<and> Q\<^sub>z\<in>Q"
     using betw_b_in_path path_Q unreach(1,2) xz unreach_on_path xyz by blast
   hence event_y: "Q\<^sub>y\<in>\<E>"
     using in_path_event path_Q by blast
-  text\<open>legacy: I6_old instead of I6\<close>
+  text\<open>legacy: @{thm I6_old} instead of @{thm I6}\<close>
   obtain X f where X_def: "ch_by_ord f X" "f 0 = Q\<^sub>x" "f (card X - 1) = Q\<^sub>z"
       "(\<forall>i\<in>{1 .. card X - 1}. (f i) \<in> unreach-on Q from b \<and> (\<forall>Qy\<in>\<E>. [f (i - 1); Qy; f i] \<longrightarrow> Qy \<in> unreach-on Q from b))"
       "short_ch X \<longrightarrow> Q\<^sub>x \<in> X \<and> Q\<^sub>z \<in> X \<and> (\<forall>Q\<^sub>y\<in>\<E>. [Q\<^sub>x; Q\<^sub>y; Q\<^sub>z] \<longrightarrow> Q\<^sub>y \<in> unreach-on Q from b)"
