@@ -132,7 +132,7 @@ text \<open>
 
 text \<open>
   For the case of two-element chains: the elements are distinct by definition,
-  and the statement on local_ordering is void (respectively, \<open>False \<Longrightarrow> P\<close> for any \<open>P\<close>).
+  and the statement on \<^term>\<open>local_ordering\<close> is void (respectively, \<^term>\<open>False \<Longrightarrow> P\<close> for any \<^term>\<open>P\<close>).
   We exclude this case from our proof of \<open>order_finite_chain\<close>. Two helper lemmas are provided,
   each capturing one of the proofs by induction in Schutz' writing.
 \<close>
@@ -2258,8 +2258,8 @@ qed
 text \<open>
   The book introduces Theorem 9 before the above three lemmas but can only complete the proof
   once they are proven.
-  This doesn't exactly say it the same way as the book, as the book gives the local_ordering (abcd)
-  explicitly (for arbitrarly named events), but is equivalent.
+  This doesn't exactly say it the same way as the book, as the book gives the
+  \<^term>\<open>local_ordering\<close> (abcd) explicitly (for arbitrarly named events), but is equivalent.
 \<close>
 
 theorem (*9*) chain4:
@@ -2333,21 +2333,11 @@ qed
 end (* context MinkowskiSpacetime *)
 
 
-section "Interlude - Chains and Equivalences"
-text \<open>
-  This section is meant for our alternative definitions of chains, and proofs of equivalence.
-  If we want to regain full independence of our axioms, we probably need to shuffle a few
-  things around. Some of this may be redundant, but is kept for compatibility with legacy proofs.
-
-  Three definitions are given (cf `Betweenness: Chains` in Minkowski.thy):
-   - one relying on explicit betweenness conditions
-   - one relying on a total local_ordering and explicit indexing
-   - one equivalent to the above except for use of the weaker, local-only local_ordering2
-\<close>
+section "Interlude - Chains, segments, rays"
 
 context MinkowskiBetweenness begin
 
-subsection "General results"
+subsection "General results for chains"
 
 lemma inf_chain_is_long:
   assumes "[f\<leadsto>X|x..]"
@@ -2435,7 +2425,7 @@ lemma chain_bounds_unique:
 
 end (* context MinkowskiBetweenness *)
 
-section "Results for segments, rays and (sub)chains"
+subsection "Results for segments, rays and (sub)chains"
 
 
 context MinkowskiBetweenness begin
@@ -2840,9 +2830,9 @@ proof -
   hence "[a\<^sub>1; f 1; a\<^sub>n]"
     using order_finite_chain chain_defs long_ch_Y
     by auto
-  text \<open>Schutz has a step here that says \<open>[b a\<^sub>1 a\<^sub>2 a\<^sub>n]\<close> is a chain (using Theorem 9).
-    We have no easy way of denoting an ordered 4-element chain, so we skip this step
-    using an local_ordering lemma from our script for 3.6, which Schutz doesn't list.\<close>
+  text \<open>Schutz has a step here that says $[b a_1 a_2 a_n]$ is a chain (using Theorem 9).
+    We have no easy way (yet) of denoting an ordered 4-element chain, so we skip this step
+    using a \<^term>\<open>local_ordering\<close> lemma from our script for 3.6, which Schutz doesn't list.\<close>
   hence "[b; a\<^sub>1; f 1]"
     using bY abd_bcd_abc by blast
   have "local_ordering g betw ?X"
@@ -4392,8 +4382,9 @@ end (* context MinkowskiSpacetime *)
 
 
 section "Chains are unique up to reversal"
+context MinkowskiSpacetime begin
 
-lemma (in MinkowskiSpacetime) chain_remove_at_right_edge:
+lemma chain_remove_at_right_edge:
   assumes "[f\<leadsto>X|a..c]" "f (card X - 2) = p" "3 \<le> card X" "X = insert c Y" "c\<notin>Y"
   shows "[f\<leadsto>Y|a..p]"
 proof -
@@ -4460,7 +4451,7 @@ text \<open>
   If we ever want to have chains less strongly identified by endpoints,
   this result should generalise - $a,c,x,z$ are only used to identify reversal/no-reversal cases.
 \<close>
-lemma (in MinkowskiSpacetime) chain_unique_induction_ax:
+lemma chain_unique_induction_ax:
   assumes "card X \<ge> 3"
       and "i < card X"
       and "[f\<leadsto>X|a..c]"
@@ -4651,7 +4642,7 @@ qed
 
 text \<open>I'm really impressed \<open>sledgehammer\<close>/\<open>smt\<close> can solve this if I just tell them "Use symmetry!".\<close>
 
-lemma (in MinkowskiSpacetime) chain_unique_induction_cx:
+lemma chain_unique_induction_cx:
   assumes "card X \<ge> 3"
       and "i < card X"
       and "[f\<leadsto>X|a..c]"
@@ -4660,17 +4651,16 @@ lemma (in MinkowskiSpacetime) chain_unique_induction_cx:
     shows "f i = g (card X - i - 1)"
   using chain_sym_obtain2 chain_unique_induction_ax assms diff_right_commute by smt
 
-
-
 text \<open>
   This lemma has to exclude two-element chains again, because no order exists within them.
   Alternatively, the result is trivial: any function that assigns one element to index 0 and
   the other to 1 can be replaced with the (unique) other assignment, without destroying any
-  (trivial, since ternary) "local_ordering" of the chain.
-  This could be made generic over the local_ordering similar to \<open>chain_sym\<close> relying on \<open>local_ordering_sym\<close>.
+  (trivial, since ternary) \<^term>\<open>local_ordering\<close> of the chain.
+  This could be made generic over the \<^term>\<open>local_ordering\<close>
+  similar to @{thm chain_sym} relying on @{thm ordering_sym_loc}.
 \<close>
 
-lemma (in MinkowskiSpacetime) chain_unique_upto_rev_cases:
+lemma chain_unique_upto_rev_cases:
   assumes ch_f: "[f\<leadsto>X|a..c]"
       and ch_g: "[g\<leadsto>X|x..z]"
       and card_X: "card X \<ge> 3"
@@ -4688,7 +4678,7 @@ proof -
     using assms(3) ch_f ch_g chain_unique_induction_cx valid_index by blast
 qed
 
-lemma (in MinkowskiSpacetime) chain_unique_upto_rev:
+lemma chain_unique_upto_rev:
   assumes "[f\<leadsto>X|a..c]" "[g\<leadsto>X|x..z]" "card X \<ge> 3" "i < card X"
   shows "f i = g i \<or> f i = g (card X - i - 1)" "a=x\<and>c=z \<or> c=x\<and>a=z"
 proof -
@@ -4698,7 +4688,10 @@ proof -
     using assms(3) \<open>i < card X\<close> assms chain_unique_upto_rev_cases by blast
   thus "(a=x\<and>c=z) \<or> (c=x\<and>a=z)"
     by (meson assms(1-3) chain_bounds_unique)
-qed
+    qed
+
+
+end (* context MinkowskiSpacetime *)
 
 
 section "Interlude: betw4 and WLOG"
@@ -4706,7 +4699,8 @@ section "Interlude: betw4 and WLOG"
 subsection "betw4 - strict and non-strict, basic lemmas"
 context MinkowskiBetweenness begin
 
-text \<open>Define additional notation for non-strict local_ordering - cf Schutz' monograph \cite[ p.~27]{schutz1997}.\<close>
+text \<open>Define additional notation for non-strict \<^term>\<open>local_ordering\<close> -
+  cf Schutz' monograph \cite[ p.~27]{schutz1997}.\<close>
 
 abbreviation nonstrict_betw_right :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("[_;_;_\<rbrakk>") where
   "nonstrict_betw_right a b c \<equiv> [a;b;c] \<or> b = c"
@@ -5949,8 +5943,6 @@ proof -
 
   text \<open>
   Then we have to manually show the bounds, defined via indices only, are in the obtained chain.
-  This step made me add the two-element-chain-case to I6 in \<open>Minkowski.thy\<close> (legacy);
-  this case is referenced here as \<open>X_def(5)\<close>.
 \<close>
   let ?a = "f 0"
   let ?d = "f (card X - 1)"
@@ -5960,12 +5952,11 @@ proof -
       using X_def \<open>card X = 2\<close> short_ch_card_2 xz by blast+
   }
   hence "[f\<leadsto>X|Q\<^sub>x..Q\<^sub>z]"
-    using chain_defs
-    by (metis X_def(1-3) fin_X)
+    using chain_defs by (metis X_def(1-3) fin_X)
 
   text \<open>
   Further on, we split the proof into two cases, namely the split Schutz absorbs into his
-  non-strict local_ordering. Just below is the statement we use \<open>disjE\<close> with.\<close>
+  non-strict \<^term>\<open>local_ordering\<close>. Just below is the statement we use @{thm disjE} with.\<close>
   have y_cases: "Q\<^sub>y\<in>X \<or> Q\<^sub>y\<notin>X" by blast
   have y_int: "Q\<^sub>y\<in>interval Q\<^sub>x Q\<^sub>z"
     using interval_def seg_betw xyz by auto
@@ -5974,14 +5965,16 @@ proof -
 
   show ?thesis
   proof (cases)
-    text \<open>We treat short chains separately (legacy: they used to have a separate clause in I6, now I6_old).\<close>
+    text \<open>We treat short chains separately.
+      (Legacy: they used to have a separate clause in @{thm I6}, now @{thm I6_old})\<close>
     assume "N=2"
     thus ?thesis
       using X_def(1,5) xyz \<open>N = card X\<close> event_y short_ch_card_2 by auto
   next
     text \<open>
-  This is where Schutz obtains the chain from Theorem 11. We instead use the chain we already have
-  with only a part of Theorem 11, namely \<open>int_split_to_segs\<close>. \<open>?S\<close> is defined like in \<open>segmentation\<close>.\<close>
+    This is where Schutz obtains the chain from Theorem 11. We instead use the chain we already have
+    with only a part of Theorem 11, namely @{thm int_split_to_segs}.
+    \<open>?S\<close> is defined like in @{thm segmentation}.\<close>
     assume "N\<noteq>2"
     hence "N\<ge>3" using \<open>2 \<le> N\<close> by auto
     have "2\<le>card X" using \<open>2 \<le> N\<close> \<open>N = card X\<close> by blast
@@ -6494,8 +6487,8 @@ begin
 text \<open>
   Path density: if $a$ and $b$ are connected by a path, then the segment between them is nonempty.
   Since Schutz insists on the number of segments in his segmentation (Theorem 11), we prove it here,
-  showcasing where his missing assumption of path density fits in
-  (it is used three times in \<open>number_of_segments\<close>, once in each separate meaningful local_ordering case).
+  showcasing where his missing assumption of path density fits in (it is used three times
+  in \<open>number_of_segments\<close>, once in each separate meaningful \<^term>\<open>local_ordering\<close> case).
 \<close>
 
 lemma segment_nonempty:
